@@ -18,21 +18,21 @@ namespace GardenModel {
 
 class Garden : public GardenAcceptable{
 public:
-	vector<Plant*>* _plants;
+	vector<Plant*> _plants;
 
 	Garden() {//garden with one plant and one sprinkler for that plant
-		_plants = new vector<Plant*>(1);
+		_plants.reserve(10);
 		Sprinkler* sprinkler = new Sprinkler();
-		_plants->push_back(new Plant(sprinkler));
+		_plants.push_back(new Plant(sprinkler));
 	}
 	virtual ~Garden(){
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Garden DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
 	Plant* getPlant(int id) {
-		if(_plants->size() - 1 < id)
+		if(_plants.size() - 1 < id)
 			return NULL;
-		return (*_plants)[id];
+		return _plants[id];
 	}
 
 	virtual void* accept(GardenVisitor& visitor){

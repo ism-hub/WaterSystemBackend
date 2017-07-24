@@ -37,6 +37,7 @@
 #include <ESP8266mDNS.h>
 
 #include <DispatcherServlet.h>
+#include <vector>
 
 const char *ssid = "rina";//"AndroidAP";
 const char *password = "1qwer5counterstrike";//"nakr0097";
@@ -61,7 +62,7 @@ void initExecutionChains(DispatcherServlet& dispatcher) {
 	handlerExecutionChain->addInterceptor(jsonInterceptor);
 
 	Serial.println("############# inserting the exe chain into the dispatcher ###########");
-	dispatcher._handlerExecutionChains->push_back(handlerExecutionChain);
+	dispatcher._handlerExecutionChains.push_back(handlerExecutionChain);
 
 	/*Serial.println("init Calling to the get controller before the handle client");
 	Serial.println("init getting the dispatcher servlet");
@@ -72,7 +73,6 @@ void initExecutionChains(DispatcherServlet& dispatcher) {
 	HandlerExecutionChain* exeChain = (*exeChains)[0];
 	Serial.println("init getting the controller");
 	Controller* ctrler = exeChain->getController();*/
-
 }
 
 void setup ( void ) {
@@ -115,33 +115,24 @@ void setup ( void ) {
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	//server._dispatcherServlet._handlerExecutionChains
 
-	Serial.println("setup Calling to the get controller before the handle client");
-		Serial.println("setup getting the dispatcher servlet");
-		DispatcherServlet* dispacher2 = &(server->_dispatcherServlet);
-		Serial.println("setup getting the handlerExecutionChains");
-		vector<HandlerExecutionChain*>* exeChains = dispacher2->_handlerExecutionChains;
-		Serial.println("setup getting the only ExecutionChain we have");
-		HandlerExecutionChain* exeChain = (*exeChains).front();
-		Serial.println("setup getting the controller");
-		Controller* ctrler = exeChain->getController();
 
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 }
 
 void loop ( void ) {
-	Serial.println("Calling to the get controller before the handle client");
+	/*Serial.println("Calling to the get controller before the handle client");
 	Serial.println("getting the dispatcher servlet");
 	DispatcherServlet* dispacher2 = &(server->_dispatcherServlet);
 	Serial.println("getting the handlerExecutionChains");
-	vector<HandlerExecutionChain*>* exeChains = dispacher2->_handlerExecutionChains;
+	HandlerExecutionChain** exeChains = dispacher2->_handlerExecutionChains;
 	Serial.println("getting the only ExecutionChain we have");
-	HandlerExecutionChain* exeChain = (*exeChains)[0];
+	HandlerExecutionChain* exeChain = *exeChains;
 	Serial.println("getting the controller");
 	Controller* ctrler = exeChain->getController();
 
-	Serial.println("success, now calling the server->handleClient(); ");
+	Serial.println("success, now calling the server->handleClient(); ");*/
 	server->handleClient();
-	delay(2000);
+	//delay(2000);
 }
 
 

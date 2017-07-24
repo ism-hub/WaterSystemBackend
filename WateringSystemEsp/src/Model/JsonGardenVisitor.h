@@ -31,8 +31,8 @@ public:
 		String& gardenJson = *(new String());
 		gardenJson = "{\"plants\":[";
 		String* strPlant;
-		for (int i = 0; i < garden._plants->size(); ++i) {
-			strPlant = (String*)(*(garden._plants))[i]->accept(*this);
+		for (int i = 0; i < garden._plants.size(); ++i) {
+			strPlant = (String*)(garden._plants[i]->accept(*this));
 			gardenJson += *strPlant;
 			gardenJson += ",";
 			strPlant->~String();

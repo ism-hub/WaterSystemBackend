@@ -31,12 +31,12 @@ public:
 
 	//typedef HttpServletResponse (*t_name)(HttpServletRequest& request);
 
-	vector<HandlerExecutionChain*>* _handlerExecutionChains=NULL;
+	vector<HandlerExecutionChain*> _handlerExecutionChains;
 	Garden* _garden=NULL;
 
 	DispatcherServlet() {
 		Serial.println ("## inside DispatcherServlet CTOR ");
-		_handlerExecutionChains = new vector<HandlerExecutionChain*>(1);
+		_handlerExecutionChains.reserve(10);//$$$ ### visit thin value
 	/*	Serial.println ("############# inside DispatcherServlet CTOR ###########");
 		_garden = new Garden();
 		_handlerExecutionChains  = new vector<HandlerExecutionChain*>(1);
@@ -60,21 +60,16 @@ public:
 	}
 
 	HandlerExecutionChain* getHandlerExecutionChain(HttpServletRequest& request) {
-		for (int i = 0; i < _handlerExecutionChains->size(); i++) {
+		for (int i = 0; i < _handlerExecutionChains.size(); i++) {
+			HandlerExecutionChain& handlerExecutionChain = *_handlerExecutionChains[i];
 
-			Serial.println ("doing vector<HandlerExecutionChain*>& handlerExecutionChains = (*_handlerExecutionChains);");
-			vector<HandlerExecutionChain*>& handlerExecutionChains = (*_handlerExecutionChains);
-
-			Serial.println ("doing HandlerExecutionChain& handlerExecutionChain = handlerExecutionChains[i];");
-			HandlerExecutionChain& handlerExecutionChain = *(handlerExecutionChains[i]);
-
-			Serial.println ("handlerExecutionChain._controller instead of handlerExecutionChain.getController();");
+			Serial.println (" handlerExecutionChain.getController();");
 			Controller* ctrl = handlerExecutionChain.getController();
 
 			Serial.println ("checking if he can handle");
 			if (ctrl->canHandle(request)){
-				Serial.println ("yes we can");
-				return (*_handlerExecutionChains)[i];
+				Serial.println ("	- yes we can");
+				return &handlerExecutionChain;
 			}
 		}
 		return NULL;
@@ -102,26 +97,35 @@ public:
 		Serial.println ("we found an handler, we can continue" );
 
 		//execute the chain
-		vector<HandlerInterceptor*>& HandlerInterceptors = *(executionChain->getInterceptors());
+		vector<HandlerInterceptor*>& handlerInterceptors = executionChain->getInterceptors();
 		Controller& controller = *(executionChain->getController());
 
 		//HandlerInterceptors before handle (every one return bool if returned true than we need to stop the execution)
 		Serial.println ("execute the pre inceptors" );
-		for(int i = 0; i<HandlerInterceptors.size();i++){
-			if(!HandlerInterceptors[i]->preHandle(request,*response,controller))// if false then the Interceptor handled the response
+		for(int i = 0; i<handlerInterceptors.size() ;i++){
+			if(!handlerInterceptors[i]->preHandle(request,*response,controller))// if false then the Interceptor handled the response
 				return response;
 		}
 
 		Serial.println ( "Calling the handler (Controller)" );
 		// call the handler
 		GardenAcceptable* gardenAcceptable = controller.handle(request,*response);
-		if(gardenAcceptable == NULL)//error happened inside the controller, and the controller prepared the right httPresponse with the error properties
+		if(gardenAcceptable == NULL){//error happened inside the controller, and the controller prepared the right httPresponse with the error properties
+			Serial.println ( "gardenAcceptable is null, maybe a problem in the controller " );
 			return response;
+		}
+		Serial.println ( "we got our GardenAcceptable, now we know its a plant so we printing it values-" );
+		Plant* plant = (Plant*)gardenAcceptable;
+		Serial.print("Plant.sprinkler._id - ");
+		Serial.println(plant->_sprinkler->_id);
+		Serial.println("Plant.sprinkler._name - " + plant->_sprinkler->_name);
+		Serial.print("Plant.sprinkler._name - ");
+		Serial.println(plant->_sprinkler->_status == Sprinkler::On ? "On" : "Off");
 
 		Serial.println ( "Calling the HandlerInterceptors post handle" );
 		//HandlerInterceptors post handle
-		for (int i = 0; i < HandlerInterceptors.size(); i++) {
-			HandlerInterceptors[i]->postHandle(request, *response,controller,*gardenAcceptable);
+		for (int i = 0; i < handlerInterceptors.size(); i++) {
+			handlerInterceptors[i]->postHandle(request, *response,controller,*gardenAcceptable);
 		}
 
 		Serial.println ( "Our response is:" );

@@ -21,21 +21,19 @@ class HandlerExecutionChain {
 public:
 
 	Controller* _controller;
-	vector<HandlerInterceptor*>* _handlerInterceptors;
+	vector<HandlerInterceptor*> _handlerInterceptors;
 
 	HandlerExecutionChain(Controller* controller) {
-		Serial.println ("doing   _controller= controller");
-		_controller=controller;
 		Serial.println ("CTOR of HandlerExecutionChain called");
-		_handlerInterceptors = new vector<HandlerInterceptor*>(1);
-
+		_handlerInterceptors.reserve(10);
+		_controller=controller;
 	}
 	virtual ~HandlerExecutionChain() {
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ HandlerExecutionChain DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
 	void addInterceptor(HandlerInterceptor* interceptor){
-		_handlerInterceptors->push_back(interceptor);
+		_handlerInterceptors.push_back(interceptor);
 	}
 
 	Controller* getController() {
@@ -47,7 +45,7 @@ public:
 		//return NULL;
 	}
 
-	vector<HandlerInterceptor*>* getInterceptors(){
+	vector<HandlerInterceptor*>& getInterceptors(){
 		return _handlerInterceptors;
 	}
 };
