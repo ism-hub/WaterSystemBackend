@@ -39,6 +39,10 @@
 #include <DispatcherServlet.h>
 #include <vector>
 
+#include <memory>
+
+//#include <typeinfo>
+
 const char *ssid = "rina";//"AndroidAP";
 const char *password = "1qwer5counterstrike";//"nakr0097";
 
@@ -64,15 +68,6 @@ void initExecutionChains(DispatcherServlet& dispatcher) {
 	Serial.println("############# inserting the exe chain into the dispatcher ###########");
 	dispatcher._handlerExecutionChains.push_back(handlerExecutionChain);
 
-	/*Serial.println("init Calling to the get controller before the handle client");
-	Serial.println("init getting the dispatcher servlet");
-	DispatcherServlet* dispacher2 = &dispatcher;
-	Serial.println("init getting the handlerExecutionChains");
-	vector<HandlerExecutionChain*>* exeChains = dispacher2->_handlerExecutionChains;
-	Serial.println("init getting the only ExecutionChain we have");
-	HandlerExecutionChain* exeChain = (*exeChains)[0];
-	Serial.println("init getting the controller");
-	Controller* ctrler = exeChain->getController();*/
 }
 
 void setup ( void ) {
@@ -97,7 +92,28 @@ void setup ( void ) {
 	}
 
 	//init the model
+	Serial.println("Creating the garden model");
 	garden = new Garden();
+	Serial.println("Printing the garden -");
+	Serial.print("Number of plants:");
+	Serial.println(garden->_plants.size());
+	Serial.print("		plants -");
+	for(int i = 0; i < garden->_plants.size(); i++)
+	{
+		Serial.println(i);
+		weak_ptr<Plant> plant = garden->_plants[i];
+		if(plant.expired())
+			Serial.println("for some reason the plant pointer is expired");
+		weak_ptr<Sprinkler> sprinkler = plant.lock()->_sprinkler;
+		if(sprinkler.expired())
+			Serial.println("for some reason the sprinkler pointer is expired");
+		Serial.print("Plant.sprinkler._id - ");
+		Serial.println(sprinkler.lock()->_id);
+		Serial.println("Plant.sprinkler._name - " + sprinkler.lock()->_name);
+		Serial.print("Plant.sprinkler._name - ");
+		Serial.println(sprinkler.lock()->_status == Sprinkler::On ? "On" : "Off");
+	}
+
 
 	//create the dispatcher model
 	DispatcherServlet* dispatcher = new DispatcherServlet();
@@ -113,26 +129,17 @@ void setup ( void ) {
 	Serial.println ( "HTTP server started" );
 
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-	//server._dispatcherServlet._handlerExecutionChains
+
+	//Serial.println(typeid(dispatcher).name());
+
+	shared_ptr<int> pi = make_shared<int>(4);
+	Serial.println(*pi);
 
 
-	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 }
 
 void loop ( void ) {
-	/*Serial.println("Calling to the get controller before the handle client");
-	Serial.println("getting the dispatcher servlet");
-	DispatcherServlet* dispacher2 = &(server->_dispatcherServlet);
-	Serial.println("getting the handlerExecutionChains");
-	HandlerExecutionChain** exeChains = dispacher2->_handlerExecutionChains;
-	Serial.println("getting the only ExecutionChain we have");
-	HandlerExecutionChain* exeChain = *exeChains;
-	Serial.println("getting the controller");
-	Controller* ctrler = exeChain->getController();
-
-	Serial.println("success, now calling the server->handleClient(); ");*/
 	server->handleClient();
-	//delay(2000);
 }
 
 

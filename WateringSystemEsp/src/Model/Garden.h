@@ -18,20 +18,19 @@ namespace GardenModel {
 
 class Garden : public GardenAcceptable{
 public:
-	vector<Plant*> _plants;
+	vector<shared_ptr<Plant> > _plants;
 
 	Garden() {//garden with one plant and one sprinkler for that plant
 		_plants.reserve(10);
-		Sprinkler* sprinkler = new Sprinkler();
-		_plants.push_back(new Plant(sprinkler));
+		_plants.push_back(make_shared<Plant>(make_shared<Sprinkler>()));
 	}
 	virtual ~Garden(){
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Garden DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
-	Plant* getPlant(int id) {
+	weak_ptr<Plant> getPlant(int id) {
 		if(_plants.size() - 1 < id)
-			return NULL;
+			return {};//returns empty weak_ptr
 		return _plants[id];
 	}
 

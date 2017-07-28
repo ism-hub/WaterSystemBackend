@@ -56,6 +56,7 @@
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/DispatcherServlet.h \
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/HttpServletRequest.h \
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/HttpServletResponse.h \
+ C:\Programming\eclipse\arduinoPlugin\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266/HardwareSerial.h \
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/WateringSystemApiParser.h \
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\http\controllers/Controller.h \
  C:\Programming\git\WateringSystem\WateringSystemEsp\src\Model/GardenAcceptable.h \
@@ -191,6 +192,8 @@ C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/DispatcherServlet.h
 C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/HttpServletRequest.h:
 
 C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/HttpServletResponse.h:
+
+C:\Programming\eclipse\arduinoPlugin\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266/HardwareSerial.h:
 
 C:\Programming\git\WateringSystem\WateringSystemEsp\src\http/WateringSystemApiParser.h:
 

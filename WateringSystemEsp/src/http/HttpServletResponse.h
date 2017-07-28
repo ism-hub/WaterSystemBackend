@@ -10,14 +10,18 @@
 
 #include <WString.h>
 #include <HttpEnums.h>
+#include <WString.h>
+
+#include <HardwareSerial.h>
 
 namespace Http {
 
 enum HttpCode {SC_OK=200, SC_NOT_FOUND = 404, SC_ACCEPTED = 202, SC_NOT_IMPL = 501};
 
+
 class HttpServletResponse {
 public:
-
+	static const String CONTENT_TYPE_JSON;// = "application/json";
 	String content_type;
 	String content;
 	HttpCode _httpCode;
@@ -34,6 +38,7 @@ public:
 	}
 };
 
+//const String HttpServletResponse::CONTENT_TYPE_JSON = "application/json";
 } /* namespace Http */
 
 #endif /* HTTP_HTTPSERVLETRESPONSE_H_ */

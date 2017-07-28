@@ -44,13 +44,13 @@ public:
 	}
 
 	GardenAcceptable* handle(HttpServletRequest& req, HttpServletResponse& res) {
-		Plant* plant=NULL;
+		Plant* plant = NULL;
 		if(canHandle(req) && req.urlTokens.size() == 2){///GET PLANTS_ID
 			Serial.println ("we handling the message" );
 			//get parameters
 			int id=atoi(req.urlTokens[1].c_str());
 			//call the correct function
-			plant = getPlant(id);
+			plant = getPlant(id).lock().get();
 		}
 		return plant;
 	}
@@ -60,7 +60,7 @@ public:
 	}*/
 
 	///GET SPRINKLERS_ID
-	Plant* getPlant(int id) {
+	weak_ptr<Plant> getPlant(int id) {
 		Serial.println ("we called getPlant in the PlantController" );
 		return _garden.getPlant(id);
 	}

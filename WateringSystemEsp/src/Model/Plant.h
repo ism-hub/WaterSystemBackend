@@ -10,16 +10,17 @@
 
 #include <Sprinkler.h>
 #include <GardenAcceptable.h>
+#include <memory>
 
 namespace GardenModel {
 
 class Plant : public GardenAcceptable {
 public:
 
-	Sprinkler* _sprinkler;
+	shared_ptr<Sprinkler> _sprinkler;
 
-	Plant(Sprinkler* sprinkler): _sprinkler(sprinkler){
-
+	Plant(shared_ptr<Sprinkler> sprinkler)/*: _sprinkler(sprinkler)*/{
+		_sprinkler = sprinkler;
 	}
 
 	virtual ~Plant(){

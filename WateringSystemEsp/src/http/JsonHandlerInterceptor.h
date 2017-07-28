@@ -30,6 +30,8 @@ public:
 	void postHandle(HttpServletRequest& request, HttpServletResponse& response, Controller& handler, GardenAcceptable& model) {
 		String jsonModel = *(String*)model.accept(_jsonGardenVisitor);
 		response.content = jsonModel;
+		response.content_type = HttpServletResponse::CONTENT_TYPE_JSON;
+		response._httpCode = SC_OK;
 	}
 
 

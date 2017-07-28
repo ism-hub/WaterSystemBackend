@@ -29,6 +29,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/http}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/Model}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/http/controllers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/DAL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Programming\cppSerializationLib\cereal\include&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.176035448" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
