@@ -9,7 +9,7 @@ RM := del
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir.mk
--include src\http\subdir.mk
+-include src\httpModule\model\subdir.mk
 -include libraries\ESP8266mDNS\subdir.mk
 -include libraries\ESP8266WiFi\src\subdir.mk
 -include libraries\ESP8266WebServer\src\subdir.mk
@@ -84,7 +84,7 @@ C:\Programming\git\WateringSystem\WateringSystemEsp\Release\arduino.ar: $(AR_OBJ
 
 WateringSystemEsp.elf: $(LINK_OBJ) $(AR)
 	@echo 'Starting combiner'
-	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-gcc" -g -Wall -Wextra -Os -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/lib" "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/ld" "-Teagle.flash.4m1m.ld" -Wl,--gc-sections -Wl,-wrap,system_restart_local -Wl,-wrap,register_chipv6_phy -o "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/WateringSystemEsp.elf" -Wl,--start-group   $(LINK_OBJ) $(AR)  "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar" -lm -lgcc -lhal -lphy -lpp -lnet80211 -lwpa -lcrypto -lmain -lwps -laxtls -lsmartconfig -lmesh -lwpa2 -llwip_gcc -lstdc++ -Wl,--end-group "-LC:\Programming\git\WateringSystem\WateringSystemEsp/Release" C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar
+	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-gcc" -g -Wall -Wextra -Os -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/lib" "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/ld" "-Teagle.flash.4m1m.ld" -Wl,--gc-sections -Wl,-wrap,system_restart_local -Wl,-wrap,register_chipv6_phy -o "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/WateringSystemEsp.elf" -Wl,--start-group  -Wl,-Map,MapFile.Map -Wl,--cref  $(LINK_OBJ) $(AR)  "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar" -lm -lgcc -lhal -lphy -lpp -lnet80211 -lwpa -lcrypto -lmain -lwps -laxtls -lsmartconfig -lmesh -lwpa2 -llwip_gcc -lstdc++ -Wl,--end-group "-LC:\Programming\git\WateringSystem\WateringSystemEsp/Release" C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar
 	@echo 'Finished building: $@'
 	@echo ' '
 

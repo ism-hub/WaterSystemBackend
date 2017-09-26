@@ -5,8 +5,8 @@
  *      Author: IsM
  */
 
-#ifndef HTTP_WATERINGSYSTEMAPIPARSER_H_
-#define HTTP_WATERINGSYSTEMAPIPARSER_H_
+#ifndef HTTPMODULE_WATERINGSYSTEMAPIPARSER_H_
+#define HTTPMODULE_WATERINGSYSTEMAPIPARSER_H_
 /*
 #include <map>
 #include <vector>
@@ -110,5 +110,5 @@ protected:
 
 } /* namespace Http */
 
-#endif /* HTTP_WATERINGSYSTEMAPIPARSER_H_ */
+#endif /* HTTPMODULE_WATERINGSYSTEMAPIPARSER_H_ */
 

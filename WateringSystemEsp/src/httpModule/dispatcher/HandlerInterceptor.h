@@ -8,10 +8,10 @@
 #ifndef HTTP_HANDLERINTERCEPTOR_H_
 #define HTTP_HANDLERINTERCEPTOR_H_
 
-#include <HttpServletRequest.h>
-#include <HttpServletResponse.h>
-#include <Controller.h>//### check to see if i need this
 #include <GardenAcceptable.h>
+#include <httpModule/dispatcher/Controller.h>//### check to see if i need this
+#include <httpModule/model/HttpServletRequest.h>
+#include <httpModule/model/HttpServletResponse.h>
 
 using namespace GardenModel;
 

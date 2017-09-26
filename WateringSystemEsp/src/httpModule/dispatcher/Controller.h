@@ -5,12 +5,12 @@
  *      Author: IsM
  */
 
-#ifndef HTTP_CONTROLLERS_CONTROLLER_H_
-#define HTTP_CONTROLLERS_CONTROLLER_H_
+#ifndef HTTPMODULE_CONTROLLERS_CONTROLLER_H_
+#define HTTPMODULE_CONTROLLERS_CONTROLLER_H_
 
-#include <HttpServletRequest.h>
-#include <HttpServletResponse.h>
 #include <GardenAcceptable.h>
+#include <httpModule/model/HttpServletRequest.h>
+#include <httpModule/model/HttpServletResponse.h>
 
 namespace Http {
 
@@ -30,4 +30,4 @@ public:
 
 } /* namespace Http */
 
-#endif /* HTTP_CONTROLLERS_CONTROLLER_H_ */
+#endif /* HTTPMODULE_CONTROLLERS_CONTROLLER_H_ */

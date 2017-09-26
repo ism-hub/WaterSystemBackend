@@ -5,17 +5,19 @@
  *      Author: IsM
  */
 
-#ifndef HTTP_CONTROLLERS_PLANTCONTROLLER_H_
-#define HTTP_CONTROLLERS_PLANTCONTROLLER_H_
+#ifndef HTTPMODULE_CONTROLLERS_PLANTCONTROLLER_H_
+#define HTTPMODULE_CONTROLLERS_PLANTCONTROLLER_H_
 
 #include <list>
 #include <Plant.h>
-#include <HttpServletRequest.h>
-#include <HttpServletResponse.h>
 #include <stdlib_noniso.h>//atoi
-#include <controllers/Controller.h>
+#include <DALModule/repositoryPattern/GardenUnitOfWork.h>
 #include <GardenAcceptable.h>
 #include <Garden.h>
+#include <httpModule/dispatcher/Controller.h>
+#include <httpModule/model/HttpServletRequest.h>
+#include <httpModule/model/HttpServletResponse.h>
+
 
 using namespace std;
 using namespace GardenModel;
@@ -23,11 +25,13 @@ using namespace GardenModel;
 namespace Http {
 
 class PlantController : public Controller{
+
+protected:
+	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
+
 public:
 
-	Garden& _garden;
-
-	PlantController(Garden& garden): _garden(garden) {
+	PlantController(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork): _unitOfWork(unitOfWork) {
 	}
 
 	virtual ~PlantController() {
@@ -43,14 +47,14 @@ public:
 		return false;
 	}
 
-	GardenAcceptable* handle(HttpServletRequest& req, HttpServletResponse& res) {
+	GardenAcceptable* handle(HttpServletRequest& req, HttpServletResponse&) {
 		Plant* plant = NULL;
 		if(canHandle(req) && req.urlTokens.size() == 2){///GET PLANTS_ID
 			Serial.println ("we handling the message" );
 			//get parameters
 			int id=atoi(req.urlTokens[1].c_str());
 			//call the correct function
-			plant = getPlant(id).lock().get();
+			plant = _unitOfWork->Plants().getById(id).lock().get();
 		}
 		return plant;
 	}
@@ -58,14 +62,8 @@ public:
 	/*list<Sprinkler> getSprinklers() {
 
 	}*/
-
-	///GET SPRINKLERS_ID
-	weak_ptr<Plant> getPlant(int id) {
-		Serial.println ("we called getPlant in the PlantController" );
-		return _garden.getPlant(id);
-	}
 };
 
 } /* namespace Http */
 
-#endif /* HTTP_CONTROLLERS_PLANTCONTROLLER_H_ */
+#endif /* HTTPMODULE_CONTROLLERS_PLANTCONTROLLER_H_ */

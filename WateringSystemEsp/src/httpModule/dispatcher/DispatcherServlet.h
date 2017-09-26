@@ -8,17 +8,17 @@
 #ifndef HTTP_DISPATCHERSERVLET_H_
 #define HTTP_DISPATCHERSERVLET_H_
 
-#include <HttpServletRequest.h>
-#include <HttpServletResponse.h>
-#include <WateringSystemApiParser.h>
+#include <httpModule/dispatcher/Controller.h>
+#include <httpModule/controllers/PlantController.h>
+#include <httpModule/controllers/PlantController.h>
+#include <httpModule/interceptors/JsonHandlerInterceptor.h>
+#include <httpModule/WateringSystemApiParser.h>
+#include <httpModule/model/HttpServletRequest.h>
+#include <httpModule/model/HttpServletResponse.h>
 #include <vector>
-#include <Controller.h>
-#include <HandlerExecutionChain.h>
-#include <PlantController.h>
-#include <HandlerInterceptor.h>
-#include <JsonGardenVisitor.h>
-#include <JsonHandlerInterceptor.h>
-#include <PlantController.h>
+#include <httpModule/dispatcher/HandlerExecutionChain.h>
+#include <httpModule/dispatcher/HandlerInterceptor.h>
+//#include <visitors/JsonGardenVisitor.obsolete>
 
 
 using namespace std;
@@ -31,12 +31,13 @@ public:
 
 	//typedef HttpServletResponse (*t_name)(HttpServletRequest& request);
 
-	vector<HandlerExecutionChain*> _handlerExecutionChains;
-	Garden* _garden=NULL;
+	vector<std::shared_ptr<HandlerExecutionChain>> _handlerExecutionChains;
+	//Garden* _garden=NULL;
 
-	DispatcherServlet() {
+	DispatcherServlet(vector<std::shared_ptr<HandlerExecutionChain>> exeChains = {}) : _handlerExecutionChains(exeChains) {
 		Serial.println ("## inside DispatcherServlet CTOR ");
-		_handlerExecutionChains.reserve(10);//$$$ ### visit thin value
+		//_handlerExecutionChains = exeChains;
+		//_handlerExecutionChains.reserve(10);//$$$ ### visit thin value
 	/*	Serial.println ("############# inside DispatcherServlet CTOR ###########");
 		_garden = new Garden();
 		_handlerExecutionChains  = new vector<HandlerExecutionChain*>(1);
@@ -64,7 +65,7 @@ public:
 			HandlerExecutionChain& handlerExecutionChain = *_handlerExecutionChains[i];
 
 			Serial.println (" handlerExecutionChain.getController();");
-			Controller* ctrl = handlerExecutionChain.getController();
+			std::shared_ptr<Controller> ctrl = handlerExecutionChain.getController();
 
 			Serial.println ("checking if he can handle");
 			if (ctrl->canHandle(request)){
@@ -97,7 +98,7 @@ public:
 		Serial.println ("we found an handler, we can continue" );
 
 		//execute the chain
-		vector<HandlerInterceptor*>& handlerInterceptors = executionChain->getInterceptors();
+		vector<std::shared_ptr<HandlerInterceptor>>& handlerInterceptors = executionChain->getInterceptors();
 		Controller& controller = *(executionChain->getController());
 
 		//HandlerInterceptors before handle (every one return bool if returned true than we need to stop the execution)

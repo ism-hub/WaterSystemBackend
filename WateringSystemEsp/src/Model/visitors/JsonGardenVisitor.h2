@@ -8,6 +8,8 @@
 #ifndef MODEL_JSONGARDENVISITOR_H_
 #define MODEL_JSONGARDENVISITOR_H_
 
+#include <DALModule/serialization/cereal2.h>
+#include <DALModule/serialization/json2.h>
 #include <GardenVisitor.h>
 #include <wString.h>
 #include <Garden.h>
@@ -16,19 +18,31 @@
 #include <stdio.h>
 
 
+
 namespace GardenModel {
 
 class JsonGardenVisitor: public GardenVisitor {//###you need to remember to free the pointers to the strings you allocate!!!
 public:
-	JsonGardenVisitor(){
+	rapidjson::StringBuffer jsonSBuffer;
+	rapidjson::Writer<rapidjson::StringBuffer>* writer;//(jsonSBuffer);
+	cereal2::JSONOutputArchive* archive;// = *(new cereal2::JSONOutputArchive(writer));
 
+
+
+	JsonGardenVisitor() {
+		writer = new rapidjson::Writer<rapidjson::StringBuffer>(jsonSBuffer);
+		archive = new cereal2::JSONOutputArchive(*writer);
 	}
+
 	virtual ~JsonGardenVisitor(){
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ JsonGardenVisitor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
 	virtual void* visit(Garden& garden) {
-		String& gardenJson = *(new String());
+		archive->operator ()(CEREAL2_NVP(garden));
+		archive->~JSONOutputArchive();
+		return new String(jsonSBuffer.GetString());
+		/*String& gardenJson = *(new String());
 		gardenJson = "{\"plants\":[";
 		String* strPlant;
 		for (int i = 0; i < garden._plants.size(); ++i) {
@@ -38,22 +52,28 @@ public:
 			strPlant->~String();
 		}
 		gardenJson += "]}";
-		return &gardenJson;
+		return &gardenJson;*/
 	}
 
 	virtual void* visit(Plant& plant) {
-		String& gardenJson = *(new String());
+		archive->operator ()(CEREAL2_NVP(plant));
+		archive->~JSONOutputArchive();
+		return new String(jsonSBuffer.GetString());
+		/*String& gardenJson = *(new String());
 		gardenJson = "{\"sprinkler\":";
 		String& strSprinkler = *(String*)plant._sprinkler->accept(*this);
 		gardenJson += strSprinkler;
 		gardenJson += "}";
 
 		strSprinkler.~String();
-		return &gardenJson;
+		return &gardenJson;*/
 	}
 
 	virtual void* visit(Sprinkler& sprinkler) {
-		String& gardenJson = *(new String("{"));
+		archive->operator ()(CEREAL2_NVP(sprinkler));
+		archive->~JSONOutputArchive();
+		return new String(jsonSBuffer.GetString());
+		/*String& gardenJson = *(new String("{"));
 
 		char cId[3];
 		snprintf(cId, sizeof(cId),"%d", sprinkler.getId());
@@ -71,7 +91,7 @@ public:
 		else
 			gardenJson += "Off";
 		gardenJson += "}";
-		return &gardenJson;
+		return &gardenJson;*/
 	}
 
 

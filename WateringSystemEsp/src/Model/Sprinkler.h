@@ -8,9 +8,11 @@
 #ifndef SPRINKLER_H_
 #define SPRINKLER_H_
 
+#include <DALModule/serialization/cereal2.h>
 #include <WString.h>
 #include <GardenAcceptable.h>
 #include <GardenVisitor.h>
+
 
 namespace GardenModel {
 class Sprinkler : public GardenAcceptable {
@@ -26,6 +28,13 @@ public:
 		_name = "SprinklerNameee";
 		_status = Off;
 	}
+
+	Sprinkler(Sprinkler&& other){
+			_id = other._id;
+			_name = std::move(other._name);
+			_status = other._status;
+		}
+
 	virtual ~Sprinkler(){
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Sprinkler DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
@@ -51,9 +60,20 @@ public:
 		_status = status;
 	}
 
-	virtual void* accept(GardenVisitor& visitor){
+	virtual std::shared_ptr<void> accept(GardenVisitor& visitor){
 		return visitor.visit(*this);
 	}
+
+	//im not sure if i want this thing in here, need to think about it.
+	template <class Archive>
+	void save(Archive& archive) const{
+		archive(CEREAL2_NVP(_id));
+	}
+
+	template<class Archive>
+		void load(Archive& archive) {
+			archive(_id);
+		}
 
 };
 }

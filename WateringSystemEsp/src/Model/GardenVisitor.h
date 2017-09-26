@@ -21,11 +21,11 @@ public:
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ GardenVisitor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
-	virtual void* visit(class Garden& garden) = 0;
+	virtual std::shared_ptr<void> visit(class Garden& garden) = 0;
 
-	virtual void* visit(class Plant& plant) = 0;
+	virtual std::shared_ptr<void> visit(class Plant& plant) = 0;
 
-	virtual void* visit(class Sprinkler& sprinkler) = 0;
+	virtual std::shared_ptr<void> visit(class Sprinkler& sprinkler) = 0;
 };
 
 } /* namespace GardenModel */

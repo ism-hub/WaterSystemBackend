@@ -5,8 +5,8 @@
  *      Author: IsM
  */
 
-#ifndef HTTP_MAPPINGHANDLER_H_
-#define HTTP_MAPPINGHANDLER_H_
+#ifndef HTTPMODULE_MAPPINGHANDLER_H_
+#define HTTPMODULE_MAPPINGHANDLER_H_
 
 namespace Http {
 
@@ -30,4 +30,4 @@ public:
 
 } /* namespace Http */
 
-#endif /* HTTP_MAPPINGHANDLER_H_ */
+#endif /* HTTPMODULE_MAPPINGHANDLER_H_ */

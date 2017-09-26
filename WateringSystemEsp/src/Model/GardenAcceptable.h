@@ -19,7 +19,7 @@ public:
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ GardenAcceptable DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
-	virtual void* accept(class GardenVisitor& visitor) = 0;
+	virtual std::shared_ptr<void> accept(class GardenVisitor& visitor) = 0;
 };
 
 } /* namespace GardenModel */

@@ -43,5 +43,5 @@ core/core/umm_malloc \
 libraries/ESP8266WebServer/src \
 libraries/ESP8266WiFi/src \
 libraries/ESP8266mDNS \
-src/http \
+src/httpModule/model \
 

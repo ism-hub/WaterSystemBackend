@@ -18,7 +18,7 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.82032017" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
 							<builder buildPath="${workspace_loc:/WateringSystemEsp}/Release" id="io.sloeber.sketch.builder.1873983183" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Arduino sketch builder" superClass="io.sloeber.sketch.builder"/>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.671015522" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
-								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.1384097894" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.1384097894" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
@@ -30,12 +30,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/Model}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/http/controllers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/DAL}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Programming\cppSerializationLib\cereal\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Programming\cppLibs\rapidjson\include&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.176035448" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.compiler.c.510521233" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
-								<option id="io.sloeber.compiler.c.sketch.option.incpath.1457846798" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
+								<option id="io.sloeber.compiler.c.sketch.option.incpath.1457846798" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
@@ -47,7 +48,7 @@
 								<inputType id="io.sloeber.compiler.c.sketch.input.833616818" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.sketch.compiler.s.1631748826" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s">
-								<option id="io.sloeber.compiler.asm.sketch.option.incpath.941700626" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
+								<option id="io.sloeber.compiler.asm.sketch.option.incpath.941700626" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
@@ -59,13 +60,13 @@
 								<inputType id="io.sloeber.compiler.S.sketch.input.521560179" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.ar.556789376" name="Arduino archiver" superClass="io.sloeber.tool.ar"/>
-							<tool id="io.sloeber.tool.combine.270842661" name="Arduino combiner" superClass="io.sloeber.tool.combine"/>
+							<tool commandLinePattern="${A.RECIPE.C.COMBINE.PATTERN.1} -Wl,-Map,MapFile.Map -Wl,--cref ${FLAGS} ${INPUTS} ${A.RECIPE.C.COMBINE.PATTERN.2} ${A.ARCHIVE_FILE_PATH} ${A.RECIPE.C.COMBINE.PATTERN.3}" id="io.sloeber.tool.combine.270842661" name="Arduino combiner" superClass="io.sloeber.tool.combine"/>
 							<tool id="io.sloeber.tool.objcopy.eep.1440863764" name="Arduino tool Create eeprom" superClass="io.sloeber.tool.objcopy.eep"/>
 							<tool id="io.sloeber.tool.size.22019637" name="Arduino tool Print Size" superClass="io.sloeber.tool.size"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries**/._*|libraries/?*/c*/?*|libraries/?*/d*/?*|libraries/?*/D*/?*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="libraries/?*/**/test*/**|libraries**/._*|libraries/?*/**/third-party/**|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/c*/?*|libraries/?*/d*/?*|src|libraries/?*/D*/?*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>

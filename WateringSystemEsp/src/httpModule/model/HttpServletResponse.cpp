@@ -6,6 +6,6 @@
  */
 
 
-#include <HttpServletResponse.h>
+#include <httpModule/model/HttpServletResponse.h>
 
 const String Http::HttpServletResponse::CONTENT_TYPE_JSON = "application/json";
