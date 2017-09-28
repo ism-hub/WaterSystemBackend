@@ -47,13 +47,17 @@ public:
 
 		static_assert(std::is_base_of<ModuleBase, ModuleType>::value, "ModuleType must inherit from ModuleBase");
 
+
 		std::shared_ptr<ModuleType> module = std::make_shared<ModuleType>();
 
 
 		StartFn fn = [module, this]() {
+			Serial.print("calling start member for module - ");
+			Serial.println(MF::compiletimeTypeid<ModuleType>());
 			this->container->memberFunctionResolver(*module, &ModuleType::start);//	module->start();
 		};
 
+		Serial.print("saving the pair of module and its starter func");
 		typeModuleMap[MF::compiletimeTypeid<ModuleType>()] = std::pair<std::shared_ptr<ModuleBase>,StartFn >(module, fn);
 
 		return module;
@@ -70,7 +74,6 @@ public:
 		setAllColoredModulesToUncolored();
 
 		for (const auto& kv : typeModuleMap) {
-			delay(100);
 			startModuleButDependenciesFrist(kv.second);
 		//	kv.second.second(); //calls each module 'start' function and inject the required dependencies.
 		}
@@ -94,6 +97,7 @@ private:
 		for (const auto& typeinf : module->dependencies) {//run the dependencies first
 			startModuleButDependenciesFrist(typeModuleMap[typeinf]);
 		}
+
 
 		moduleStarterPair.second();//calling the startFn
 		module->colored = true;//mark that we started it

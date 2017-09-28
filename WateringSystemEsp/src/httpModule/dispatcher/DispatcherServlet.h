@@ -8,6 +8,7 @@
 #ifndef HTTP_DISPATCHERSERVLET_H_
 #define HTTP_DISPATCHERSERVLET_H_
 
+#include <memory>
 #include <httpModule/dispatcher/Controller.h>
 #include <httpModule/controllers/PlantController.h>
 #include <httpModule/controllers/PlantController.h>
@@ -28,36 +29,14 @@ namespace Http {
 
 class DispatcherServlet {
 public:
-
-	//typedef HttpServletResponse (*t_name)(HttpServletRequest& request);
-
 	vector<std::shared_ptr<HandlerExecutionChain>> _handlerExecutionChains;
-	//Garden* _garden=NULL;
 
 	DispatcherServlet(vector<std::shared_ptr<HandlerExecutionChain>> exeChains = {}) : _handlerExecutionChains(exeChains) {
-		Serial.println ("## inside DispatcherServlet CTOR ");
-		//_handlerExecutionChains = exeChains;
-		//_handlerExecutionChains.reserve(10);//$$$ ### visit thin value
-	/*	Serial.println ("############# inside DispatcherServlet CTOR ###########");
-		_garden = new Garden();
-		_handlerExecutionChains  = new vector<HandlerExecutionChain*>(1);
-
-		Serial.println ("############# creating the PlantController ###########");
-		PlantController* plantCtrl = new PlantController(*_garden);
-		HandlerExecutionChain* handlerExecutionChain = new HandlerExecutionChain(plantCtrl);
-
-		Serial.println ("############# trying to do: handlerExecutionChain->_controller ###########");
-		Controller* ctrl = handlerExecutionChain->_controller;
-
-		//adding the interceptor
-		JsonGardenVisitor* jsonVisitor = new JsonGardenVisitor();
-		JsonHandlerInterceptor* jsonInterceptor = new JsonHandlerInterceptor(*jsonVisitor);
-		handlerExecutionChain->addInterceptor(jsonInterceptor);
-
-		_handlerExecutionChains->push_back(handlerExecutionChain);*/
+		Serial.println ("DispatcherServlet CTOR ");
 	}
+
 	virtual ~DispatcherServlet() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ DispatcherServlet DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("DispatcherServlet DTOR");
 	}
 
 	HandlerExecutionChain* getHandlerExecutionChain(HttpServletRequest& request) {

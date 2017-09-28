@@ -30,7 +30,7 @@ public:
 		_sprinklerRepository( SprinklerRepository(*gardenContext)),
 		_gardenContext(gardenContext)
 		{
-		_gardenContext->init();
+	//	_gardenContext->init();
 	}
 
 	virtual ~GardenUnitOfWork(){

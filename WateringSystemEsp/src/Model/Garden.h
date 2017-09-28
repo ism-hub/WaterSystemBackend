@@ -32,7 +32,7 @@ public:
 		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Garden DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
-	weak_ptr<Plant> getPlant(int id) {
+	std::weak_ptr<Plant> getPlant(int id) {
 		if(_plants.size() - 1 < id)
 			return {};//returns empty weak_ptr
 		return _plants[id];

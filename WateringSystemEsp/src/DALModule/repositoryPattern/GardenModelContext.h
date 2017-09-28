@@ -44,7 +44,7 @@ public:
 
 	}
 
-	shared_ptr<Garden> getGarden(){//init if needed
+	std::shared_ptr<Garden> getGarden(){//init if needed
 		if(_garden == nullptr)
 			init();
 		return _garden;
@@ -98,7 +98,7 @@ private:
 		  File f = SPIFFS.open("/f.txt", "r");
 
 		  if (!f) {//File doesn't exist yet.
-			  _garden = nullptr;
+			  _garden = std::make_shared<Garden>();//making empty garden
 			  return false;//_garden is null
 		  }
 		  else{

@@ -24,8 +24,8 @@ public:
 
 	}
 
-	weak_ptr<Plant> getById(int id){
-		return _contexModel._garden->getPlant(id);
+	std::weak_ptr<Plant> getById(int id){
+		return _contexModel.getGarden()->getPlant(id);
 	}
 
 	std::vector<weak_ptr<Plant>> getAll() {

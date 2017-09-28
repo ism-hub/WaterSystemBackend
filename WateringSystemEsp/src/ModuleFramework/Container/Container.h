@@ -105,6 +105,8 @@ public:
 	void registerType(ctor_function<std::shared_ptr<Ret>, Deps ...> ctorFnc, bool isSingleton = true) {
 		const void* compileType = MF::compiletimeTypeid<Ret>();
 		RegisteredType::CreateFn create = [&, ctorFnc](RegisteredType& regType) {
+			Serial.print( "container registerType createFnc ");
+			Serial.println( MF::compiletimeTypeid<Ret>());
 			std::shared_ptr<Ret> obj = std::static_pointer_cast<Ret>(regType.obj);
 			if(regType.obj == nullptr) {
 				 obj = this->ctorFunctionResolver(ctorFnc);

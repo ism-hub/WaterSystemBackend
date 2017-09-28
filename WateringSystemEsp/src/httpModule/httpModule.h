@@ -47,9 +47,9 @@ std::shared_ptr<GardenModel::JsonGardenVisitor> jsonGardenVisitorCreator(std::sh
 }
 
 
-class httpModule : public MF::Module<httpModule>{
+class httpModule : public MF::ModuleBase{
 public:
-	httpModule() : MF::Module<httpModule>(*this){
+	httpModule() {
 		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 		Serial.println("httpModule CTOR"); }
 	virtual ~httpModule(){Serial.println("httpModule DTOR");}

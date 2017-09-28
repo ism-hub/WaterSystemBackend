@@ -54,7 +54,9 @@ public:
 			//get parameters
 			int id=atoi(req.urlTokens[1].c_str());
 			//call the correct function
+			Serial.println ("b4 _unitOfWork->Plants().getById(id).lock().get();" );
 			plant = _unitOfWork->Plants().getById(id).lock().get();
+			Serial.println ("done." );
 		}
 		return plant;
 	}

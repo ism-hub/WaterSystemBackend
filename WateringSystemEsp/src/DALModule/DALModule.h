@@ -36,9 +36,9 @@ std::shared_ptr<DAL::JsonSerializationService> JsonSerializationServiceCreator( 
 	return std::make_shared<DAL::JsonSerializationService>(inputArchive, outputArchive);
 }
 
-class DALModule : public MF::Module<DALModule>  {
+class DALModule : public MF::ModuleBase  {
 public:
-	DALModule() : MF::Module<DALModule>(*this){
+	DALModule(){
 		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 		Serial.println("DALModule CTOR"); }
 	virtual ~DALModule(){Serial.println("DALModule DTOR");}

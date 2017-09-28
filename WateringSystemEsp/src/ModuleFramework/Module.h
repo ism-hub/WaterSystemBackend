@@ -42,7 +42,7 @@ public:
 //template member function can't be virtual,
 // and I need a function that can take multiple different variables
 //(I need to force the client to implement it, its his entry point, there isn't any sense to give it default impl)
-template <class DerivedType>
+/*template <class DerivedType>
 class Module: public ModuleBase{
 public:
 	DerivedType* _derived;
@@ -57,7 +57,7 @@ public:
 		_derived->start(std::forward<Args>(args)...);
 	}
 
-};
+};*/
 
 
 

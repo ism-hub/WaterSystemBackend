@@ -30,9 +30,9 @@ std::shared_ptr<AA> AACtorFnc(){
 	return std::make_shared<AA>();
 }
 
-class ModuleA: public MF::Module<ModuleA> {
+class ModuleA: public MF::ModuleBase {
 public:
-	ModuleA() : MF::Module<ModuleA>(*this){Serial.println("ModuleA CTOR"); }
+	ModuleA() {Serial.println("ModuleA CTOR"); }
 	virtual ~ModuleA(){Serial.println("ModuleA DTOR");}
 
 	void start(std::shared_ptr<cntnr::Container> ctr){
@@ -41,9 +41,9 @@ public:
 	}
 };
 
-class SomeModule: public MF::Module<SomeModule> {
+class SomeModule: public MF::ModuleBase {
 public:
-	SomeModule() : MF::Module<SomeModule>(*this){Serial.println("someModule CTOR"); }
+	SomeModule() {Serial.println("someModule CTOR"); }
 	virtual ~SomeModule(){Serial.println("someModule DTOR");}
 
 	std::shared_ptr<AA> _aa;
