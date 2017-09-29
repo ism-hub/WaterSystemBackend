@@ -69,9 +69,9 @@ template <class T>
                   only pass r-values in cases where this makes sense, such as the result of some
                   size() call.
          @internal */
-     NameValuePair( char const * n, T && v ) : name(n), value(std::forward<T>(v)) {}
+     NameValuePair(String n, T && v ) : name(n), value(std::forward<T>(v)) {}
 
-     char const * name;
+     String name;
      Type value;
  };
 

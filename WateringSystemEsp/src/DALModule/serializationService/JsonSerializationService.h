@@ -47,22 +47,24 @@ public:
 		//std::shared_ptr<rapidjson::Writer<rapidjson::StringBuffer>> writer = std::make_shared<rapidjson::Writer<rapidjson::StringBuffer>>(jsonSBuffer);
 		_stringBuffer.Clear();
 		_outputArchive->reset(_stringBuffer);//_outputArchive->itsWriter.reset(jsonSBuffer);
-
 		_outputArchive->operator ()(cereal2::make_nvp(MF::getTemplateName<T>(), model));
 		_outputArchive->finalize();// instead of _outputArchive->~JSONOutputArchive(); for reusing capabilities
+
+		Serial.println("The json String from modelToJson(T& model):");
+		Serial.println(_stringBuffer.GetString());
+
 		return _stringBuffer.GetString();
 	}
 
 	//pre: already inserted the string we want to _stringBuffer
 	template <class T>
 	std::shared_ptr<T> jsonToModel(String json){
-		//rapidjson::StringStream jsonInput(json.c_str());
-		//cereal2::JSONInputArchive readArchive(jsonInput); //(istreamChar);
+		Serial.println("The json String we will jsonToModel:");
+		Serial.println(json);
 
 		_inputArchive->reset(json.c_str());//sets new sink
-
 		std::shared_ptr<T> model = std::make_shared<T>();
-		(*_inputArchive)(model);
+		(*_inputArchive)(*model);
 
 		return model;
 	}

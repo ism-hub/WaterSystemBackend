@@ -31,7 +31,7 @@ namespace DAL {
 
 class GardenModelContext {
 public:
-	shared_ptr<Garden> 				_garden = nullptr;
+	std::shared_ptr<Garden> 				_garden = nullptr;
 	std::shared_ptr<DAL::JsonSerializationService> _jsonSerializationService;
 
 	GardenModelContext(std::shared_ptr<DAL::JsonSerializationService> jsonSerializationService) :
@@ -52,76 +52,67 @@ public:
 
 
 	bool init(){//loads the data from flash to _garden, (if you already loaded, disposed the old copy and load a fresh one)
+		Serial.println("GardenModelContext init();");
 		return loadGardenIntoMemory();
 	}
 
-	bool saveChanges(){//writes the data into flash
-		if(_garden == nullptr)
+	bool saveChanges() { //writes the data into flash
+		if (_garden == nullptr)
 			return false;
 
-		//convert the object into json string
-	//	rapidjson::StringBuffer jsonSBuffer;
-	//	rapidjson::Writer<rapidjson::StringBuffer> writer(jsonSBuffer);
-
-	//	cereal2::JSONOutputArchive& archive = *(new cereal2::JSONOutputArchive(writer));
-	//	archive(CEREAL2_NVP(_garden));
-	//	archive.~JSONOutputArchive();
+		String jsonStringOfOurGarden = _jsonSerializationService->modelToJson(*_garden);
+		Serial.print("The json strin of the garden we saving to memory: ");
+		Serial.println(jsonStringOfOurGarden);
 
 		//save the string into flash
 		bool result = SPIFFS.begin();
 		Serial.println("SPIFFS opened: " + result);
 
-		File f = SPIFFS.open("/f.txt", "w");
-		//f.print(jsonSBuffer.GetString());
-		f.print(_jsonSerializationService->modelToJson(*_garden));
-
-		f.close();
-
-		Serial.println("SPIFFS closing: " );
+		{
+			File f = SPIFFS.open("/f.txt", "w");
+			//f.print(jsonSBuffer.GetString());
+			f.print(jsonStringOfOurGarden);
+			f.flush();
+			f.close();
+		}
+		Serial.println("SPIFFS closing: ");
 		SPIFFS.end();
-
-
 
 		return true;
 	}
 
 private:
-	bool loadGardenIntoMemory() {//from flash to object
+	bool loadGardenIntoMemory() { //from flash to object
 
 		//load our json string from the flash
 		String jsonGarden;
 
-		  bool result = SPIFFS.begin();
-		  Serial.println("SPIFFS opened: " + result);
+		{
+			bool result = SPIFFS.begin();
+			Serial.println("SPIFFS opened: " + result);
 
+			File f = SPIFFS.open("/f.txt", "r");
 
-		  File f = SPIFFS.open("/f.txt", "r");
+			if (!f) { //File doesn't exist yet.
+				_garden = std::make_shared<Garden>(); //making empty garden
+				f.close();
+				SPIFFS.end();
+				return false; //_garden is null
+			} else {
+				jsonGarden = f.readStringUntil('\0');
+				f.flush();
+				f.close();
+			}
 
-		  if (!f) {//File doesn't exist yet.
-			  _garden = std::make_shared<Garden>();//making empty garden
-			  return false;//_garden is null
-		  }
-		  else{
-			  jsonGarden = f.readStringUntil('\0');
-			 // _jsonSerializationService->_stringBuffer.Put(f.readStringUntil('\0')) ;
-			  f.close();
-		  }
+			Serial.println("SPIFFS closing");
+			SPIFFS.end();
+		}
 
-		  Serial.println("SPIFFS closing: " );
-		  SPIFFS.end();
-
-
-		//convert the json into garden
-	//	rapidjson::StringStream jsonInput(jsonGarden.c_str());
-	//	cereal2::JSONInputArchive readArchive(jsonInput); //(istreamChar);
-
-		if(_garden != nullptr)
+		if (_garden != nullptr)
 			_garden = nullptr;
-	//	_garden = make_shared<Garden>();
 
-	//	readArchive(_garden);
-
-		  _garden = _jsonSerializationService->jsonToModel<GardenModel::Garden>(jsonGarden);//(jsonGarden.c_str());
+		Serial.println("Reading the garden from the flash (as json) and realizing it ");
+		_garden = _jsonSerializationService->jsonToModel<GardenModel::Garden>(jsonGarden);
 
 		return true;
 	}

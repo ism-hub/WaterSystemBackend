@@ -25,11 +25,11 @@ public:
 	vector<std::shared_ptr<HandlerInterceptor>> _handlerInterceptors;
 
 	HandlerExecutionChain(std::shared_ptr<Controller> controller) : _controller(controller) {
-		Serial.println ("CTOR of HandlerExecutionChain called");
+		Serial.println ("HandlerExecutionChain CTOR");
 		_handlerInterceptors.reserve(5);
 	}
 	virtual ~HandlerExecutionChain() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ HandlerExecutionChain DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("HandlerExecutionChain DTOR");
 	}
 
 	void addInterceptor(std::shared_ptr<HandlerInterceptor> interceptor){
@@ -37,16 +37,41 @@ public:
 	}
 
 	std::shared_ptr<Controller> getController() {
-		Serial.println ("inside the getController function");
-		if(_controller == NULL)
-			Serial.println ("the controller is null for some reason");
-		Serial.println ("returning the controller inside HandlerExecutionChain");
 		return _controller;
-		//return NULL;
 	}
 
 	vector<std::shared_ptr<HandlerInterceptor>>& getInterceptors(){
 		return _handlerInterceptors;
+	}
+
+	bool canHandle(HttpServletRequest& req){
+		return _controller->canHandle(req);
+	}
+
+	std::shared_ptr<HttpServletResponse> execute(HttpServletRequest& req) {
+		std::shared_ptr<HttpServletResponse> response = std::make_shared<HttpServletResponse>();
+		//HandlerInterceptors before handle (every one return bool if returned true than we need to stop the execution)
+		Serial.println("execute the pre inceptors");
+		for (int i = 0; i < _handlerInterceptors.size(); i++) {
+			if (!_handlerInterceptors[i]->preHandle(req, *response, *_controller)) // if false then the Interceptor handled the response
+				return response;
+		}
+
+		Serial.println("Calling the handler (Controller)");
+		// call the handler
+		std::shared_ptr<GardenAcceptable> gardenAcceptable = _controller->handle(req, *response);
+		if (gardenAcceptable == NULL) { //error happened inside the controller, and the controller prepared the right httPresponse with the error properties
+			Serial.println("gardenAcceptable is null, maybe a problem in the controller ");
+			return response;
+		}
+
+		Serial.println("Calling the HandlerInterceptors post handle");
+		//HandlerInterceptors post handle
+		for (int i = 0; i < _handlerInterceptors.size(); i++) {
+			_handlerInterceptors[i]->postHandle(req, *response, *_controller,*gardenAcceptable);
+		}
+
+		return response;
 	}
 };
 

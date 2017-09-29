@@ -35,11 +35,11 @@ public:
 	}
 
 	virtual ~PlantController() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ PlantController DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("PlantController DTOR");
 	}
 
 	bool canHandle(HttpServletRequest& req) {
-		Serial.println ("we are in the canHandle() of the PlantController" );
+		Serial.println ("canHandle() in PlantController" );
 		if(req.httPMethod == HTTP_GET && req.urlTokens[0] == "plants"){
 			Serial.println ("	- can handle returned true" );
 			return true;
@@ -47,15 +47,14 @@ public:
 		return false;
 	}
 
-	GardenAcceptable* handle(HttpServletRequest& req, HttpServletResponse&) {
-		Plant* plant = NULL;
+	std::shared_ptr<GardenAcceptable> handle(HttpServletRequest& req, HttpServletResponse&) {
+		std::shared_ptr<Plant> plant = nullptr;
 		if(canHandle(req) && req.urlTokens.size() == 2){///GET PLANTS_ID
 			Serial.println ("we handling the message" );
 			//get parameters
 			int id=atoi(req.urlTokens[1].c_str());
 			//call the correct function
-			Serial.println ("b4 _unitOfWork->Plants().getById(id).lock().get();" );
-			plant = _unitOfWork->Plants().getById(id).lock().get();
+			plant = _unitOfWork->Plants().getById(id);
 			Serial.println ("done." );
 		}
 		return plant;

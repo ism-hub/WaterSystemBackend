@@ -13,26 +13,28 @@
 #include <GardenAcceptable.h>
 #include <memory>
 
+#include <ModuleFramework/utils.h>
 
 namespace GardenModel {
 
 class Plant : public GardenAcceptable {
 public:
-
+	int id = 0;
 	shared_ptr<Sprinkler> _sprinkler;
+	String name = "Lily";
 
-	Plant(shared_ptr<Sprinkler> sprinkler = nullptr)/*: _sprinkler(sprinkler)*/{
-	Serial.println("!@#!@# Plant CTRO has been called");
-		_sprinkler = sprinkler;
+	Plant(shared_ptr<Sprinkler> sprinkler = nullptr): _sprinkler(sprinkler){
+	Serial.println("Plant CTOR");
 	}
 
-	Plant(Plant&& other)/*: _sprinkler(sprinkler)*/{
+	/*Plant(Plant&& other){
+		Serial.println("Plant CPY_CTOR");
 			_sprinkler = std::move(other._sprinkler);
 			other._sprinkler = nullptr;
-		}
+		}*/
 
 	virtual ~Plant(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Plant DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("Plant DTOR");
 		_sprinkler.~__shared_ptr();
 	}
 
@@ -43,12 +45,12 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(_sprinkler));
+		archive(CEREAL2_NVP(id), CEREAL2_NVP(name), cereal2::make_nvp(MF::getTemplateName<Sprinkler>(),_sprinkler));
 	}
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive(_sprinkler);
+		archive(id ,name, _sprinkler);
 	}
 
 };

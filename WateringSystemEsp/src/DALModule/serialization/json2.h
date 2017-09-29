@@ -16,6 +16,8 @@
 
 #include "rapidjson/reader.h"
 
+#include <WString.h>
+
 //#include "rapidjson/istreamwrapper.h"
 //#include "rapidjson/document.h"
 
@@ -24,12 +26,15 @@
 #include <stack>
 
 #include <memory>//shared_pointer
+#include <utility> //std::forward
 
 namespace cereal2 {
 
 using namespace rapidjson;
 
 class JSONInputArchive: public InputArchive<JSONInputArchive>{
+
+	using WString = String;
 
 private:
 
@@ -125,6 +130,7 @@ private:
 
 		int lastInt=666;
 		unsigned int lastUInt=666;
+		WString lastString;
 		std::vector<bool> isInsideArrayHistory = {false};
 
 
@@ -133,7 +139,7 @@ private:
 	    bool Null() {
 	    	Serial.println(" called MyHandler Null");
 	    	return true; }
-	    bool Bool(bool b) {
+	    bool Bool(bool ) {
 	    	Serial.println(" called MyHandler Bool");
 	    	return true; }
 	    bool Int(int i) {
@@ -145,28 +151,29 @@ private:
 	    	lastInt = u;
 	    	Serial.println(" called MyHandler Uint");
 	    	return true; }
-	    bool Int64(int64_t i) {
+	    bool Int64(int64_t ) {
 	    	Serial.println(" called MyHandler Int64");
 	    	return true; }
-	    bool Uint64(uint64_t u) {
+	    bool Uint64(uint64_t ) {
 	    	Serial.println(" called MyHandler Uint64");
 	    	return true; }
-	    bool Double(double d) {
+	    bool Double(double ) {
 	    	Serial.println(" called MyHandler Double");
 	    	return true; }
-	    bool String(const char* str, SizeType length, bool copy) {
+	    bool String(const Ch* str, SizeType length, bool copy) {
 	    	Serial.println(" called MyHandler String");
+	    	lastString = WString(str);
 	        return true;
 	    }
 	    bool StartObject() {
 	    	isInsideArrayHistory.push_back(false);
 	    	Serial.println(" called MyHandler StartObject");
 	    	return true; }
-	    bool Key(const char* str, SizeType length, bool copy) {
+	    bool Key(const char* , SizeType , bool ) {
 	    	Serial.println(" called MyHandler Key");
 	        return true;
 	    }
-	    bool EndObject(SizeType memberCount) {
+	    bool EndObject(SizeType ) {
 	    	isInsideArrayHistory.pop_back();
 	    	Serial.println(" called MyHandler EndObject");
 	    	return true; }
@@ -174,7 +181,7 @@ private:
 	    	Serial.println(" called MyHandler StartArray");
 	    	isInsideArrayHistory.push_back(true);
 	    	return true; }
-	    bool EndArray(SizeType elementCount) {
+	    bool EndArray(SizeType ) {
 	    	Serial.println(" called MyHandler EndArray");
 	    	isInsideArrayHistory.pop_back();
 	    	return true; }
@@ -225,6 +232,7 @@ public:
 
 private:
 	void init(){
+		handler = MyHandler();
 		reader.IterativeParseInit();
 		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//skip the first '{'
 	}
@@ -341,6 +349,11 @@ public:
 			t = handler.lastUInt;
 		}
 
+	void loadValue(WString& t){
+				reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next String
+				t = handler.lastString;
+			}
+
 	template<class T,class A>
 	void loadArray(std::vector<T,A> & vector ){
 		while(strStream.Peek() != ']'){//while the next symbol is not the end of the array (meaning we still have more elemnts in the array)
@@ -370,8 +383,15 @@ public:
 class JSONOutputArchive: public OutputArchive<JSONOutputArchive>, public traits2::TextArchive {
 	enum class NodeType {StartObject, InObject, StartArray, InArray};
 
-	using WriteStringBuffer = rapidjson::StringBuffer;
-	using JSONWriter = rapidjson::Writer<WriteStringBuffer>;
+	//using WriteStringBuffer = rapidjson::StringBuffer;
+	//using JSONWriter = rapidjson::Writer<WriteStringBuffer>;
+
+private:
+	char const * itsNextName;            //!< The next name
+	rapidjson::Writer<rapidjson::StringBuffer> itsWriter;                //!< Rapidjson writer
+	std::stack<uint32_t> itsNameCounter; //!< Counter for creating unique names for unnamed nodes
+	std::stack<NodeType> itsNodeStack;
+
 
 public:
 
@@ -483,6 +503,7 @@ public:
       void saveValue(char const * s)        { itsWriter.String(s);                                                       }
       //! Saves a nullptr to the current node
       void saveValue(std::nullptr_t)        { itsWriter.Null();                                                          }
+      void saveValue(String const & s)      { itsWriter.String(s.c_str(), static_cast<rapidjson::SizeType>(s.length())); }
 
 
   	//! Write the name of the upcoming node and prepare object/array state
@@ -544,12 +565,6 @@ public:
 
 
 
-private:
-	char const * itsNextName;            //!< The next name
-	JSONWriter itsWriter;                //!< Rapidjson writer
-	std::stack<uint32_t> itsNameCounter; //!< Counter for creating unique names for unnamed nodes
-	std::stack<NodeType> itsNodeStack;
-
 
 };// JSONOutputArchive
 
@@ -592,19 +607,31 @@ inline void prologue( JSONInputArchive & ar, T const & )
 
 // ######################################################################
 //! Prologue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
 void prologue( JSONOutputArchive & ar, T const & )
 {
 	//std::cout << "prologue for std::is_arithmetic<T>" << std::endl;
   ar.writeName();
 }
 
+//template <class T> inline
+/*void prologue( JSONOutputArchive & ar, const String& )
+{
+	//std::cout << "prologue for std::is_arithmetic<T>" << std::endl;
+  ar.writeName();
+}*/
+
 //! Prologue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
 void prologue( JSONInputArchive & ar, T const & )
 {
 	ar.skipKey();
 }
+
+/*void prologue( JSONInputArchive & ar, String const & )
+{
+	ar.skipKey();
+}*/
 
 //! Serialization for non-arithmetic vector types
   template <class T, class A> inline
@@ -631,7 +658,7 @@ void prologue( JSONInputArchive & ar, T const & )
     template <class T, class A> inline
   //  typename std::enable_if<!traits::is_output_serializable<BinaryData<T>, Archive>::value
     //                        || !std::is_arithmetic<T>::value, void>::type
-    void prologue(JSONInputArchive & ar, std::vector<T, A> const & vector )
+    void prologue(JSONInputArchive & ar, std::vector<T, A> const &  )
     {
   	 // cout << "prologue(JSONOutputArchive & ar, std::vector<T, A> const & vector" <<endl;
   	  ar.skipArrayStart();
@@ -677,15 +704,23 @@ inline void epilogue( JSONInputArchive & ar, T const & )
 
 // ######################################################################
 //! Epilogue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value || is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
 void   epilogue( JSONOutputArchive & , T const & )
 {	//std::cout << "epilogue for is_arithmetic<T>" << std::endl;
 	}
 
+
+/*void   epilogue( JSONOutputArchive & , String const & )
+{	//std::cout << "epilogue for is_arithmetic<T>" << std::endl;
+	}*/
+
 //! Epilogue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value || is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
 void epilogue( JSONInputArchive &, T const & )
 { }
+
+
+//void epilogue( JSONInputArchive &, String const & ){ }
 
 
 //! Serialization for non-arithmetic vector types
@@ -713,7 +748,7 @@ void epilogue( JSONInputArchive &, T const & )
     template <class T, class A> inline
   //  typename std::enable_if<!traits::is_output_serializable<BinaryData<T>, Archive>::value
     //                        || !std::is_arithmetic<T>::value, void>::type
-    void epilogue(JSONInputArchive & ar, std::vector<T, A> const & vector )
+    void epilogue(JSONInputArchive & ar, std::vector<T, A> const &  )
     {
   	  //cout << "epilogue(JSONInputArchive & ar, std::vector<T, A" <<endl;
   	  ar.skipArrayEnd();//finish array node
@@ -738,7 +773,7 @@ void epilogue( JSONInputArchive &, T const & )
 template<class T> inline
 void   save(JSONOutputArchive & ar,NameValuePair<T> const & t) {
 	//std::cout << "save for NameValuePair<T> " << std::endl;
-	ar.setNextName(t.name);
+	ar.setNextName(t.name.c_str());
 	ar(t.value);
 }
 
@@ -751,19 +786,30 @@ void load( JSONInputArchive & ar, NameValuePair<T> & t )
 }
 
 //! Saving for arithmetic to JSON
-  template <class T, typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+  template <class T, typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
   void save(JSONOutputArchive & ar, T const & t)
   {
 	  //std::cout << "save for is_arithmetic<T> " << t << std::endl;
     ar.saveValue( t );
   }
 
+/*  void save(JSONOutputArchive & ar, String const & t)
+  {
+	  //std::cout << "save for is_arithmetic<T> " << t << std::endl;
+    ar.saveValue( t );
+  }*/
+
   //! Loading arithmetic from JSON
-  template <class T,  typename std::enable_if<std::is_arithmetic<T>::value,  detail2::sfinae>::type = {}> inline
+  template <class T,  typename std::enable_if<(std::is_arithmetic<T>::value || std::is_same<T,String>::value),  detail2::sfinae>::type = {}> inline
   void load(JSONInputArchive & ar, T & t)
   {
     ar.loadValue( t );
   }
+
+ /* void load(JSONInputArchive & ar, String & t)
+  {
+    ar.loadValue( t );
+  }*/
 
 
   //! Serialization for non-arithmetic vector types
@@ -801,10 +847,10 @@ void load( JSONInputArchive & ar, NameValuePair<T> & t )
       //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
       template<class T> inline
       void load(JSONInputArchive & ar, std::shared_ptr<T> & sharedPointer) {
-    	  T t;
-    	  ar(t);
+    	  std::shared_ptr<T> t = make_shared<T>();
+    	  ar(*t);
     	 // make_shared<T>();
-    	  sharedPointer = make_shared<T>(std::move(t));//shared_ptr<T>(std::move(t));
+    	  sharedPointer = t;//shared_ptr<T>(std::move(t));
       }
 
 

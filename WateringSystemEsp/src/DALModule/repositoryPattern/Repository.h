@@ -19,7 +19,7 @@ public:
 	Repository(){}
 	virtual ~Repository(){}
 
-	virtual weak_ptr<Entity> getById(int id) = 0;
+	virtual std::shared_ptr<Entity> getById(int id) = 0;
 	virtual std::vector<weak_ptr<Entity>> getAll() = 0;
 
 	//virtual bool update(Entity& entity) = 0;

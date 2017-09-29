@@ -19,45 +19,47 @@ class Sprinkler : public GardenAcceptable {
 
 public:
 	enum Status { On, Off };
-	int _id;
-	String _name;
-	Status _status;
+	int id;
+	//String name;
+	Status status;
 
 	Sprinkler(){
-		_id = 1;
-		_name = "SprinklerNameee";
-		_status = Off;
+		Serial.println("Sprinkler CTOR");
+		id = 1;
+		//name = "SprinklerNameee";
+		status = Off;
 	}
 
-	Sprinkler(Sprinkler&& other){
-			_id = other._id;
-			_name = std::move(other._name);
-			_status = other._status;
-		}
+	/*Sprinkler(Sprinkler&& other){
+		Serial.println("Sprinkler CPT_CTOR");
+			id = other.id;
+			//name = std::move(other.name);
+			status = other.status;
+		}*/
 
 	virtual ~Sprinkler(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Sprinkler DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("Sprinkler DTOR");
 	}
 
 	int getId(){
-		return _id;
+		return id;
 	}
 	void setId(int id){
-		_id = id;
+		this->id = id;
 	}
 
-	String getName(){
-		return _name;
+	/*String getName(){
+		return name;
 	}
 	void setName(String name){
-		_name = name;
-	}
+		this->name = name;
+	}*/
 
 	Status getStatus(){
-		return _status;
+		return status;
 	}
 	void setStatus(Status status){
-		_status = status;
+		this->status = status;
 	}
 
 	virtual std::shared_ptr<void> accept(GardenVisitor& visitor){
@@ -67,12 +69,12 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(_id));
+		archive(CEREAL2_NVP(id));
 	}
 
 	template<class Archive>
 		void load(Archive& archive) {
-			archive(_id);
+			archive(id);
 		}
 
 };

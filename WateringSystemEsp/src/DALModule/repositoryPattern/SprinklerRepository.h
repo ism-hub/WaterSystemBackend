@@ -23,7 +23,7 @@ public:
 
 	}
 
-	weak_ptr<Sprinkler> getById(int id){
+	std::shared_ptr<Sprinkler> getById(int id){
 			return {};//TODO: implement this.
 		}
 

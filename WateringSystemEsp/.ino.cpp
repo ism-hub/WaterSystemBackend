@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2017-09-28 13:30:07
+//This file has been generated on 2017-09-29 12:43:25
 
 #include "Arduino.h"
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
@@ -23,6 +23,8 @@
 #include <ModuleFramework/SomeModule.h>
 #include <ModuleFramework/Container/Container.h>
 #include <config/moduleMap.h>
+void writeGardenToFlash();
+bool readThefFile(String& str);
 void setup ( void ) ;
 void loop ( void ) ;
 

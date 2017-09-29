@@ -145,6 +145,7 @@ public:
 		return t_vector;
 	}
 
+private:
 	template <typename T, typename _ = void>
 	struct is_vector {
 	    static const bool value = false;
@@ -165,15 +166,12 @@ public:
 		    static const bool value = true;
 		};
 
-private:
+
 	enum class sfinae {};
 
 	template<class T, typename std::enable_if<is_shared_ptr<T>::value, sfinae>::type = { }>
 	T resolve() {
-		//check if we have that type registered
-		if (typeRegisteredTypeMap.find(MF::compiletimeTypeid<typename T::element_type>())== typeRegisteredTypeMap.end()) //we didnt register it
-			return nullptr;
-		return std::static_pointer_cast<typename T::element_type>(typeRegisteredTypeMap[MF::compiletimeTypeid<typename T::element_type>()].front().create());
+		return resolve<typename T::element_type>();
 	}
 
 	template<class T,typename std::enable_if<is_vector<T>::value, sfinae>::type = { }>
@@ -206,7 +204,6 @@ public:
 
 	template <class Ret, class ...Deps>
 	std::shared_ptr<Ret> ctorFunctionResolver(ctor_function< std::shared_ptr<Ret>, Deps ...> ctorFunction){
-		Serial.println("calling ctorFunction in 'ctorFunctionResolver(ctor_...' ");
 		return ctorFunction(resolve<Deps>() ...);
 	}
 

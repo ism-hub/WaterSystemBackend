@@ -58,129 +58,76 @@
 #include <config/moduleMap.h>
 
 
-//#include "rapidjson/document.h"
-//#include "serialization/MyLightDocument.h"
-
-//#include <typeinfo>
-
-
 const char *ssid = "rina";//"AndroidAP";
 const char *password = "1qwer5counterstrike";//"nakr0097";
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
 
-DAL::GardenUnitOfWork* gardenUnitOfWork;
+void writeGardenToFlash(){
+	{
 
-/*void HelloWorldxXx(){
-	Serial.println("calling the HWorld!! ");
-}*/
+		bool result = SPIFFS.begin();
+		Serial.print("SPIFFS opened: ");
+		Serial.println(result);
 
-/*void initExecutionChains(DispatcherServlet& dispatcher) {
+		if (SPIFFS.exists("/f.txt")) {
+			SPIFFS.end();
+			return;
+		}
 
-	//	HelloWorldxXx();
-	Serial.println("############# creating new execution chain ###########");
-	Serial.println("############# creating the PlantController ###########");
-	Controller* plantCtrl = new PlantController(*gardenUnitOfWork);
-	HandlerExecutionChain* handlerExecutionChain = new HandlerExecutionChain(plantCtrl);
 
-	//Serial.println("############# trying to do: handlerExecutionChain->getController() ###########");
-	//Controller* ctrl = handlerExecutionChain->getController();
+		GardenModel::Garden garden = GardenModel::Garden();
+		std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();
+		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler);
+		plant->name = "Yellow Lily";
+		sprinkler->id = 12;
 
-	Serial.println("############# adding the interceptor ###########");
-	//adding the interceptor
-	JsonGardenVisitor* jsonVisitor = new JsonGardenVisitor();
-	JsonHandlerInterceptor* jsonInterceptor = new JsonHandlerInterceptor(*jsonVisitor);
-	handlerExecutionChain->addInterceptor(jsonInterceptor);
+		std::shared_ptr<cereal2::JSONInputArchive> 	inputArchive = std::make_shared<cereal2::JSONInputArchive>();
+		rapidjson::StringBuffer						_stringBuffer;
+		std::shared_ptr<cereal2::JSONOutputArchive> outputArchive = std::make_shared<cereal2::JSONOutputArchive>();
+		DAL::JsonSerializationService jsonSerializationService(inputArchive, outputArchive);
+		garden._plants.push_back(plant);
+		Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		String str = jsonSerializationService.modelToJson(garden);
+		Serial.println("The string we writing to the file");
+		Serial.println(str);
 
-	Serial.println("############# inserting the exe chain into the dispatcher ###########");
-	dispatcher._handlerExecutionChains.push_back(handlerExecutionChain);
+		{
+			File f = SPIFFS.open("/f.txt", "w");
 
-}*/
+			f.print(str);
+			f.flush();
+			f.close();
+		}
+		SPIFFS.end();
 
-/*
-enum class sfinae {};
-static const sfinae sfinae2 = {};
+	}
 
-template <typename T, typename std::enable_if<std::numeric_limits<T>::is_integer,  sfinae>::type = sfinae2 > inline
-static void foo(T a){
-	Serial.println("called the int ver");
-	Serial.println(a);
+	Serial.println("SPIFFS closing: ");
+
 }
 
-template <typename T, typename std::enable_if<!std::numeric_limits<T>::is_integer, sfinae >::type = sfinae2>inline
-static void foo(T a){
-	Serial.println("called the float ver");
-	//Serial.println(a);
+bool readThefFile(String& str){
+	bool result = SPIFFS.begin();
+	Serial.print("SPIFFS opened: ");
+	Serial.println(result);
+
+	File f = SPIFFS.open("/f.txt", "r");
+
+	if (f) {
+		Serial.println("we have a file:  /f.txt");
+		str = f.readStringUntil('\0');
+		f.flush();
+		f.close();
+		SPIFFS.end();
+		return true;
+	} else {
+		Serial.print("we dont have a file:  /f.txt");
+		f.close();
+		SPIFFS.end();
+		return false;
+	}
 }
-*/
-//static void foo(float a){
-//	Serial.println("called the float ver");
-//	Serial.println(a);
-//}
-
-
-/*
-
-template<typename, typename T>
-struct has_serialize {
-    static_assert(
-        std::integral_constant<T, false>::value,
-        "Second template parameter needs to be of function type.");
-};
-
-template<typename C, typename Ret, typename... Args>
-struct has_serialize<C, Ret(Args...)> {
-private:
-    template<typename T>
-    static constexpr auto check(T*)-> typename std::is_same< decltype( std::declval<T>().serialize( std::declval<Args>()... ) ), Ret    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-																																	>::type;  // attempt to call it and see if the return type is correct
-
-    template<typename>
-    static constexpr std::false_type check(...);
-
-    typedef decltype(check<C>(0)) type;
-
-public:
-    static constexpr bool value = type::value;
-};
-
-struct X {
-     void serialize(const int&) { return ; }
-};
-
-struct Y : X {};
-
-*/
-/*
-class A {
-public:
-	int x=3;
-	char ca='a';
-//	char const * lala = "Trololololol";
-
-	template <class Archive>
-	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(x));
-	}
-
-	template<class Archive>
-	void load(Archive& archive) {
-		archive(CEREAL2_NVP(x));
-	}
-
-	void start(){
-		Serial.println("called A::start");
-	}
-};*/
-
-/*struct membuf : std::streambuf
-{
-	membuf(char* begin, char* end){
-		this->setg(begin, begin, end);
-	}
-};*/
-
-
 
 void setup ( void ) {
 	Serial.begin ( 115200 );
@@ -203,144 +150,7 @@ void setup ( void ) {
 		Serial.println ( "MDNS responder started" );
 	}
 
-	//init the model
-/*	Serial.println("Creating the garden model");
-	gardenUnitOfWork = new DAL::GardenUnitOfWork(*(new DAL::GardenModelContext()));
-	if(gardenUnitOfWork->_gardenContext._garden == nullptr){
-		Serial.println("_garden is nullptr, inserting new garden");
-		gardenUnitOfWork->_gardenContext._garden = make_shared<Garden>();
-	}*/
-
-	//garden = new Garden();
-//	Serial.println("Printing the garden -");
-//	Serial.print("Number of plants:");
-	//Serial.println(garden->_plants.size());
-//	Serial.print("		plants -");
-	/*for(int i = 0; i < garden->_plants.size(); i++)
-	{
-		Serial.println(i);
-		weak_ptr<Plant> plant = garden->_plants[i];
-		if(plant.expired())
-			Serial.println("for some reason the plant pointer is expired");
-		weak_ptr<Sprinkler> sprinkler = plant.lock()->_sprinkler;
-		if(sprinkler.expired())
-			Serial.println("for some reason the sprinkler pointer is expired");
-		Serial.print("Plant.sprinkler._id - ");
-		Serial.println(sprinkler.lock()->_id);
-		Serial.println("Plant.sprinkler._name - " + sprinkler.lock()->_name);
-		Serial.print("Plant.sprinkler._name - ");
-		Serial.println(sprinkler.lock()->_status == Sprinkler::On ? "On" : "Off");
-	}*/
-
-
-	//create the dispatcher model
-//	DispatcherServlet* dispatcher = new DispatcherServlet();
-
-	//init the dispatcher with the handlers (execution chains) and the model
-	//dispatcher->_garden = gardenUnitOfWork->_gardenContext._garden.get();
-	//initExecutionChains(*dispatcher);
-
-	//create a new server
-	//server = new ESP8266WebServer( *dispatcher ,80 );
-
-	//server->begin();
-//	Serial.println ( "HTTP server started" );
-
-//	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
-	//Serial.println(typeid(dispatcher).name());
-
-	/*shared_ptr<int> pi = make_shared<int>(4);
-	Serial.println(*pi);
-
-	Serial.print("has_serialize<X, void(const int&)>::value : ");
-	Serial.println(has_serialize<X, void(const int&)>::value);
-
-	Serial.print("has_serialize<Y, void(const int&)>::value : ");
-	Serial.println(has_serialize<Y, void(const int&)>::value);
-
-	Serial.print("has_serialize<ESP8266WebServer, void(const int&)>::value : ");
-	Serial.println(has_serialize<ESP8266WebServer, void(const int&)>::value);
-*/
-	//111111111111111111111111111
-
-	/*int x=6666;
-	auto nvp = CEREAL2_NVP(x);
-
-	Serial.println(nvp.value);
-*/
-//	foo(3);
-//	foo('a');
-//	foo(3.1);
-/*
-	rapidjson::StringBuffer ss;
-	rapidjson::Writer<rapidjson::StringBuffer> writer2(ss);
-
-	cereal2::JSONOutputArchive& archive2 = *(new cereal2::JSONOutputArchive(writer2));
-	Garden& gardenn = *(gardenUnitOfWork->_gardenContext._garden.get());
-	archive2(CEREAL2_NVP(gardenn));
-	archive2.~JSONOutputArchive();
-	Serial.println(ss.GetString());
-
-
-	rapidjson::StringBuffer s;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-	writer.StartObject();
-	writer.Key("hello");
-	writer.String("world");
-	writer.Key("t");
-	writer.Bool(true);
-	writer.Key("f");
-	writer.Bool(false);
-	writer.Key("n");
-	writer.Null();
-	writer.Key("i");
-	writer.Uint(123);
-	//writer.Key("pi");
-	//writer.Double(3.1416);
-	writer.Key("a");
-	writer.StartArray();
-	for (unsigned i = 0; i < 4; i++)
-		writer.Uint(i);
-	writer.EndArray();
-	writer.EndObject();
-
-	Serial.println(s.GetString());
-	//cout << s.GetString() << endl;
-
-	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
-	A a;
-	//rapidjson::StringStream jsonInput("{\"a\":{\"x\":113}}");
-	rapidjson::StringStream jsonInput("{\"garden\":{\"_plants\":[{\"_sprinkler\":{\"_id\":123}}]}}");
-
-	//membuf membufStr(jsonInput, jsonInput + sizeof(jsonInput));
-	//std::istream istreamChar(&membufStr);
-
-	//std::cout << "dsdsdsd" << std::endl;
-
-	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-	Serial.println("creating JSONInputArchive");
-	//cereal2::JSONInputArchive readArchive(jsonInput);//(istreamChar);
-	Garden garden;
-	cereal2::JSONInputArchive readArchive(jsonInput);//(istreamChar);
-	Serial.println("end creating JSONInputArchive");
-	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
-	Serial.println("calling readArchive(garden);");
-	readArchive(garden);
-
-	Serial.println("@@@@@@@@@@");
-	Serial.println(garden._plants[1]->_sprinkler->_id);
-
-	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
-	//rapidjson2::MyLightDocument doc;
-	//doc.parse();
-
-//	rapidjson::Document document;
-//	document.Parse("{\"a\": {\"x\":113}}");
-*/
+	writeGardenToFlash();
 
 	MF::ModuleService mfs;
 	config::moduleMap(mfs);
@@ -354,7 +164,6 @@ void setup ( void ) {
 	server->begin();
 	Serial.println ( "HTTP server started" );
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
 }
 
 void loop ( void ) {

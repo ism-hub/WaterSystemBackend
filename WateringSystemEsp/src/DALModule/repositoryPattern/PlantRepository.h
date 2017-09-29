@@ -18,13 +18,13 @@ protected:
 
 public:
 	PlantRepository(GardenModelContext& contexModel) : _contexModel(contexModel) {
-
+		Serial.println("PlantRepository CTOR");
 	}
 	virtual ~PlantRepository() {
-
+		Serial.println("PlantRepository DTOR");
 	}
 
-	std::weak_ptr<Plant> getById(int id){
+	std::shared_ptr<Plant> getById(int id){
 		return _contexModel.getGarden()->getPlant(id);
 	}
 

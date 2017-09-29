@@ -13,6 +13,8 @@
 #include <Plant.h>
 #include <GardenAcceptable.h>
 
+#include <ModuleFramework/utils.h>
+
 
 //#include <se>
 
@@ -24,17 +26,16 @@ class Garden : public GardenAcceptable{
 public:
 	vector<shared_ptr<Plant> > _plants;
 
-	Garden() {//garden with one plant and one sprinkler for that plant
-		_plants.reserve(10);
-		_plants.push_back(make_shared<Plant>(make_shared<Sprinkler>()));
+	Garden() {
+		Serial.println("Garden CTOR");
 	}
 	virtual ~Garden(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Garden DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+		Serial.println("Garden DTOR");
 	}
 
-	std::weak_ptr<Plant> getPlant(int id) {
+	std::shared_ptr<Plant> getPlant(int id) {
 		if(_plants.size() - 1 < id)
-			return {};//returns empty weak_ptr
+			return {};
 		return _plants[id];
 	}
 
@@ -46,7 +47,7 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(_plants));
+		archive(cereal2::make_nvp(MF::getTemplateName<Plant>(),_plants));
 	}
 
 	template<class Archive>

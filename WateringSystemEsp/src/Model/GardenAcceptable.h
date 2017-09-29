@@ -16,7 +16,6 @@ public:
 
 	}
 	virtual ~GardenAcceptable(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ GardenAcceptable DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
 	}
 
 	virtual std::shared_ptr<void> accept(class GardenVisitor& visitor) = 0;

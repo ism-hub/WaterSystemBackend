@@ -162,7 +162,7 @@ void ESP8266WebServer::serveStatic(const char* uri, FS& fs, const char* path, co
     _addRequestHandler(new StaticRequestHandler(fs, path, uri, cache_header));
 }
 
-HttpServletRequest* ESP8266WebServer::_createHttpServletRequest(){
+std::shared_ptr<HttpServletRequest> ESP8266WebServer::_createHttpServletRequest(){
     //from what i understood from the text the RequestArgument with the key of "plain" is where the json data is going
     String requestBody="";
     /*for (int i = 0; i < _currentArgCount; ++i) {
@@ -171,7 +171,20 @@ HttpServletRequest* ESP8266WebServer::_createHttpServletRequest(){
     	}
 	}*/
     Serial.println ( " before new HttpServletRequest" );
-    return new HttpServletRequest(requestBody, _currentMethod, _currentUri);
+    return std::make_shared<HttpServletRequest>(requestBody, _currentMethod, _currentUri);
+}
+
+void printServletRequest(HttpServletRequest& req){
+	Serial.println("The Request parameters:");
+	Serial.println("url: " + req.url);
+	Serial.print("Method: ");
+	Serial.println((req.httPMethod == HTTP_GET ? "GET" : "POST"));
+	Serial.println("Body: " + req.requestBody);
+	Serial.println("url tokens:");
+	for (int i = 0; i < req.urlTokens.size(); ++i) {
+		Serial.print("	-token: ");
+		Serial.println(req.urlTokens[i]);
+	}
 }
 
 void ESP8266WebServer::handleClient() {
@@ -219,31 +232,20 @@ void ESP8266WebServer::handleClient() {
     Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 
     Serial.println ( "Calling _createHttpServletRequest()" );
-    HttpServletRequest* httpServletRequest = _createHttpServletRequest();
+    std::shared_ptr<HttpServletRequest> httpServletRequest = _createHttpServletRequest();
 
-    Serial.println ( "The Request parameters " );
-    Serial.println ( "url: " + httpServletRequest->url );
-    Serial.print ( "Method: ");
-    		Serial.println ( (httpServletRequest->httPMethod == HTTP_GET ? "GET" : "POST"));
-    Serial.println ( "Body: " + httpServletRequest->requestBody );
-    Serial.println ( "url tokens:" );
-    for (int i = 0;  i < httpServletRequest->urlTokens.size(); ++i) {
-    	Serial.print ( "	-token: " );
-    	Serial.println ( httpServletRequest->urlTokens[i] );
-	}
-
+    printServletRequest(*httpServletRequest);
 
     Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-    Serial.println ( "Dispatching the request   Calling _dispatcherServlet.dispatch(*httpServletRequest)" );
-    HttpServletResponse* httpServletResponse = _dispatcherServlet->dispatch(*httpServletRequest);
+    Serial.println ( "Dispatching the request Calling FispatcherServlet.dispatch(HttpServletRequest)" );
+    std::shared_ptr<HttpServletResponse> httpServletResponse = _dispatcherServlet->dispatch(*httpServletRequest);
 
     Serial.println ( "Sending the http response from the dispatcher" );
     this->send(httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
 
 
-    //here we need cleanup the requests
-
-    //_handleRequest();
+    //here we need cleanup
+    Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 
 
 
@@ -267,6 +269,7 @@ void ESP8266WebServer::handleClient() {
       return;
     }
   }
+
 }
 
 void ESP8266WebServer::close() {

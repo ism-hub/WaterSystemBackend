@@ -24,7 +24,7 @@ public:
 
 	}
 
-	weak_ptr<Garden> getById(int id){
+	std::shared_ptr<Garden> getById(int id){
 		return {};//TODO: implement this.
 	}
 

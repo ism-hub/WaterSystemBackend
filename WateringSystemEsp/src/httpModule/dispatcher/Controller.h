@@ -25,7 +25,7 @@ public:
 	}
 
 	virtual bool canHandle(HttpServletRequest& req)=0;
-	virtual GardenModel::GardenAcceptable* handle(HttpServletRequest& req, HttpServletResponse& response)=0;
+	virtual std::shared_ptr<GardenModel::GardenAcceptable> handle(HttpServletRequest& req, HttpServletResponse& response)=0;
 };
 
 } /* namespace Http */

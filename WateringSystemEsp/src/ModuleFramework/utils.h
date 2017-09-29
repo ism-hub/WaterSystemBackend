@@ -8,6 +8,7 @@
 #ifndef MODULEFRAMEWORK_UTILS_H_
 #define MODULEFRAMEWORK_UTILS_H_
 
+#include <WString.h>
 
 namespace MF {
 
@@ -17,7 +18,7 @@ const char* compiletimeTypeid(){
 }
 
 template <class T>
-const char* getTemplateName(){ //... [with type = int]
+String getTemplateName(){ //... [with type = int]
 	const char* stratOfTypePointer = __PRETTY_FUNCTION__;
 	while(*stratOfTypePointer != '=')
 		stratOfTypePointer++;
@@ -35,11 +36,10 @@ const char* getTemplateName(){ //... [with type = int]
 		stratOfTypeWithoutNamespaces--;
 
 	int length = endOfTypePointer - stratOfTypeWithoutNamespaces + 2;
-	char* typeName = new char[length];
-	typeName[length - 1] = '\0';
+	String typeName;
 
-	for(int i = 0; i < length - 2; i++)
-		typeName[i] = stratOfTypeWithoutNamespaces[i];
+	for(int i = 0; i < length - 1; i++)
+		typeName += stratOfTypeWithoutNamespaces[i];
 
 	return typeName;
 }

@@ -61,13 +61,12 @@ public:
 
 private:
       //! Serializes data after calling prologue, then calls epilogue
-      template <class T> inline
-      void process( T && head )
-      {
-        prologue( *self, head );
-        self->processImpl( head );
-        epilogue( *self, head );
-      }
+	template<class T> inline
+	void process(T && head) {
+		prologue(*self, head);
+		self->processImpl(head);
+		epilogue(*self, head);
+	}
 
       //! Unwinds to process all data
       template <class T, class ... Other> inline
@@ -209,7 +208,7 @@ private:
 
 
 template<class T> inline
-NameValuePair<T> make_nvp(const char *name, T&& value){
+NameValuePair<T> make_nvp(String name, T&& value){
 	return {name, std::forward<T>(value)};
 }
 
