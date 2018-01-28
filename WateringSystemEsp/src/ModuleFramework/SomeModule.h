@@ -4,7 +4,7 @@
  *  Created on: 21 בספט׳ 2017
  *      Author: IsM
  */
-
+/*
 #ifndef MODULEFRAMEWORK_SOMEMODULE_H_
 #define MODULEFRAMEWORK_SOMEMODULE_H_
 
@@ -56,4 +56,4 @@ public:
 
 } /* namespace moduleFramework */
 
-#endif /* MODULEFRAMEWORK_SOMEMODULE_H_ */
+/*#endif*/ /* MODULEFRAMEWORK_SOMEMODULE_H_ */

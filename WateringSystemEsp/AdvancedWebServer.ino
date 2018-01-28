@@ -30,7 +30,7 @@
  java -jar EspStackTraceDecoder.jar C:/Users/IsM/AppData/Local/Arduino15/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-addr2line C:/Programming/Cworkspace/WateringSystemEsp/Release/WateringSystemEsp.elf ./bla/dump.txt
 
  */
-
+//#define DEBUG_MY_CODE
 
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
 #include <DALModule/serialization/cereal2.h>
@@ -57,6 +57,16 @@
 
 #include <config/moduleMap.h>
 
+#include <Model/ObserverDesignPattern/Signal.hpp>
+#include <Model/ObserverDesignPattern/Property.hpp>
+
+#include <Model/ObserverDesignPattern/ObservableVector.h>
+
+#include <chrono>
+
+#include <TimeModule/timeService/TimeService.h>
+
+
 
 const char *ssid = "rina";//"AndroidAP";
 const char *password = "1qwer5counterstrike";//"nakr0097";
@@ -65,35 +75,39 @@ std::shared_ptr<ESP8266WebServer> server = nullptr;
 
 void writeGardenToFlash(){
 	{
-
-		bool result = SPIFFS.begin();
-		Serial.print("SPIFFS opened: ");
-		Serial.println(result);
-
-		if (SPIFFS.exists("/f.txt")) {
-			SPIFFS.end();
-			return;
-		}
-
-
 		GardenModel::Garden garden = GardenModel::Garden();
+		garden.name = String("FooooodGarden");
 		std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();
-		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler);
+		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
+		//std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
+
+		Serial.print("plant->_sprinkler is ");
+		Serial.println(plant->_sprinkler == nullptr ? "null" : "not-null");
+
 		plant->name = "Yellow Lily";
 		sprinkler->id = 12;
+
+		std::vector<GardenModel::Hour> hours = {GardenModel::Hour(11,12)};
+		std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
+		simpleProgram->timePattern = TimePattern(days);
+		simpleProgram->id = 22;
+
 
 		std::shared_ptr<cereal2::JSONInputArchive> 	inputArchive = std::make_shared<cereal2::JSONInputArchive>();
 		rapidjson::StringBuffer						_stringBuffer;
 		std::shared_ptr<cereal2::JSONOutputArchive> outputArchive = std::make_shared<cereal2::JSONOutputArchive>();
 		DAL::JsonSerializationService jsonSerializationService(inputArchive, outputArchive);
 		garden._plants.push_back(plant);
-		Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		garden._sprinklers.push_back(sprinkler);
+		garden._programs.push_back(simpleProgram);
+
 		String str = jsonSerializationService.modelToJson(garden);
-		Serial.println("The string we writing to the file");
 		Serial.println(str);
+		bool result = SPIFFS.begin();
 
 		{
-			File f = SPIFFS.open("/f.txt", "w");
+			File f = SPIFFS.open("/f.txt","w");
 
 			f.print(str);
 			f.flush();
@@ -103,16 +117,14 @@ void writeGardenToFlash(){
 
 	}
 
-	Serial.println("SPIFFS closing: ");
-
 }
 
-bool readThefFile(String& str){
+/*bool readThefFile(String& str){
 	bool result = SPIFFS.begin();
 	Serial.print("SPIFFS opened: ");
 	Serial.println(result);
 
-	File f = SPIFFS.open("/f.txt", "r");
+	File f = SPIFFS.open("/f.txt","r");
 
 	if (f) {
 		Serial.println("we have a file:  /f.txt");
@@ -122,12 +134,14 @@ bool readThefFile(String& str){
 		SPIFFS.end();
 		return true;
 	} else {
-		Serial.print("we dont have a file:  /f.txt");
 		f.close();
 		SPIFFS.end();
+		Serial.print("we dont have a file: /f.txt");
 		return false;
 	}
-}
+}*/
+
+TS::TimeService timeService;
 
 void setup ( void ) {
 	Serial.begin ( 115200 );
@@ -150,6 +164,27 @@ void setup ( void ) {
 		Serial.println ( "MDNS responder started" );
 	}
 
+	/*Model::ObservableVector<std::shared_ptr<GardenModel::Plant> > plantz;
+	typename Model::ObservableVector<std::shared_ptr<GardenModel::Plant> >::ConnectorFncType connectorFnc;
+	connectorFnc = [](std::shared_ptr<GardenModel::Plant> plant, Model::Change change) {
+		Serial.println("A plant was " + String( change == Model::Change::Added ? "Added" : "Deleted"));
+		Serial.print("The plant id is");
+		Serial.println(plant->id);
+	};
+	int slotId = plantz.on_change().connect(connectorFnc);
+	plantz.push_back(std::make_shared<Plant>());
+	std::shared_ptr<Plant> plantt = std::make_shared<Plant>();
+	plantt->id = 22;
+	plantz.push_back(plantt);
+
+	Model::Property<int> intProp(3);
+	std::function<void(int)> propConnFnB4 = [](int a) {Serial.print("Value changed from "); Serial.println(a);};
+	std::function<void(int)> propConnFnOn = [](int a) {Serial.print("Value changed to "); Serial.println(a);};
+	intProp.before_change().connect(propConnFnB4);
+	intProp.on_change().connect(propConnFnOn);
+	intProp = 5;
+	intProp = 97;*/
+
 	writeGardenToFlash();
 
 	MF::ModuleService mfs;
@@ -159,17 +194,41 @@ void setup ( void ) {
 	if (!success)
 		Serial.println("___CRITICAL ERROR___: Failed to start all modules");
 
+	std::shared_ptr<DAL::JsonSerializationService> serService = mfs.container->resolve<DAL::JsonSerializationService>();
+	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ what i belive to be the problematic line ");
+	std::shared_ptr<Garden> garden = serService->jsonToModel<Garden>("{\"Garden\":{\"name\":\"FooooodGarden\",\"plants\":[{\"id\":0,\"name\":\"Yellow Lily\",\"sprinkler\":null,\"program\":{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"Off\"}],\"programs\":[{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}]}}");
+	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
 	server = mfs.container->resolve<ESP8266WebServer>();
 
 	server->begin();
-	Serial.println ( "HTTP server started" );
+
+	//initiate the TimeService (will be in the module later)
+	timeService.initCurrentTime(myDate::my_clock::time_point{std::chrono::seconds{1507920363}});//18:46:03 UTC
+
+
+	//timeService.
+
+	Serial.println("HTTP server started");
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+	Serial.println(millis());
+}
+
+template <class T>
+void printTime(T timeToday){
+	Serial.print("The time is:");
+	Serial.print(timeToday.hours().count());
+	Serial.print(":");
+	Serial.print(timeToday.minutes().count());
+	Serial.print(":");
+	Serial.print((long)timeToday.seconds().count());
+	Serial.println();
 }
 
 void loop ( void ) {
 //	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	server->handleClient();
-	//delay(1000);
+	//printTime(timeService.getCurrentDateTime());
+	//delay(1000 * 60 * 10);//10 min delay
 }
 
 

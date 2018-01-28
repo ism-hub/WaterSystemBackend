@@ -28,6 +28,8 @@
 #include <memory>//shared_pointer
 #include <utility> //std::forward
 
+#include <Model/ObserverDesignPattern/Property.hpp>
+
 namespace cereal2 {
 
 using namespace rapidjson;
@@ -132,65 +134,105 @@ private:
 		unsigned int lastUInt=666;
 		WString lastString;
 		std::vector<bool> isInsideArrayHistory = {false};
+		boolean isLastFuncCalledIsNullFnc = false;
 
 
 
 
 	    bool Null() {
-	    	Serial.println(" called MyHandler Null");
+	    	isLastFuncCalledIsNullFnc = true;
 	    	return true; }
 	    bool Bool(bool ) {
+	    	isLastFuncCalledIsNullFnc = false;
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Bool");
+#endif
 	    	return true; }
 	    bool Int(int i) {
 	    	lastInt = i;
+	    	isLastFuncCalledIsNullFnc = false;
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Int");
+#endif
 	    	return true; }
 	    bool Uint(unsigned u) {
 	    	lastUInt = u;
 	    	lastInt = u;
+	    	isLastFuncCalledIsNullFnc = false;
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Uint");
+#endif
 	    	return true; }
 	    bool Int64(int64_t ) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Int64");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool Uint64(uint64_t ) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Uint64");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool Double(double ) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Double");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool String(const Ch* str, SizeType length, bool copy) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler String");
+#endif
 	    	lastString = WString(str);
+	    	isLastFuncCalledIsNullFnc = false;
 	        return true;
 	    }
 	    bool StartObject() {
 	    	isInsideArrayHistory.push_back(false);
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler StartObject");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool Key(const char* , SizeType , bool ) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Key");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	        return true;
 	    }
 	    bool EndObject(SizeType ) {
 	    	isInsideArrayHistory.pop_back();
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler EndObject");
+#endif
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool StartArray() {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler StartArray");
+#endif
 	    	isInsideArrayHistory.push_back(true);
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	    bool EndArray(SizeType ) {
+#ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler EndArray");
+#endif
 	    	isInsideArrayHistory.pop_back();
+	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
 	};
 
 	rapidjson::Reader reader;
+	public:
 	MyHandler handler;
+
 	StringStream strStream;
 
+	boolean loadSameValueAgain = false; // if we loaded the value but want to load the same value again next time in the loadValue functions
 
 public:
 	/* JSONInputArchive(const char* json)://std::istream & stream) :
@@ -340,19 +382,33 @@ public:
 		}
 
 	void loadValue(int& t){
-		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
+		if(!loadSameValueAgain)
+			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
 		t = handler.lastInt;
+		loadSameValueAgain= false;
 	}
 
 	void loadValue(unsigned int& t){
-			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
+			if(!loadSameValueAgain)
+				reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
 			t = handler.lastUInt;
+			loadSameValueAgain = false;
 		}
 
 	void loadValue(WString& t){
-				reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next String
+				if(!loadSameValueAgain)
+					reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next String
 				t = handler.lastString;
+				loadSameValueAgain = false;
 			}
+
+	void loadValue(std::nullptr_t){// calling it when we want to load and dont know what we are loading, usualy goes with loadSameValueAgain = true
+		if(!loadSameValueAgain)
+			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);
+		Serial.println("loadValue(std::nullptr_t)");
+		loadSameValueAgain = false;
+	}
+
 
 	template<class T,class A>
 	void loadArray(std::vector<T,A> & vector ){
@@ -389,7 +445,7 @@ class JSONOutputArchive: public OutputArchive<JSONOutputArchive>, public traits2
 private:
 	char const * itsNextName;            //!< The next name
 	rapidjson::Writer<rapidjson::StringBuffer> itsWriter;                //!< Rapidjson writer
-	std::stack<uint32_t> itsNameCounter; //!< Counter for creating unique names for unnamed nodes
+//	std::stack<int> itsNameCounter; //!< Counter for creating unique names for unnamed nodes
 	std::stack<NodeType> itsNodeStack;
 
 
@@ -410,7 +466,7 @@ public:
 		}
 
 	void init(){
-		itsNameCounter.push(0);
+		//itsNameCounter.push(0);
 		itsNodeStack.push(NodeType::StartObject);
 	}
 
@@ -421,15 +477,23 @@ public:
 	}
 
 	void finalize(){
-		if (itsNodeStack.top() == NodeType::InObject)
+		/*if (itsNodeStack.top() == NodeType::InObject){
+			Serial.println("before finalize itsWriter.EndObject(); ");
 			itsWriter.EndObject();
-		else if (itsNodeStack.top() == NodeType::InArray)
+			Serial.println("after finalize itsWriter.EndObject(); ");
+			itsNodeStack.pop();
+		}
+
+		else if (itsNodeStack.top() == NodeType::InArray){
 			itsWriter.EndArray();
+			itsNodeStack.pop();
+		}*/
+		finishNode();
 		itsWriter.Flush();
 	}
 
 	void reset(rapidjson::StringBuffer& os){
-		itsNameCounter.empty();
+		//itsNameCounter.empty();
 		itsNodeStack.empty();
 		itsWriter.Reset(os);
 		init();
@@ -450,34 +514,34 @@ public:
       {
         writeName();
         itsNodeStack.push(NodeType::StartObject);
-        itsNameCounter.push(0);
+       // itsNameCounter.push(0);//here!!!!!
       }
 
       //! Designates the most recently added node as finished
-            void finishNode()
-            {
-              // if we ended up serializing an empty object or array, writeName
-              // will never have been called - so start and then immediately end
-              // the object/array.
-              //
-              // We'll also end any object/arrays we happen to be in
-              switch(itsNodeStack.top())
-              {
-                case NodeType::StartArray:
-                  itsWriter.StartArray();
-                case NodeType::InArray:
-                  itsWriter.EndArray();
-                  break;
-                case NodeType::StartObject:
-                  itsWriter.StartObject();
-                case NodeType::InObject:
-                  itsWriter.EndObject();
-                  break;
-              }
+	void finishNode() {
+		// if we ended up serializing an empty object or array, writeName
+		// will never have been called - so start and then immediately end
+		// the object/array.
+		//
+		// We'll also end any object/arrays we happen to be in
+		if(itsNodeStack.empty())
+			return;
+		switch (itsNodeStack.top()) {
+		case NodeType::StartArray:
+			itsWriter.StartArray();
+		case NodeType::InArray:
+			itsWriter.EndArray();
+			break;
+		case NodeType::StartObject:
+			itsWriter.StartObject();
+		case NodeType::InObject:
+			itsWriter.EndObject();
+			break;
+		}
 
-              itsNodeStack.pop();
-              itsNameCounter.pop();
-            }
+		itsNodeStack.pop();
+		//   itsNameCounter.pop();
+	}
 
       //! Sets the name for the next node created with startNode
       void setNextName( const char * name )
@@ -522,7 +586,6 @@ public:
   	      void writeName()
   	      {
   	        NodeType const & nodeType = itsNodeStack.top();
-
   	        // Start up either an object or an array, depending on state
   	        if(nodeType == NodeType::StartArray)
   	        {
@@ -535,15 +598,21 @@ public:
   	          itsWriter.StartObject();
   	        }
 
+
   	        // Array types do not output names
-  	        if(nodeType == NodeType::InArray) return;
+  	        if(nodeType == NodeType::InArray){
+  	        	return;
+  	        }
 
   	        if(itsNextName == nullptr)
   	        {
-  	        //  std::string name = "value" + std::to_string( itsNameCounter.top()++ ) + "\0";
-  	        	Serial.print("in writeName() when itsNextName == nullptr : not suppose to be here!! ");
-  	        //  saveValue(name); //the actual writing, i need to implement that
-  	        	saveValue("someValue");
+#ifdef DEBUG_MY_CODE
+  	        	//  std::string name = "value" + std::to_string( itsNameCounter.top()++ ) + "\0";
+  	        	  Serial.print("______ERORR______ in writeName() when itsNextName == nullptr : not suppose to be here!! ");
+  	        	  //  saveValue(name); //the actual writing, i need to implement that
+  	        	  saveValue("someValue");
+#endif
+  	        	Serial.print("______ERORR______ in writeName() when itsNextName == nullptr : not suppose to be here!! ");
   	        }
   	        else
   	        {
@@ -600,14 +669,14 @@ inline void   prologue(JSONOutputArchive & ar, T const &) {
 template<class T, typename std::enable_if< detail2::has_load_method<T, void(const detail2::InputArchiveBase&)>::value ,  detail2::sfinae>::type = {}>
 inline void prologue( JSONInputArchive & ar, T const & )
 {
-  Serial.println("inside prologue for things with load method");
+  //Serial.println("inside prologue for things with load method");
   //ar.startNode();
 	ar.enterNode();
 }
 
 // ######################################################################
 //! Prologue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || std::is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
 void prologue( JSONOutputArchive & ar, T const & )
 {
 	//std::cout << "prologue for std::is_arithmetic<T>" << std::endl;
@@ -622,7 +691,7 @@ void prologue( JSONOutputArchive & ar, T const & )
 }*/
 
 //! Prologue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<(std::is_arithmetic<T>::value || std::is_same<T, String>::value),  detail2::sfinae>::type = {}> inline
 void prologue( JSONInputArchive & ar, T const & )
 {
 	ar.skipKey();
@@ -648,10 +717,17 @@ void prologue( JSONInputArchive & ar, T const & )
 
   //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
   template<class T> inline
-  void   prologue(JSONOutputArchive &, std::shared_ptr<T> const &) {
+  void   prologue(JSONOutputArchive & ar, std::shared_ptr<T> const & sPtr) {
   	//std::cout << "prologue for std::shared_ptr<T> " << std::endl;
+	if (sPtr == nullptr)
+		ar.writeName();
   }
 
+  //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+  template<class T> inline
+  void   prologue(JSONOutputArchive &, Model::Property<T> const &) {
+  	//std::cout << "prologue for std::shared_ptr<T> " << std::endl;
+  }
 
 
   //! Serialization for non-arithmetic vector types
@@ -667,6 +743,12 @@ void prologue( JSONInputArchive & ar, T const & )
     //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
     template<class T> inline
     void prologue(JSONInputArchive &, std::shared_ptr<T> const &) {
+    	//std::cout << "prologue for std::shared_ptr<T> " << std::endl;
+    }
+
+    //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+    template<class T> inline
+    void prologue(JSONInputArchive &, Model::Property<T> const &) {
     	//std::cout << "prologue for std::shared_ptr<T> " << std::endl;
     }
 
@@ -697,14 +779,14 @@ inline void   epilogue(JSONOutputArchive & ar, T const &) {
 template <class T,typename std::enable_if< detail2::has_load_method<T, void(const detail2::InputArchiveBase&)>::value ,  detail2::sfinae>::type = {}>
 inline void epilogue( JSONInputArchive & ar, T const & )
 {
-  Serial.println("inside epilogue for things with load method");
+  //Serial.println("inside epilogue for things with load method");
   //ar.finishNode();
 	ar.exitNode();
 }
 
 // ######################################################################
 //! Epilogue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value || is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
 void   epilogue( JSONOutputArchive & , T const & )
 {	//std::cout << "epilogue for is_arithmetic<T>" << std::endl;
 	}
@@ -715,7 +797,7 @@ void   epilogue( JSONOutputArchive & , T const & )
 	}*/
 
 //! Epilogue for arithmetic types for JSON archives
-template <class T, typename std::enable_if<std::is_arithmetic<T>::value || is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, String>::value,  detail2::sfinae>::type = {}> inline
 void epilogue( JSONInputArchive &, T const & )
 { }
 
@@ -743,6 +825,12 @@ void epilogue( JSONInputArchive &, T const & )
   	//std::cout << "epilogue for std::shared_ptr<T> " << std::endl;
   }
 
+  //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+  template<class T> inline
+  void   epilogue(JSONOutputArchive &, Model::Property<T> const &) {
+  	//std::cout << "epilogue for std::shared_ptr<T> " << std::endl;
+  }
+
 
   //! Serialization for non-arithmetic vector types
     template <class T, class A> inline
@@ -764,6 +852,12 @@ void epilogue( JSONInputArchive &, T const & )
     	//std::cout << "epilogue for std::shared_ptr<T> " << std::endl;
     }
 
+    //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+    template<class T> inline
+    void epilogue(JSONInputArchive &, Model::Property<T> const &) {
+    	//std::cout << "epilogue for std::shared_ptr<T> " << std::endl;
+    }
+
 
 
 // ######################################################################
@@ -780,7 +874,6 @@ void   save(JSONOutputArchive & ar,NameValuePair<T> const & t) {
 template <class T> inline
 void load( JSONInputArchive & ar, NameValuePair<T> & t )
 {
-  Serial.println("inside load( JSONInputArchive & ar, NameValuePair<T> & t )");
  // ar.setNextName( t.name );
   ar( t.value );
 }
@@ -827,7 +920,17 @@ void load( JSONInputArchive & ar, NameValuePair<T> & t )
     //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
     template<class T> inline
     void save(JSONOutputArchive & ar, std::shared_ptr<T> const & sharedPointer) {
-    	ar(*sharedPointer.get());
+    	if (sharedPointer == nullptr)
+    		ar.saveValue(nullptr);
+    	else
+    		ar(*sharedPointer.get());
+    	Serial.println("######## void save(JSONOutputArchive & ar, std::shar");
+    }
+
+    //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+    template<class T> inline
+	void save(JSONOutputArchive & ar, Model::Property<T> const & property) {
+    	ar(property.get());
     }
 
 
@@ -847,10 +950,25 @@ void load( JSONInputArchive & ar, NameValuePair<T> & t )
       //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
       template<class T> inline
       void load(JSONInputArchive & ar, std::shared_ptr<T> & sharedPointer) {
-    	  std::shared_ptr<T> t = make_shared<T>();
-    	  ar(*t);
-    	 // make_shared<T>();
-    	  sharedPointer = t;//shared_ptr<T>(std::move(t));
+    	  ar.loadValue(nullptr);
+    	  if (ar.handler.isLastFuncCalledIsNullFnc){
+    		  Serial.println("if (ar.handler.isLastFuncCalledIsNullFnc)");
+    		  sharedPointer = nullptr;
+    	  }else{
+    		  ar.loadSameValueAgain = true;
+    		  std::shared_ptr<T> t = std::make_shared<T>();
+			  ar(*t);
+			 // make_shared<T>();
+			  sharedPointer = t;//shared_ptr<T>(std::move(t));
+    	  }
+      }
+
+      //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+      template<class T> inline
+      void load(JSONInputArchive & ar, Model::Property<T> & property) {
+    	  typename Model::Property<T>::value_type t;
+    	  ar(t);
+    	  property = t;
       }
 
 

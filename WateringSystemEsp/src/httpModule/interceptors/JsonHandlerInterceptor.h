@@ -19,11 +19,16 @@ class JsonHandlerInterceptor: public HandlerInterceptor {
 public:
 	std::shared_ptr<GardenModel::JsonGardenVisitor>	_jsonGardenVisitor;
 	JsonHandlerInterceptor(std::shared_ptr<GardenModel::JsonGardenVisitor>	jsonGardenVisitor) : _jsonGardenVisitor(jsonGardenVisitor){
-
+#ifdef DEBUG_MY_CODE
+		Serial.println("JsonHandlerInterceptor CTOR");
+#endif
 	}
 
 	virtual ~JsonHandlerInterceptor(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ JsonHandlerInterceptor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("JsonHandlerInterceptor DTOR");
+#endif
+
 	}
 
 	bool preHandle(HttpServletRequest& , HttpServletResponse& , Controller&){
@@ -32,8 +37,6 @@ public:
 
 	void postHandle(HttpServletRequest& , HttpServletResponse& response, Controller& , GardenAcceptable& model) {
 		//convert the object into json string
-
-
 		String jsonModel = std::move(*std::static_pointer_cast<String>(model.accept(*_jsonGardenVisitor)));
 		response.content = jsonModel;
 		response.content_type = HttpServletResponse::CONTENT_TYPE_JSON;

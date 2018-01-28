@@ -14,7 +14,6 @@ CXX_SRCS :=
 C++_SRCS := 
 PDE_SRCS := 
 CC_SRCS := 
-AR_SRCS := 
 C_SRCS := 
 C_UPPER_DEPS := 
 PDE_DEPS := 
@@ -40,8 +39,8 @@ core/core \
 core/core/libb64 \
 core/core/spiffs \
 core/core/umm_malloc \
-libraries/ESP8266WebServer/src \
 libraries/ESP8266WiFi/src \
 libraries/ESP8266mDNS \
+libraries/MYESP8266WebServer/src \
 src/httpModule/model \
 

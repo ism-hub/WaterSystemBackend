@@ -23,7 +23,9 @@ public:
 
 	}
 	virtual ~HandlerInterceptor() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ HandlerInterceptor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("HandlerInterceptor DTOR");
+#endif
 	}
 
 	virtual bool preHandle(HttpServletRequest& request, HttpServletResponse& response, Controller& handler) = 0;

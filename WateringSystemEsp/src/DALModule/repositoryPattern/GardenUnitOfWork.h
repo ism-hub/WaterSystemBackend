@@ -11,6 +11,7 @@
 #include <DALModule/repositoryPattern/GardenRepository.h>
 #include <DALModule/repositoryPattern/PlantRepository.h>
 #include <DALModule/repositoryPattern/SprinklerRepository.h>
+#include <DALModule/repositoryPattern/ProgramRepository.h>
 #include <memory>
 
 namespace DAL {
@@ -20,6 +21,7 @@ private:
 	GardenRepository 		_gardenRepository;
 	PlantRepository 		_plantRepository;
 	SprinklerRepository 	_sprinklerRepository;
+	ProgramRepository 		_programRepository;
 public:
 	std::shared_ptr<GardenModelContext> 	_gardenContext;
 
@@ -28,6 +30,7 @@ public:
 		_gardenRepository(GardenRepository(*gardenContext)),
 		_plantRepository(PlantRepository(*gardenContext)),
 		_sprinklerRepository( SprinklerRepository(*gardenContext)),
+		_programRepository( ProgramRepository(*gardenContext)),
 		_gardenContext(gardenContext)
 		{
 	//	_gardenContext->init();
@@ -47,6 +50,10 @@ public:
 
 	SprinklerRepository& Sprinklers(){
 		return _sprinklerRepository;
+	}
+
+	ProgramRepository& Programs(){
+		return _programRepository;
 	}
 
 	bool complete(){

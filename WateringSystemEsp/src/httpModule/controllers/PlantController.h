@@ -19,8 +19,7 @@
 #include <httpModule/model/HttpServletResponse.h>
 
 
-using namespace std;
-using namespace GardenModel;
+
 
 namespace Http {
 
@@ -35,13 +34,17 @@ public:
 	}
 
 	virtual ~PlantController() {
+#ifdef DEBUG_MY_CODE
 		Serial.println("PlantController DTOR");
+#endif
+
 	}
 
 	bool canHandle(HttpServletRequest& req) {
-		Serial.println ("canHandle() in PlantController" );
 		if(req.httPMethod == HTTP_GET && req.urlTokens[0] == "plants"){
-			Serial.println ("	- can handle returned true" );
+#ifdef DEBUG_MY_CODE
+			Serial.println ("Plant controller can handle the request." );
+#endif
 			return true;
 		}
 		return false;
@@ -50,12 +53,14 @@ public:
 	std::shared_ptr<GardenAcceptable> handle(HttpServletRequest& req, HttpServletResponse&) {
 		std::shared_ptr<Plant> plant = nullptr;
 		if(canHandle(req) && req.urlTokens.size() == 2){///GET PLANTS_ID
-			Serial.println ("we handling the message" );
 			//get parameters
 			int id=atoi(req.urlTokens[1].c_str());
 			//call the correct function
 			plant = _unitOfWork->Plants().getById(id);
-			Serial.println ("done." );
+#ifdef DEBUG_MY_CODE
+			Serial.println ("Done handling the request.");
+#endif
+
 		}
 		return plant;
 	}

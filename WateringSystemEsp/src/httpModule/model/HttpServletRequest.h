@@ -9,7 +9,7 @@
 #define HTTP_HTTPSERVLETREQUEST_H_
 
 #include <WString.h>
-#include <HttpEnums.h>
+#include <httpModule/model/HttpEnums.h>
 #include <map>
 #include <vector>
 #include <stdio.h>
@@ -43,12 +43,18 @@ public:
 
 	HttpServletRequest(String requestBody, Http::HTTPMethod httPMethod, String url) :
 			requestBody(requestBody), httPMethod(httPMethod), url(url) {
-		Serial.println ( "in the HttpServletRequest CTOR" );
+#ifdef DEBUG_MY_CODE
+		Serial.println ( "HttpServletRequest CTOR" );
+#endif
+
 		addURLTokens(url);
 	}
 
 	virtual ~HttpServletRequest() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ HttpServletRequest DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("HttpServletRequest DTOR");
+#endif
+
 	}
 
 private:

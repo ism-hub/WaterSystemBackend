@@ -33,13 +33,18 @@ public:
 	std::map<const void*, std::pair<std::shared_ptr<ModuleBase>,StartFn >> typeModuleMap;
 
 	ModuleService(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("ModuleService CTOR");
+#endif
 		container = std::make_shared<cntnr::Container>();
 		container->registerInstance(container);
-		Serial.println("ModuleService CTOR");
 	}
 	virtual ~ModuleService(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("ModuleService DTOR");
+#endif
 		container->unregister<cntnr::Container>();
-		Serial.println("ModuleService DTOR");}
+		}
 
 	//creates module of the requested type and saves it to the map (registers it as one of the modules we need to call 'run/start' on)
 	template<class ModuleType>
@@ -52,12 +57,12 @@ public:
 
 
 		StartFn fn = [module, this]() {
+#ifdef DEBUG_MY_CODE
 			Serial.print("calling start member for module - ");
 			Serial.println(MF::compiletimeTypeid<ModuleType>());
+#endif
 			this->container->memberFunctionResolver(*module, &ModuleType::start);//	module->start();
 		};
-
-		Serial.print("saving the pair of module and its starter func");
 		typeModuleMap[MF::compiletimeTypeid<ModuleType>()] = std::pair<std::shared_ptr<ModuleBase>,StartFn >(module, fn);
 
 		return module;

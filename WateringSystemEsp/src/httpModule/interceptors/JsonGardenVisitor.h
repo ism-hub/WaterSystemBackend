@@ -27,11 +27,15 @@ public:
 	std::shared_ptr<DAL::JsonSerializationService>	_jsonSerializationService;
 
 	JsonGardenVisitor(std::shared_ptr<DAL::JsonSerializationService> jsonSerializationService) : _jsonSerializationService(jsonSerializationService){
-
+#ifdef DEBUG_MY_CODE
+		Serial.println("JsonGardenVisitor CTOR");
+#endif
 	}
 
 	virtual ~JsonGardenVisitor(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ JsonGardenVisitor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("JsonGardenVisitor DTOR");
+#endif
 	}
 
 	virtual std::shared_ptr<void> visit(Garden& garden) {
@@ -44,8 +48,12 @@ public:
 
 	virtual std::shared_ptr<void> visit(Sprinkler& sprinkler) {
 		return std::make_shared<String>(_jsonSerializationService->modelToJson(sprinkler));
+		//std::shared_ptr<void> sptr((char*)json,[=](void*){Serial.println("--------------My costume deleter");});
 	}
 
+	virtual std::shared_ptr<void> visit(SimpleProgram& program) {
+		return std::make_shared<String>(_jsonSerializationService->modelToJson(program));
+	}
 
 };
 

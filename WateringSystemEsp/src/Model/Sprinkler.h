@@ -13,19 +13,25 @@
 #include <GardenAcceptable.h>
 #include <GardenVisitor.h>
 
+#include <Model/ObserverDesignPattern/Property.hpp>
+
 
 namespace GardenModel {
 class Sprinkler : public GardenAcceptable {
 
 public:
-	enum Status { On, Off };
-	int id;
+	Model::Property<int> id;
+	enum Status { Off, On };
 	//String name;
-	Status status;
+	Model::Property<Status> status;//we need to make sure that when we pulling the data from the flash the status is Off
 
-	Sprinkler(){
+
+	Sprinkler() : id(1), status(Off){
+#ifdef DEBUG_MY_CODE
 		Serial.println("Sprinkler CTOR");
-		id = 1;
+#endif
+
+		//id = 1;
 		//name = "SprinklerNameee";
 		status = Off;
 	}
@@ -38,7 +44,10 @@ public:
 		}*/
 
 	virtual ~Sprinkler(){
+#ifdef DEBUG_MY_CODE
 		Serial.println("Sprinkler DTOR");
+#endif
+
 	}
 
 	int getId(){
@@ -62,6 +71,10 @@ public:
 		this->status = status;
 	}
 
+	bool operator==(Sprinkler const& rhs) const {
+		return id == rhs.id;
+	}
+
 	virtual std::shared_ptr<void> accept(GardenVisitor& visitor){
 		return visitor.visit(*this);
 	}
@@ -69,13 +82,17 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(id));
+		String status;
+		status = (this->status == Off ? "Off" : "On");
+		archive(CEREAL2_NVP(id), CEREAL2_NVP(status));
 	}
 
 	template<class Archive>
-		void load(Archive& archive) {
-			archive(id);
-		}
+	void load(Archive& archive) {
+		String status;
+		archive(id, status);
+		this->status = (status == "Off" ? Off : On);
+	}
 
 };
 }

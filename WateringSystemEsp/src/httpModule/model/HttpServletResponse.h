@@ -9,7 +9,7 @@
 #define HTTP_HTTPSERVLETRESPONSE_H_
 
 #include <WString.h>
-#include <HttpEnums.h>
+#include <httpModule/model/HttpEnums.h>
 #include <WString.h>
 
 #include <HardwareSerial.h>
@@ -29,12 +29,15 @@ public:
 			content_type(""), content(""), _httpCode(SC_NOT_IMPL) {
 
 		}
-	HttpServletResponse(String contentType, String content, HttpCode httpCode) :
+	HttpServletResponse(String contentType, const char* content, HttpCode httpCode) :
 		content_type(contentType), content(content), _httpCode(httpCode) {
 
 	}
 	virtual ~HttpServletResponse() {
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ HttpServletResponse DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("HttpServletResponse DTOR");
+#endif
+
 	}
 };
 

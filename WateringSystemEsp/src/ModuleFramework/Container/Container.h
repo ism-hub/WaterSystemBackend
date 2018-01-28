@@ -79,8 +79,16 @@ public:
 
 	std::map<const void*, std::vector<RegisteredType> > typeRegisteredTypeMap;
 
-	Container(){Serial.println("Container CTOR");}
-	virtual ~Container(){Serial.println("Container DTOR");}
+	Container(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("Container CTOR");
+#endif
+	}
+	virtual ~Container(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("Container DTOR");
+#endif
+	}
 
 	template <class T>
 	void registerInstance(std::shared_ptr<T> instance){
@@ -105,8 +113,10 @@ public:
 	void registerType(ctor_function<std::shared_ptr<Ret>, Deps ...> ctorFnc, bool isSingleton = true) {
 		const void* compileType = MF::compiletimeTypeid<Ret>();
 		RegisteredType::CreateFn create = [&, ctorFnc](RegisteredType& regType) {
+#ifdef DEBUG_MY_CODE
 			Serial.print( "container registerType createFnc ");
 			Serial.println( MF::compiletimeTypeid<Ret>());
+#endif
 			std::shared_ptr<Ret> obj = std::static_pointer_cast<Ret>(regType.obj);
 			if(regType.obj == nullptr) {
 				 obj = this->ctorFunctionResolver(ctorFnc);

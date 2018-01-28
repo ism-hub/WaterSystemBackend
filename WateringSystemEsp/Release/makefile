@@ -10,9 +10,9 @@ RM := del
 -include sources.mk
 -include subdir.mk
 -include src\httpModule\model\subdir.mk
+-include libraries\MYESP8266WebServer\src\subdir.mk
 -include libraries\ESP8266mDNS\subdir.mk
 -include libraries\ESP8266WiFi\src\subdir.mk
--include libraries\ESP8266WebServer\src\subdir.mk
 -include core\core\umm_malloc\subdir.mk
 -include core\core\spiffs\subdir.mk
 -include core\core\libb64\subdir.mk
@@ -72,25 +72,25 @@ all: WateringSystemEsp
 WateringSystemEsp: $(HEX)
 	@echo 'Building target: $@'
 	@echo 'Printing size:'
-	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-size" -A "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.elf"
+	"C:\Programming\sloeber\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-size" -A "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.elf"
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 C:\Programming\git\WateringSystem\WateringSystemEsp\Release\arduino.ar: $(AR_OBJ)
 	@echo 'Starting archiver'
-	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-ar" cru "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar"    C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar $(AR_OBJ)
+	"C:\Programming\sloeber\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-ar" cru "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar"    C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar $(AR_OBJ)
 	@echo 'Finished building: $@'
 	@echo ' '
 
 WateringSystemEsp.elf: $(LINK_OBJ) $(AR)
 	@echo 'Starting combiner'
-	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-gcc" -g -Wall -Wextra -Os -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/lib" "-LC:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/tools/sdk/ld" "-Teagle.flash.4m1m.ld" -Wl,--gc-sections -Wl,-wrap,system_restart_local -Wl,-wrap,register_chipv6_phy -o "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/WateringSystemEsp.elf" -Wl,--start-group  -Wl,-Map,MapFile.Map -Wl,--cref  $(LINK_OBJ) $(AR)  "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar" -lm -lgcc -lhal -lphy -lpp -lnet80211 -lwpa -lcrypto -lmain -lwps -laxtls -lsmartconfig -lmesh -lwpa2 -llwip_gcc -lstdc++ -Wl,--end-group "-LC:\Programming\git\WateringSystem\WateringSystemEsp/Release" C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar
+	"C:\Programming\sloeber\/arduinoPlugin/packages/esp8266/tools/xtensa-lx106-elf-gcc/1.20.0-26-gb404fb9-2/bin/xtensa-lx106-elf-gcc" -g -Wall -Wextra -Os -nostdlib -Wl,--no-check-sections -u call_user_start -u _printf_float -u _scanf_float -Wl,-static "-LC:\Programming\sloeber\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.4.0/tools/sdk/lib" "-LC:\Programming\sloeber\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.4.0/tools/sdk/ld" "-LC:\Programming\sloeber\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.4.0/tools/sdk/libc/xtensa-lx106-elf/lib" "-Teagle.flash.4m.ld" -Wl,--gc-sections -Wl,-wrap,system_restart_local -Wl,-wrap,spi_flash_read -o "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/WateringSystemEsp.elf" -Wl,--start-group  -Wl,-Map,MapFile.Map -Wl,--cref  $(LINK_OBJ)  "C:\Programming\git\WateringSystem\WateringSystemEsp/Release/arduino.ar" -lhal -lphy -lpp -lnet80211 -llwip2 -lwpa -lcrypto -lmain -lwps -laxtls -lespnow -lsmartconfig -lairkiss -lmesh -lwpa2 -lstdc++ -lm -lc -lgcc -Wl,--end-group "-LC:\Programming\git\WateringSystem\WateringSystemEsp/Release" C:/Programming/git/WateringSystem/WateringSystemEsp/Release/arduino.ar
 	@echo 'Finished building: $@'
 	@echo ' '
 
 WateringSystemEsp.hex: $(ELF)
 	@echo 'Create eeprom image'
-	"C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/tools/esptool/0.4.9/esptool.exe" -eo "C:\Programming\eclipse\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.3.0/bootloaders/eboot/eboot.elf" -bo "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.bin" -bm dio -bf 40 -bz 4M -bs .text -bp 4096 -ec -eo "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.elf" -bs .irom0.text -bs .text -bs .data -bs .rodata -bc -ec
+	"C:\Programming\sloeber\/arduinoPlugin/packages/esp8266/tools/esptool/0.4.12/esptool.exe" -eo "C:\Programming\sloeber\/arduinoPlugin/packages/esp8266/hardware/esp8266/2.4.0/bootloaders/eboot/eboot.elf" -bo "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.bin" -bm dio -bf 40 -bz 4M -bs .text -bp 4096 -ec -eo "C:/Programming/git/WateringSystem/WateringSystemEsp/Release/WateringSystemEsp.elf" -bs .irom0.text -bs .text -bs .data -bs .rodata -bc -ec
 	@echo 'Finished building: $@'
 	@echo ' '
 

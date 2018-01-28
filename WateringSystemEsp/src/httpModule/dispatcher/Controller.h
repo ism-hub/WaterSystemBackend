@@ -21,7 +21,10 @@ public:
 
 	}
 	virtual ~Controller(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ Controller DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println(" Controller DTOR");
+#endif
+
 	}
 
 	virtual bool canHandle(HttpServletRequest& req)=0;

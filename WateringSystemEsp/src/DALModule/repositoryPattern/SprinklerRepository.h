@@ -27,8 +27,8 @@ public:
 			return {};//TODO: implement this.
 		}
 
-		std::vector<weak_ptr<Sprinkler>> getAll() {
-			return std::vector<weak_ptr<Sprinkler>>(); //TODO: implement this
+		std::vector<std::weak_ptr<Sprinkler>> getAll() {
+			return std::vector<std::weak_ptr<Sprinkler>>(); //TODO: implement this
 		}
 
 		bool add(Sprinkler&& entity){

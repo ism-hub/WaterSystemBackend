@@ -28,8 +28,8 @@ public:
 		return {};//TODO: implement this.
 	}
 
-	std::vector<weak_ptr<Garden>> getAll() {
-		return std::vector<weak_ptr<Garden>>(); //TODO: implement this
+	std::vector<std::weak_ptr<Garden>> getAll() {
+		return std::vector<std::weak_ptr<Garden>>(); //TODO: implement this
 	}
 
 	bool add(Garden&& entity){

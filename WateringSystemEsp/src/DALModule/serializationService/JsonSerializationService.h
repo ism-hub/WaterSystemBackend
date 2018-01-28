@@ -50,17 +50,21 @@ public:
 		_outputArchive->operator ()(cereal2::make_nvp(MF::getTemplateName<T>(), model));
 		_outputArchive->finalize();// instead of _outputArchive->~JSONOutputArchive(); for reusing capabilities
 
+#ifdef DEBUG_MY_CODE
 		Serial.println("The json String from modelToJson(T& model):");
 		Serial.println(_stringBuffer.GetString());
-
+#endif
 		return _stringBuffer.GetString();
 	}
 
 	//pre: already inserted the string we want to _stringBuffer
 	template <class T>
 	std::shared_ptr<T> jsonToModel(String json){
+
+#ifdef DEBUG_MY_CODE
 		Serial.println("The json String we will jsonToModel:");
 		Serial.println(json);
+#endif
 
 		_inputArchive->reset(json.c_str());//sets new sink
 		std::shared_ptr<T> model = std::make_shared<T>();

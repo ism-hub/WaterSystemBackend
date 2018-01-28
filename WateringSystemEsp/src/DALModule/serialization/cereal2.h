@@ -15,7 +15,7 @@
 
 
 
-using namespace std;
+
 namespace cereal2 {
 
 

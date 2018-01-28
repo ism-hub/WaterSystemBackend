@@ -52,7 +52,6 @@ public:
 
 
 	bool init(){//loads the data from flash to _garden, (if you already loaded, disposed the old copy and load a fresh one)
-		Serial.println("GardenModelContext init();");
 		return loadGardenIntoMemory();
 	}
 
@@ -60,14 +59,14 @@ public:
 		if (_garden == nullptr)
 			return false;
 
-		String jsonStringOfOurGarden = _jsonSerializationService->modelToJson(*_garden);
+		const String jsonStringOfOurGarden = _jsonSerializationService->modelToJson(*_garden);
+
+#ifdef DEBUG_MY_CODE
 		Serial.print("The json strin of the garden we saving to memory: ");
 		Serial.println(jsonStringOfOurGarden);
-
+#endif
 		//save the string into flash
 		bool result = SPIFFS.begin();
-		Serial.println("SPIFFS opened: " + result);
-
 		{
 			File f = SPIFFS.open("/f.txt", "w");
 			//f.print(jsonSBuffer.GetString());
@@ -75,7 +74,6 @@ public:
 			f.flush();
 			f.close();
 		}
-		Serial.println("SPIFFS closing: ");
 		SPIFFS.end();
 
 		return true;
@@ -85,15 +83,24 @@ private:
 	bool loadGardenIntoMemory() { //from flash to object
 
 		//load our json string from the flash
+#ifdef DEBUG_MY_CODE
+		Serial.println("Loading the garden from Flash to memory");
+#endif
+
 		String jsonGarden;
 
 		{
 			bool result = SPIFFS.begin();
-			Serial.println("SPIFFS opened: " + result);
+			if(!result){
+				Serial.println("____EROR____ in loadGardenIntoMemory SPIFFS not opened");
+				return false;
+			}
+
 
 			File f = SPIFFS.open("/f.txt", "r");
 
 			if (!f) { //File doesn't exist yet.
+				Serial.println("file doesn't exists");
 				_garden = std::make_shared<Garden>(); //making empty garden
 				f.close();
 				SPIFFS.end();
@@ -104,16 +111,18 @@ private:
 				f.close();
 			}
 
-			Serial.println("SPIFFS closing");
 			SPIFFS.end();
 		}
 
-		if (_garden != nullptr)
+		/*Serial.println("wtf?!?!?!");
+		if (_garden != nullptr){
+			Serial.println("wtf?!?!?!222");
 			_garden = nullptr;
+			Serial.println("kms");
+		}*/
 
-		Serial.println("Reading the garden from the flash (as json) and realizing it ");
+
 		_garden = _jsonSerializationService->jsonToModel<GardenModel::Garden>(jsonGarden);
-
 		return true;
 	}
 };

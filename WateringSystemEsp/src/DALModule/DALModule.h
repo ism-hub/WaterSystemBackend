@@ -26,7 +26,6 @@ std::shared_ptr<DAL::GardenUnitOfWork> GardenUnitOfWorkCreator(std::shared_ptr<D
 
 
 std::shared_ptr<DAL::JsonSerializationService> JsonSerializationServiceCreator( ){
-
 	//std::shared_ptr<rapidjson::StringBuffer> jsonSBuffer = std::make_shared<rapidjson::StringBuffer>();
 	//std::shared_ptr<rapidjson::Writer<rapidjson::StringBuffer>> writer = std::make_shared<rapidjson::Writer<rapidjson::StringBuffer>>(jsonSBuffer);
 	std::shared_ptr<cereal2::JSONOutputArchive> outputArchive =std::make_shared<cereal2::JSONOutputArchive>();
@@ -39,13 +38,21 @@ std::shared_ptr<DAL::JsonSerializationService> JsonSerializationServiceCreator( 
 class DALModule : public MF::ModuleBase  {
 public:
 	DALModule(){
-		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-		Serial.println("DALModule CTOR"); }
-	virtual ~DALModule(){Serial.println("DALModule DTOR");}
+#ifdef DEBUG_MY_CODE
+		Serial.println("DALModule CTOR");
+#endif
+		 }
+	virtual ~DALModule(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("DALModule DTOR");
+#endif
+	}
 
 	void start(std::shared_ptr<cntnr::Container> container){
+#ifdef DEBUG_MY_CODE
 		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 		Serial.println("DALModule start");
+#endif
 		container->registerType<DAL::GardenUnitOfWork>(&GardenUnitOfWorkCreator, true);//always gives the same unit of work (meaning all the program share the same context model)
 		container->registerType<DAL::JsonSerializationService>(&JsonSerializationServiceCreator,true);
 	}

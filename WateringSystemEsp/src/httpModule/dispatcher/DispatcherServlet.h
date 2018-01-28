@@ -13,7 +13,6 @@
 #include <httpModule/controllers/PlantController.h>
 #include <httpModule/controllers/PlantController.h>
 #include <httpModule/interceptors/JsonHandlerInterceptor.h>
-#include <httpModule/WateringSystemApiParser.h>
 #include <httpModule/model/HttpServletRequest.h>
 #include <httpModule/model/HttpServletResponse.h>
 #include <vector>
@@ -32,11 +31,16 @@ public:
 	vector<std::shared_ptr<HandlerExecutionChain>> _handlerExecutionChains;
 
 	DispatcherServlet(vector<std::shared_ptr<HandlerExecutionChain>> exeChains = {}) : _handlerExecutionChains(exeChains) {
+#ifdef DEBUG_MY_CODE
 		Serial.println ("DispatcherServlet CTOR ");
+#endif
+
 	}
 
 	virtual ~DispatcherServlet() {
+#ifdef DEBUG_MY_CODE
 		Serial.println("DispatcherServlet DTOR");
+#endif
 	}
 
 	std::shared_ptr<HandlerExecutionChain> getHandlerExecutionChain(HttpServletRequest& request) {
@@ -48,28 +52,23 @@ public:
 	}
 
 	std::shared_ptr<HttpServletResponse> dispatch(HttpServletRequest& request) {
-		Serial.println ("Inside dispatch(HttpServletRequest& request)" );
+#ifdef DEBUG_MY_CODE
 		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-
-		Serial.println("Finding the execution chain for the request");
+		Serial.println("Dispatching the request");
+#endif
 		std::shared_ptr<HandlerExecutionChain> executionChain = getHandlerExecutionChain(request);
-
-		Serial.println ("chcking if executionChain is not null (if we found handler for the url)" );
 		if(executionChain == nullptr) {
-			Serial.println ("execution chain is null, sending default response");
+#ifdef DEBUG_MY_CODE
+			Serial.println("We didnt find any handler for the request, returning the default response.");
+#endif
 			std::shared_ptr<HttpServletResponse> resp = std::make_shared<HttpServletResponse>();
 			resp->_httpCode = SC_NOT_FOUND;
 			return resp;
 		}
-
+#ifdef DEBUG_MY_CODE
 		Serial.println ("we found an handler, we can execute it" );
+#endif
 		std::shared_ptr<HttpServletResponse> response = executionChain->execute(request);
-
-		Serial.println ( "Our response is:" );
-		Serial.println ( "HttpCode:" + response->_httpCode);
-		Serial.println ( "Content:" + response->content);
-		Serial.println ( "content_type:" + response->content_type);
-		//finished
 		return response;
 	}
 

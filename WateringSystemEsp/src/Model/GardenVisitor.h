@@ -15,10 +15,15 @@ namespace GardenModel {
 class GardenVisitor {
 public:
 	GardenVisitor(){
+#ifdef DEBUG_MY_CODE
+		Serial.println("GardenVisitor CTOR");
+#endif
 
 	}
 	virtual ~GardenVisitor(){
-		Serial.println("$#$##$#$#$#$##$$##$#$#$#$#$#$#$#$ GardenVisitor DESTRACTOR has been called ##$#$#$#$#$$##$#$#$#$$##$#$#$#$");
+#ifdef DEBUG_MY_CODE
+		Serial.println("GardenVisitor DTOR");
+#endif
 	}
 
 	virtual std::shared_ptr<void> visit(class Garden& garden) = 0;
@@ -26,6 +31,8 @@ public:
 	virtual std::shared_ptr<void> visit(class Plant& plant) = 0;
 
 	virtual std::shared_ptr<void> visit(class Sprinkler& sprinkler) = 0;
+
+	virtual std::shared_ptr<void> visit(class SimpleProgram& program) = 0;
 };
 
 } /* namespace GardenModel */
