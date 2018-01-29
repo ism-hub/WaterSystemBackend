@@ -20,6 +20,7 @@
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.671015522" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.1384097894" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/MYESP8266WebServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
@@ -27,8 +28,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/Model}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Programming\cppLibs\rapidjson\include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Programming\cppLibs\DateChrono\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.176035448" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
@@ -38,8 +37,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 								</option>
@@ -50,8 +47,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 								</option>
