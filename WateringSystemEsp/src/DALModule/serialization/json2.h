@@ -135,7 +135,7 @@ private:
 		WString lastString;
 		std::vector<bool> isInsideArrayHistory = {false};
 		boolean isLastFuncCalledIsNullFnc = false;
-
+		WString keyStr;
 
 
 
@@ -196,10 +196,11 @@ private:
 #endif
 	    	isLastFuncCalledIsNullFnc = false;
 	    	return true; }
-	    bool Key(const char* , SizeType , bool ) {
+	    bool Key(const char* keyStr, SizeType , bool ) {
 #ifdef DEBUG_MY_CODE
 	    	Serial.println(" called MyHandler Key");
 #endif
+	    	this->keyStr = keyStr;
 	    	isLastFuncCalledIsNullFnc = false;
 	        return true;
 	    }
@@ -352,62 +353,184 @@ public:
 	//moves the handler into the node e.g.- {"a":{"x":3}} will be {"a":{"x":3}}
 	//where our pointer at-                  ^                          ^
 	void enterNode(){
+		if(loadSameValueAgain){
+			Serial.println("In enterNode() but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
 		if(handler.isInsideArrayHistory.back())//arrays objects dont have keys
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);// the start object ('{')
 		else{
-			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the key (a in our example)
+			skipKey();//the key (a in our example)
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);// the start object ('{')
 		}
+
+		char peekAfter = strStream.Peek();
+		logParsings("enterNode() suppose to parse '{'", peekb4, peekAfter );
+
+		loadSameValueAgain = false;
 	}
 
 	void exitNode(){
+		if(loadSameValueAgain){
+			Serial.println("In exitNode() but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
 		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);// the end object ('}')
+
+		char peekAfter = strStream.Peek();
+		logParsings("exitNode() suppose to parse '}'", peekb4, peekAfter );
+
+		loadSameValueAgain = false;
 	}
 
 	void skipKey(){
+		if(loadSameValueAgain){
+			Serial.println("In skipKey() but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
 		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the key
+
+		char peekAfter = strStream.Peek();
+
+		logParsings("skipKey()", handler.keyStr ,peekb4, peekAfter );
+
+		loadSameValueAgain = false;
 	}
 
 	void skipArrayStart(){
+		if(loadSameValueAgain){
+			Serial.println("In skipArrayStart() but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
 		if(handler.isInsideArrayHistory.back())//arrays objects dont have keys, maybe we array inside an array
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the '['
 		else{
-			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the key (name of the array)
+			skipKey();//the key (name of the array)
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the '['
 		}
+
+		char peekAfter = strStream.Peek();
+
+		logParsings("skipArrayStart() the pick suppose to be '['", peekb4, peekAfter );
+
+		loadSameValueAgain = false;
 	}
 
 	void skipArrayEnd(){
-		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the ']'
+		if(loadSameValueAgain){
+			Serial.println("In skipArrayStart() but loadSameValueAgain is true so skipping");
+			return;
 		}
 
+		char peekb4 = strStream.Peek();
+		reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);//the ']'
+		char peekAfter = strStream.Peek();
+		logParsings("skipArrayEnd() (need to see ']')", peekb4, peekAfter );
+
+		loadSameValueAgain = false;
+	}
+
+	template<class T>
+	void logParsings(const char* callerFuncName, T val, char peekb4, char peekAfter){
+		Serial.print(callerFuncName);
+		Serial.print(", loadSameValueAgain: ");
+		Serial.println(loadSameValueAgain);
+		Serial.print("peek (before read): ");
+		Serial.println(peekb4);
+		Serial.print("Value: ");
+		Serial.println(val);
+		Serial.print("peek (after read): ");
+		Serial.println(peekAfter);
+	}
+
+	void logParsings(const char* callerFuncName, char peekb4, char peekAfter){
+		Serial.print(callerFuncName);
+		Serial.print(", loadSameValueAgain: ");
+		Serial.println(loadSameValueAgain);
+		Serial.print("peek (before read): ");
+		Serial.println(peekb4);
+		Serial.print("peek (after read): ");
+		Serial.println(peekAfter);
+	}
+
 	void loadValue(int& t){
+		if(loadSameValueAgain){
+			Serial.println("In loadValue(int& t) but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
 		if(!loadSameValueAgain)
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
 		t = handler.lastInt;
 		loadSameValueAgain= false;
+
+		char peekAfter = strStream.Peek();
+		logParsings("loadValue(int& t)", t, peekb4, peekAfter);
+
+		loadSameValueAgain = false;
 	}
 
 	void loadValue(unsigned int& t){
-			if(!loadSameValueAgain)
-				reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
-			t = handler.lastUInt;
-			loadSameValueAgain = false;
+		if(loadSameValueAgain){
+			Serial.println("In loadValue(int& t) but loadSameValueAgain is true so skipping");
+			return;
 		}
 
+		char peekb4 = strStream.Peek();
+
+		if(!loadSameValueAgain)
+			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next int
+		t = handler.lastUInt;
+		loadSameValueAgain = false;
+
+		char peekAfter = strStream.Peek();
+		logParsings("loadValue(unsigned int& t)", t, peekb4, peekAfter);
+	}
+
 	void loadValue(WString& t){
-				if(!loadSameValueAgain)
-					reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next String
-				t = handler.lastString;
-				loadSameValueAgain = false;
-			}
+		if(loadSameValueAgain){
+			Serial.println("In loadValue(int& t) but loadSameValueAgain is true so skipping");
+			return;
+		}
+
+		char peekb4 = strStream.Peek();
+
+		if(!loadSameValueAgain)
+			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler); //calls the next String
+		t = handler.lastString;
+		loadSameValueAgain = false;
+
+		char peekAfter = strStream.Peek();
+		logParsings("loadValue(WString& t)", t, peekb4, peekAfter);
+	}
 
 	void loadValue(std::nullptr_t){// calling it when we want to load and dont know what we are loading, usualy goes with loadSameValueAgain = true
+
+		char peekb4 = strStream.Peek();
+
 		if(!loadSameValueAgain)
 			reader.IterativeParseNext < kParseDefaultFlags > (strStream, handler);
-		Serial.println("loadValue(std::nullptr_t)");
+
+		char peekAfter = strStream.Peek();
+		logParsings("loadValue(std::nullptr_t)", "???", peekb4, peekAfter);
+
 		loadSameValueAgain = false;
 	}
+
 
 
 	template<class T,class A>
@@ -948,6 +1071,7 @@ void load( JSONInputArchive & ar, NameValuePair<T> & t )
       }
 
       //we just ignore the pointer part of the shared pointer (we just pass on what they are pointing on)
+      //!!!!!!!!!! will break if it pointer to a null pointer: it will return a null pointer (instead of a pointer to a null pointer)
       template<class T> inline
       void load(JSONInputArchive & ar, std::shared_ptr<T> & sharedPointer) {
     	  ar.loadValue(nullptr);
