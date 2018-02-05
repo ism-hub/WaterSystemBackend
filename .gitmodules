@@ -1,0 +1,3 @@
+[submodule "WateringSystemEsp/libraries/ArduinoJson"]
+	path = WateringSystemEsp/libraries/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
