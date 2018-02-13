@@ -8,7 +8,7 @@
 #ifndef MODEL_GARDEN_H_
 #define MODEL_GARDEN_H_
 
-#include <DALModule/serialization/cereal2.h>
+
 #include <vector>
 #include <Plant.h>
 #include <GardenAcceptable.h>
@@ -57,10 +57,10 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(name));
-		archive(cereal2::make_nvp("plants",_plants.getInnerVector()));
-		archive(cereal2::make_nvp("sprinklers", _sprinklers.getInnerVector()));
-		archive(cereal2::make_nvp("programs",_programs.getInnerVector()));
+		archive.addProperties(DAL::make_nvp(name));
+		archive(DAL::make_nvp("plants",_plants.getInnerVector()));
+		archive(DAL::make_nvp("sprinklers", _sprinklers.getInnerVector()));
+		archive(DAL::make_nvp("programs",_programs.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Plant>(),_plants.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Sprinkler>(), _sprinklers.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<SimpleProgram>(),_programs.getInnerVector()));

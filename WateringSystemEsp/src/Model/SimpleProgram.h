@@ -8,7 +8,7 @@
 #ifndef MODEL_SIMPLEPROGRAM_H_
 #define MODEL_SIMPLEPROGRAM_H_
 
-#include <Model/TimePattern.h>
+#include <TimePattern.h>
 #include <GardenAcceptable.h>
 
 namespace GardenModel {
@@ -36,8 +36,8 @@ public:
 	}
 
 	template <class Archive>
-	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(id), CEREAL2_NVP(name), CEREAL2_NVP(timePattern));
+	void save(Archive& archive) {
+		archive.addProperties(MACRO_NVP(id), MACRO_NVP(name), MACRO_NVP(timePattern));
 	}
 
 	template<class Archive>

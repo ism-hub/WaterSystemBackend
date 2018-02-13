@@ -8,12 +8,13 @@
 #ifndef SPRINKLER_H_
 #define SPRINKLER_H_
 
-#include <DALModule/serialization/cereal2.h>
+//#include <DALModule/serialization/cereal2.h>
 #include <WString.h>
 #include <GardenAcceptable.h>
 #include <GardenVisitor.h>
+#include <serializationService/JsonSerializationService2.h>
 
-#include <Model/ObserverDesignPattern/Property.hpp>
+#include <ObserverDesignPattern/Property.hpp>
 
 
 namespace GardenModel {
@@ -84,15 +85,15 @@ public:
 	void save(Archive& archive) const{
 		String status;
 		status = (this->status == Off ? "Off" : "On");
-		archive(CEREAL2_NVP(id), CEREAL2_NVP(status));
+		archive.addProperties(DAL::make_nvp("id", id), DAL::make_nvp("status", status));
 	}
 
-	template<class Archive>
+	/*template<class Archive>
 	void load(Archive& archive) {
 		String status;
 		archive(id, status);
 		this->status = (status == "Off" ? Off : On);
-	}
+	}*/
 
 };
 }

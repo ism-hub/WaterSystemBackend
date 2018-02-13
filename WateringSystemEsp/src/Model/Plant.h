@@ -8,7 +8,7 @@
 #ifndef MODEL_PLANT_H_
 #define MODEL_PLANT_H_
 
-#include <DALModule/serialization/cereal2.h>
+//#include <DALModule/serialization/cereal2.h>
 #include <Sprinkler.h>
 #include <GardenAcceptable.h>
 #include <Model/SimpleProgram.h>

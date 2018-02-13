@@ -5,7 +5,7 @@
 #ifndef PROPERTY_HPP
 #define PROPERTY_HPP
 
-#include <Model/ObserverDesignPattern/Signal.hpp>
+#include <ObserverDesignPattern/Signal.hpp>
 #include <ObserverDesignPattern/NotifyChangeSignalable.h>
 
 //#include <iostream>

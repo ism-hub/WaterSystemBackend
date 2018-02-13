@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <serializationService/JsonSerializationService2.h>
 
 namespace GardenModel {
 
@@ -59,8 +60,8 @@ public:
 
 
 	template <class Archive>
-	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(id), CEREAL2_NVP(hour), CEREAL2_NVP(min));
+	void save(Archive& archive) const {
+		archive.addProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min));
 	}
 
 	template<class Archive>
@@ -126,8 +127,8 @@ public:
 	}
 
 	template <class Archive>
-	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(id), CEREAL2_NVP(hours));
+	void save(Archive& archive) const {
+		archive.addProperties(MACRO_NVP(id), MACRO_NVP(hours));
 	}
 
 	template<class Archive>
@@ -181,11 +182,11 @@ public:
 	}
 
 	template <class Archive>
-	void save(Archive& archive) const{
+	void save(Archive& archive) const {
 #ifdef DEBUG_MY_CODE
 		Serial.println("before TimePattern save");
 #endif
-		archive(CEREAL2_NVP(days));
+		archive.addProperties(MACRO_NVP(days));
 #ifdef DEBUG_MY_CODE
 		Serial.println("after TimePattern save");
 #endif

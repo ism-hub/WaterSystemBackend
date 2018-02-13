@@ -8,7 +8,7 @@
 #ifndef MODEL_OBSERVERDESIGNPATTERN_NOTIFYCHANGESIGNALABLE_H_
 #define MODEL_OBSERVERDESIGNPATTERN_NOTIFYCHANGESIGNALABLE_H_
 
-#include <Model/ObserverDesignPattern/Signal.hpp>
+#include <ObserverDesignPattern/Signal.hpp>
 
 namespace Model {
 
