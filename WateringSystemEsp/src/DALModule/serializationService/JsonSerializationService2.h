@@ -21,29 +21,20 @@ namespace DAL {
 //-------------------------------------------- detail input archive
 enum class sfinae {};
 
-template<typename, typename T>
-struct has_load_method {
-    static_assert(
-        std::integral_constant<T, false>::value,
-        "has_load_method failed : Second template parameter needs to be of function type.");
+template <typename T>
+struct has_load_method
+{
+    struct dummy { /* something */ };
+
+    template <typename C, typename P>
+    static auto test(P * p) -> decltype(std::declval<C>().load(*p), std::true_type());
+
+    template <typename, typename>
+    static std::false_type test(...);
+
+    typedef decltype(test<T, dummy>(nullptr)) type;
+    static const bool value = std::is_same<std::true_type, decltype(test<T, dummy>(nullptr))>::value;
 };
-
-template<typename C, typename Ret, typename... Args>
-struct has_load_method<C, Ret(Args...)> {
-private:
-    template<typename T>
-    static constexpr auto check(T*)-> typename std::is_same< decltype( std::declval<T>().load( std::declval<Args>()... ) ), Ret    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-																																	>::type;  // attempt to call it and see if the return type is correct
-
-    template<typename>
-    static constexpr std::false_type check(...);
-
-    typedef decltype(check<C>(0)) type;
-
-public:
-    static constexpr bool value = type::value;
-};
-
 //--------------------------------------------
 
 //-------------------------------------------- detail output archive
@@ -153,6 +144,12 @@ public:
 			return false;
 		return _jsonObj->containsKey(key);
 	}
+
+	int getKeyValue(){//TODO: implement properly
+		if(_isJsonObj)
+			return (*_jsonObj)[*nextName];
+		return -1;
+	}
 };
 
 class OutputArchiveBase {};
@@ -167,13 +164,6 @@ public:
 	SerializationService2(MappingFile mappingFile):
 		_mappingFile(mappingFile){}
 	virtual ~SerializationService2(){}
-
-	//! Serializes all passed in data
-	/*! This is the primary interface for serializing data with an archive */
-	//template<class ... Types>
-	//void operator()(Types && ... args) {
-	//	addProperties(std::forward<Types>( args )...);//add the properties of the object (the current one we are filling his json in)
-	//}
 
 	//catching all the NameValuePairs. we save its name as the nextName for the json context
 	//if we handle a NameValuePair it means that we inside an object and we want to add to it a property named head.name
@@ -275,8 +265,64 @@ public:
 
 		char buffer[400];
 		root.printTo(buffer, sizeof(buffer));
+
+		//cleanup
+		contexList.clear();
+		jsonBuffer.clear();
+
 		return String(buffer);
 	}
+
+	//loading only the keys that are in the json if no key is present we just ignore the property, even if it has nameValuePair
+	template<typename ModelType>
+	void Json2Model(ModelType& model, const String& json){//we are taking references and fill them
+		JsonObject& root = jsonBuffer.parseObject(json);
+		contexList.push_back(&root);
+
+		//starting the serialization of model by serializing his properties
+		_mappingFile.Json2Model(model, root, *this);//checking to see if the user want to override our default implementation (he can add keys to the banned keys list of the contex and we will ignore them when loading)
+
+		//calling to start to serialize the model properties (adding the keys our user didn't add)
+		model.load(*this);
+
+		//cleanup
+		contexList.clear();
+		jsonBuffer.clear();
+	}
+
+	//! Unwinds to process all data
+	template <class T, class ... Other> inline
+	void loadProperties(T&& head, Other&& ... tail )
+	{
+		loadProperty(head );//I think head is lvalue now (usually T&& is rvalue when we get NameValuePair)
+		loadProperties( tail ... );
+	}
+	void loadProperties(){}
+
+	template<class T>
+	void loadProperty(NameValuePair<T>& head){
+		auto& contex = contexList.back();
+		contex.nextName = &head.name;//save the name
+
+		const std::vector<String>& bannedKeys = contex.listOfNotAllowedKeys;
+		if(std::find(bannedKeys.begin(), bannedKeys.end(), head.name) != bannedKeys.end())//if we already have this key we dont handle this object
+			return;
+		if(!contex.containsKey(head.name))
+			return;
+
+		loadProperty(head.value);//continue
+	}
+
+	//int/string/double/bool properties; we not nameValuePair so we are inside an array
+	template<class T, typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || std::is_same<typename std::remove_reference<T>::type, String>::value   , sfinae>::type = {}>
+	void loadProperty(T& t) {
+		auto& contex = contexList.back();
+		t = contex.getKeyValue();
+		//adding this property to the current contex
+		if(!contex.add(t))
+			std::cout << "ERROR: failed to set a key in enable_if<std::is_arithmetic" << std::endl;
+	}
+
 
 };
 
@@ -285,6 +331,9 @@ class DoNothingMappingFile {
 public:
 	template<typename ModelType, typename JsonObjType, typename ArchiveType>
 	void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {}
+
+	template<typename ... Args>
+	void Json2Model(Args& ...) {}
 };
 //------------------------------------------- temporary for development
 class A {
@@ -315,8 +364,12 @@ public:
 
 	template<class Archive>
 	void save( Archive& archive) const{
-		archive.addProperties(DAL::make_nvp("a", a), DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr));
+		archive.addProperties(DAL::make_nvp("a", a)/*, DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr)*/);
+	}
 
+	template<class Archive>
+	void load(Archive& archive){
+		archive.loadProperties(DAL::make_nvp("a", a));
 	}
 };
 
@@ -335,15 +388,16 @@ public:
 };
 
 void run(){
-	/*B b;
+	B b;
 	A a;
 
 
 	DAL::SerializationService2<DAL::DoNothingMappingFile> *serSevice = new DAL::SerializationService2<DAL::DoNothingMappingFile>(DAL::DoNothingMappingFile());
 	std::cout << "the json string is: " << std::endl;
-	String generatedJson = serSevice->Model2Json(b);
-	std::cout << generatedJson << std::endl;*/
-
+	String generatedJson = serSevice->Model2Json(a);
+	std::cout << generatedJson << std::endl;
+	serSevice->Json2Model(a, "{\"a\":1111}");
+	std::cout << a.a << std::endl;
 }
 
 //------------------------------------------------
