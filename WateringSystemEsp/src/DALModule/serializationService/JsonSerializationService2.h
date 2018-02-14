@@ -13,6 +13,7 @@
 #include <ArduinoJson.h>
 #include <WString.h>
 #include <ObserverDesignPattern/Property.hpp>
+#include <algorithm>
 //#include <Sprinkler.h>
 
 namespace DAL {
@@ -106,13 +107,7 @@ NameValuePair<T> make_nvp(String name, T&& value){
 #define MACRO_NVP(T) ::DAL::make_nvp(#T, T)
 //--------------------------------------------
 
-class DoNothingMappingFile {
-public:
-	template<typename ModelType, typename JsonObjType>
-	void Model2Json(const ModelType&, JsonObjType&) {
 
-	}
-};
 
 //giving the same interface to jsonArray/Object for more readable code
 class JsonContex {
@@ -120,7 +115,8 @@ class JsonContex {
 public:
 	JsonObject* _jsonObj;
 	JsonArray* _jsonArr;
-	const String* nextName ;
+	const String* nextName ;//next Key
+	std::vector<String> listOfNotAllowedKeys;// list of names that we not aloowed as keys in this context,
 
 	JsonContex(JsonObject* jsonObj): _isJsonObj(true), _jsonObj(jsonObj), _jsonArr(NULL), nextName(NULL) {}
 	JsonContex(JsonArray* jsonArr): _isJsonObj(false), _jsonObj(NULL), _jsonArr(jsonArr), nextName(NULL) {}
@@ -151,6 +147,12 @@ public:
 		return _jsonArr->add(t);
 	}
 
+	template<typename TString>
+	bool containsKey(const TString& key){
+		if(!_isJsonObj)
+			return false;
+		return _jsonObj->containsKey(key);
+	}
 };
 
 class OutputArchiveBase {};
@@ -174,9 +176,17 @@ public:
 	//}
 
 	//catching all the NameValuePairs. we save its name as the nextName for the json context
+	//if we handle a NameValuePair it means that we inside an object and we want to add to it a property named head.name
+	//if a property names like that already exists we dont cont (the mapping file already costume added it)
 	template<class T>
 	void addProperty(const NameValuePair<T>& head){
-		contexList.back().nextName = &head.name;//save the name
+		auto& contex = contexList.back();
+		contex.nextName = &head.name;//save the name
+
+		const std::vector<String>& bannedKeys = contex.listOfNotAllowedKeys;
+		if(contex.containsKey(head.name) || std::find(bannedKeys.begin(), bannedKeys.end(), head.name) != bannedKeys.end())//if we already have this key we dont handle this object
+			return;
+
 		addProperty(head.value);//continue
 	}
 
@@ -187,9 +197,9 @@ public:
 		auto& contex = contexList.back();
 
 		//adding this property to the current contex
-		JsonContex propContex = contex.createNestedObject();//add here a destructor that pops the element from the list by itself?
-		contexList.push_back(propContex);
-		_mappingFile.Model2Json(t, propContex);
+		//JsonContex propContex = contex.createNestedObject();//add here a destructor that pops the element from the list by itself?
+		contexList.push_back(contex.createNestedObject());
+		_mappingFile.Model2Json(t, contexList.back(), *this);
 		t.save(*this);//adding this property properties (basically like calling 'addProperties' with all the properties the user want)
 		contexList.pop_back();//must to remember to pot the context after we done with it (do some auto pop context thing on scope destruction..)
 	}
@@ -230,6 +240,17 @@ public:
 		addProperty(prop.get());
 	}
 
+	//handle shared pointer type (invisible)
+	template <typename T>
+	void addProperty(const std::shared_ptr<T>& sharedPtr) {
+		if(sharedPtr != nullptr)
+			addProperty(*sharedPtr);
+		else{// if we null ptr we need to add null property
+			if(!contexList.back().add((char*)0))
+				std::cout << "ERROR: failed to set null value" << std::endl;
+		}
+	}
+
 	//! Unwinds to process all data
 	template <class T, class ... Other> inline
 	void addProperties(const T& head, const Other& ... tail )
@@ -247,7 +268,7 @@ public:
 		contexList.push_back(&root);
 
 		//starting the serialization of model by serializing his properties
-		_mappingFile.Model2Json(model, root);//checking to see if the user want to override our default implementation (buy mannualy adding some keys)
+		_mappingFile.Model2Json(model, root, *this);//checking to see if the user want to override our default implementation (buy mannualy adding some keys)
 
 		//calling to start to serialize the model properties (adding the keys our user didn't add)
 		model.save(*this);
@@ -259,6 +280,12 @@ public:
 
 };
 
+//------------------------------------------- MappingFiles
+class DoNothingMappingFile {
+public:
+	template<typename ModelType, typename JsonObjType, typename ArchiveType>
+	void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {}
+};
 //------------------------------------------- temporary for development
 class A {
 public:
@@ -288,8 +315,8 @@ public:
 
 	template<class Archive>
 	void save( Archive& archive) const{
-		//archive.addProperties(DAL::make_nvp("a", a), DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr));
-		archive.addProperties(DAL::make_nvp("a", a));
+		archive.addProperties(DAL::make_nvp("a", a), DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr));
+
 	}
 };
 
@@ -303,20 +330,19 @@ public:
 
 	template<class Archive>
 	void save( Archive& archive) const {
-		//archive.addProperties(DAL::make_nvp("ca", ca), DAL::make_nvp("b", b), DAL::make_nvp("brr", brr), DAL::make_nvp("acrr", acrr));
-		archive.addProperties(DAL::make_nvp("b", b));
+		archive.addProperties(DAL::make_nvp("ca", ca), DAL::make_nvp("b", b), DAL::make_nvp("brr", brr), DAL::make_nvp("acrr", acrr));
 	}
 };
 
 void run(){
-	//B b;
+	/*B b;
 	A a;
 
 
 	DAL::SerializationService2<DAL::DoNothingMappingFile> *serSevice = new DAL::SerializationService2<DAL::DoNothingMappingFile>(DAL::DoNothingMappingFile());
 	std::cout << "the json string is: " << std::endl;
-	String generatedJson = serSevice->Model2Json(a);
-	std::cout << generatedJson << std::endl;
+	String generatedJson = serSevice->Model2Json(b);
+	std::cout << generatedJson << std::endl;*/
 
 }
 
@@ -326,3 +352,117 @@ void run(){
 } /* namespace DAL */
 
 #endif /* SERIALIZATIONSERVICE2_H_ */
+
+// PUT THIS IN SOME OTHER MAIN FILE AND RUN (TO TEST)
+/*
+
+#include <memory>
+#include <iostream>
+#include <stdio.h>
+#include <serializationService/JsonSerializationService2.h>
+#include <Sprinkler.h>
+#include <Plant.h>
+#include <Garden.h>
+#include <TimePattern.h>
+#include <SimpleProgram.h>
+using namespace std;
+
+
+class FlashMappingFile {//mapping file of what we are saving to the flash
+public:
+
+template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
+void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
+
+template<typename ArchiveType>
+void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType&) {//we want the program and sprinkler keys to be the id instead of the whole object
+	String key;
+
+	key = "program";
+	if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
+		context.nextName = &key;
+		const int& pid = plant._program()->id();
+		context.add(pid);
+	}else
+		context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
+
+	key = "sprinkler";
+	if(plant._sprinkler() != nullptr){//if sprinkler exists
+		context.nextName = &key;
+		const int& sid = plant._sprinkler()->id();
+		context.add(sid);
+	}else
+		context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
+}
+};
+
+class APIMappingFile {//mapping file of what we are saving to the flash
+class Link{
+public:
+	const String rel;
+	const String href;
+	Link(const String& rel, const String& href): rel(rel), href(href){}
+
+	template <class Archive>
+	void save(Archive& archive) const{
+		archive.addProperties(MACRO_NVP(rel), MACRO_NVP(href));
+	}
+};
+public:
+
+template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
+void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
+
+template<typename ArchiveType>
+void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
+	String key;
+	std::vector<Link> links;
+
+	key = "program";
+	if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
+		context.nextName = &key;
+		const int& pid = plant._program()->id();
+		links.push_back(Link(key, "/programs/" + std::to_string(pid) ));//### in the ESP we are using 'String' so we need a different function
+	}
+	context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
+
+	key = "sprinkler";
+	if(plant._sprinkler() != nullptr){//if sprinkler exists
+		context.nextName = &key;
+		const int& sid = plant._sprinkler()->id();
+		links.push_back(Link(key, "/sprinklers/" + std::to_string(sid)));
+	}
+	context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
+
+	if(!links.empty())
+		archive.addProperties(MACRO_NVP(links));
+}
+};
+
+
+int main() {
+std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();;
+std::vector<GardenModel::Hour> hours = {GardenModel::Hour(14, 12)};
+std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
+GardenModel::TimePattern TPattern(days);
+std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
+simpleProgram->timePattern = TPattern;
+std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+
+GardenModel::Garden garden;
+garden._plants.push_back(plant);
+garden._sprinklers.push_back(sprinkler);
+garden._programs.push_back(simpleProgram);
+
+
+
+DAL::SerializationService2<APIMappingFile> *serSevice = new DAL::SerializationService2<APIMappingFile>(APIMappingFile());
+std::cout << "the json string is: " << std::endl;
+String generatedJson = serSevice->Model2Json(garden);
+std::cout << generatedJson << std::endl;
+
+//printf("%d\n", f10);
+//DAL::run();
+return 0;
+}
+*/

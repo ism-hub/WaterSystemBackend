@@ -36,7 +36,7 @@ public:
 	}
 
 	template <class Archive>
-	void save(Archive& archive) {
+	void save(Archive& archive) const{
 		archive.addProperties(MACRO_NVP(id), MACRO_NVP(name), MACRO_NVP(timePattern));
 	}
 

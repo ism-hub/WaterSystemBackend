@@ -12,11 +12,11 @@
 #include <vector>
 #include <Plant.h>
 #include <GardenAcceptable.h>
-#include <Model/SimpleProgram.h>
+#include <SimpleProgram.h>
 
-#include <ModuleFramework/utils.h>
+//#include <ModuleFramework/utils.h>
 
-#include <Model/ObserverDesignPattern/ObservableVector.h>
+#include <ObserverDesignPattern/ObservableVector.h>
 
 
 //#include <se>
@@ -57,10 +57,10 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive.addProperties(DAL::make_nvp(name));
-		archive(DAL::make_nvp("plants",_plants.getInnerVector()));
-		archive(DAL::make_nvp("sprinklers", _sprinklers.getInnerVector()));
-		archive(DAL::make_nvp("programs",_programs.getInnerVector()));
+		archive.addProperties(DAL::make_nvp("name", name));
+		archive.addProperties(DAL::make_nvp("plants",_plants.getInnerVector()));
+		archive.addProperties(DAL::make_nvp("sprinklers", _sprinklers.getInnerVector()));
+		archive.addProperties(DAL::make_nvp("programs",_programs.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Plant>(),_plants.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Sprinkler>(), _sprinklers.getInnerVector()));
 		//archive(cereal2::make_nvp(MF::getTemplateName<SimpleProgram>(),_programs.getInnerVector()));

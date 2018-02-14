@@ -11,17 +11,17 @@
 //#include <DALModule/serialization/cereal2.h>
 #include <Sprinkler.h>
 #include <GardenAcceptable.h>
-#include <Model/SimpleProgram.h>
+#include <SimpleProgram.h>
 
 #include <memory>
 
-#include <ModuleFramework/utils.h>
+//#include <ModuleFramework/utils.h>
 
-#include <Model/ObserverDesignPattern/Property.hpp>
+#include <ObserverDesignPattern/Property.hpp>
 
 //###############
-#include <rapidjson/stringbuffer.h>
-#include <DALModule/serialization/json2.h>
+//#include <rapidjson/stringbuffer.h>
+//#include <DALModule/serialization/json2.h>
 
 namespace GardenModel {
 
@@ -58,11 +58,11 @@ public:
 	//im not sure if i want this thing in here, need to think about it.
 	template <class Archive>
 	void save(Archive& archive) const{
-		archive(CEREAL2_NVP(id), CEREAL2_NVP(name) );
-		Serial.println("b4 archive(cereal2::make_nvp(sprinkler,_sprinkler)");
-		archive(cereal2::make_nvp("sprinkler",_sprinkler));
-		Serial.println("after archive(cereal2::make_nvp(sprinkler,_sprinkler)");
-		archive(cereal2::make_nvp("program",_program));
+		archive.addProperties(MACRO_NVP(id), MACRO_NVP(name) );
+		//Serial.println("b4 archive(cereal2::make_nvp(sprinkler,_sprinkler)");
+		archive.addProperties(DAL::make_nvp("sprinkler",_sprinkler));
+		//Serial.println("after archive(cereal2::make_nvp(sprinkler,_sprinkler)");
+		archive.addProperties(DAL::make_nvp("program",_program));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Sprinkler>(),_sprinkler));
 		//archive(cereal2::make_nvp(MF::getTemplateName<SimpleProgram>(),_program));
 	}
