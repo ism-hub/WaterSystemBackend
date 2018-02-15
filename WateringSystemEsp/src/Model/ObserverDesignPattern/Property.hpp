@@ -100,6 +100,8 @@ class Property : public NotifyChangeSignalable<T>{
   // returns the internal value
   virtual T const& get() const { return value_; }
 
+ // T& getBackdoor() const { return value_; }//TODO: rethink how i use properties. this breaks them. maybe like what i used to from c# - notifies every time a primitive change (or the pointer, but not if the value inside the object changes )
+
   // connects two Properties to each other. If the source's
   // value is changed, this' value will be changed as well
   virtual void connect_from(Property<T> const& source) {

@@ -42,7 +42,7 @@ public:
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive(id, name, timePattern);
+		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(name), MACRO_NVP(timePattern));
 	}
 
 };

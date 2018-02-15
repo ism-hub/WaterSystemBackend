@@ -71,12 +71,12 @@ public:
 		std::vector<Model::Property<std::shared_ptr<Plant>> > plants;
 		std::vector<Model::Property<std::shared_ptr<Sprinkler>> > sprinklers;
 		std::vector<Model::Property<std::shared_ptr<SimpleProgram>> > programs;
-		archive(name, plants, sprinklers, programs);
+		archive.loadProperties(MACRO_NVP(name), MACRO_NVP(plants), MACRO_NVP(sprinklers), MACRO_NVP(programs));
 		_plants = plants;//TODO: not efficient
 		_sprinklers = sprinklers;
 		_programs = programs;
 
-		correctPointers();
+	//	correctPointers(); TODO:1111 decide how i keep my model correct!
 	}
 
 private:

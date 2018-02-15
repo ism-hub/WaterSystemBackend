@@ -88,12 +88,12 @@ public:
 		archive.addProperties(DAL::make_nvp("id", id), DAL::make_nvp("status", status));
 	}
 
-	/*template<class Archive>
+	template<class Archive>
 	void load(Archive& archive) {
 		String status;
-		archive(id, status);
+		archive.loadProperties(DAL::make_nvp("id", id), DAL::make_nvp("status", status));
 		this->status = (status == "Off" ? Off : On);
-	}*/
+	}
 
 };
 }

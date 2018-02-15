@@ -66,7 +66,7 @@ public:
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive(id, hour ,min);
+		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min));
 	}
 };
 
@@ -133,7 +133,7 @@ public:
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive(id, hours);
+		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(hours));
 	}
 };
 
@@ -197,7 +197,7 @@ public:
 #ifdef DEBUG_MY_CODE
 		Serial.println("before TimePattern load");
 #endif
-		archive(days);
+		archive.loadProperties(MACRO_NVP(days));
 #ifdef DEBUG_MY_CODE
 		Serial.println("after TimePattern load");
 #endif

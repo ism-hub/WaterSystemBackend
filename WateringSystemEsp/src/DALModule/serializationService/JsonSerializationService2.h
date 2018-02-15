@@ -106,9 +106,9 @@ class JsonContex {
 public:
 	JsonObject* _jsonObj;
 	JsonArray* _jsonArr;
-	const String* nextName ;//next Key
+	const String* nextName ;//next Key to read/write to
 	std::vector<String> listOfNotAllowedKeys;// list of names that we not aloowed as keys in this context,
-
+	int nextIndx=0;// like nextName only for arrays
 	JsonContex(JsonObject* jsonObj): _isJsonObj(true), _jsonObj(jsonObj), _jsonArr(NULL), nextName(NULL) {}
 	JsonContex(JsonArray* jsonArr): _isJsonObj(false), _jsonObj(NULL), _jsonArr(jsonArr), nextName(NULL) {}
 	//JsonContex(JsonContex&& other) = default;
@@ -145,11 +145,30 @@ public:
 		return _jsonObj->containsKey(key);
 	}
 
-	int getKeyValue(){//TODO: implement properly
-		if(_isJsonObj)
-			return (*_jsonObj)[*nextName];
-		return -1;
+	class opTgetKet{
+	public:
+		JsonContex& jCntx;
+		opTgetKet(JsonContex& jsonCntx) : jCntx(jsonCntx){}
+
+		template<typename T>
+		operator T(){
+			if(jCntx._isJsonObj)
+				return (*(jCntx._jsonObj))[*(jCntx.nextName)];
+			else
+				return (*(jCntx._jsonArr))[jCntx.nextIndx];
+		}
+	};
+
+	opTgetKet getKeyValue() {//TODO: implement properly
+		return opTgetKet(*this);
 	}
+
+	//auto getKeyValue() -> decltype(_isJsonObj ? (*(_jsonObj))[*(nextName)] : (*(_jsonArr))[nextIndx]){//TODO: implement properly
+	//	if(_isJsonObj)
+	//		return (*(_jsonObj))[*(nextName)];
+	//	else
+	//		return (*(_jsonArr))[nextIndx];
+	//}
 };
 
 class OutputArchiveBase {};
@@ -263,7 +282,7 @@ public:
 		//calling to start to serialize the model properties (adding the keys our user didn't add)
 		model.save(*this);
 
-		char buffer[400];
+		char buffer[4000];
 		root.printTo(buffer, sizeof(buffer));
 
 		//cleanup
@@ -317,13 +336,62 @@ public:
 	template<class T, typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || std::is_same<typename std::remove_reference<T>::type, String>::value   , sfinae>::type = {}>
 	void loadProperty(T& t) {
 		auto& contex = contexList.back();
-		t = contex.getKeyValue();
-		//adding this property to the current contex
-		if(!contex.add(t))
-			std::cout << "ERROR: failed to set a key in enable_if<std::is_arithmetic" << std::endl;
+		t = contex.getKeyValue().operator T();
 	}
 
 
+	//! property with save method - the property is an object, we didn't get NameValuePair so we are inside array
+	template<class T, typename std::enable_if<has_load_method<T>::value ,  sfinae>::type = {}>
+	void loadProperty(T& t) {
+		//the contex in which t is defined
+		auto& contex = contexList.back();
+
+
+		JsonObject& tJson = contex.getKeyValue().operator JsonObject&();
+		contexList.push_back(&tJson);//getting t contex (t in json format)
+		_mappingFile.Json2Model(t, contexList.back(), *this);//if we want to manually handle part of the deserialization (twik the default behaviour hook)
+		t.load(*this);//basically calling loadProperties function with the nameValuePairs of the properties we wants from the json and where to put them (refernce)
+		contexList.pop_back();//must to remember to pot the context after we done with it (after we done loading that obj)
+	}
+
+	//NameValuePair - means that we are in objJson contex, vector mean that the property is an array
+	template<class T, typename A>
+	void loadProperty(std::vector<T, A>&  vec) {
+
+		//the context where the vector is a property
+		auto& contex = contexList.back();
+
+		//the contx which is the Json of the vector
+		JsonArray& jArr = contex.getKeyValue().operator JsonArray&();
+		//JsonContex propJsonArrCntx = contex.createNestedArray();
+		contexList.push_back(&jArr);
+
+		//add what is the json, (not touching what is already inside) we can't only update those who are there or delete those who aren't etc.. cause we don't know the keys of the items, the mappingFiles prob deal with it, maybe after i will do the i will return to this TODO: revisit after the Mapping files for the load section is over
+		for(int i = 0; i < jArr.size(); i++){
+			T t;
+			contexList.back().nextIndx = i;
+			loadProperty(t);
+			vec.push_back(std::move(t));
+		}
+
+		contexList.pop_back();
+	}
+
+	//handle property type (invisible)
+	template <typename T>
+	void loadProperty(Model::Property<T>& prop) {
+		T t(prop.get());//copy ctor of that obj. maybe change the whole property notification concept
+		loadProperty(t);
+		prop = t;
+	}
+
+	//handle shared pointer type (invisible)
+	template <typename T>
+	void loadProperty(std::shared_ptr<T>& sharedPtr) {
+		if(sharedPtr == nullptr)//we assume it's ok to create T (call its CTOR) if the user didnt create one
+			sharedPtr = std::make_shared<T>();
+		loadProperty(*sharedPtr);
+	}
 };
 
 //------------------------------------------- MappingFiles
@@ -364,12 +432,12 @@ public:
 
 	template<class Archive>
 	void save( Archive& archive) const{
-		archive.addProperties(DAL::make_nvp("a", a)/*, DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr)*/);
+		archive.addProperties(DAL::make_nvp("a", a), DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr));
 	}
 
 	template<class Archive>
 	void load(Archive& archive){
-		archive.loadProperties(DAL::make_nvp("a", a));
+		archive.loadProperties(DAL::make_nvp("a", a), DAL::make_nvp("sa", sa), DAL::make_nvp("arr", arr));
 	}
 };
 
@@ -385,6 +453,11 @@ public:
 	void save( Archive& archive) const {
 		archive.addProperties(DAL::make_nvp("ca", ca), DAL::make_nvp("b", b), DAL::make_nvp("brr", brr), DAL::make_nvp("acrr", acrr));
 	}
+
+	template<class Archive>
+	void load( Archive& archive) {
+		archive.loadProperties(DAL::make_nvp("ca", ca), DAL::make_nvp("b", b), DAL::make_nvp("brr", brr), DAL::make_nvp("acrr", acrr));
+	}
 };
 
 void run(){
@@ -393,11 +466,11 @@ void run(){
 
 
 	DAL::SerializationService2<DAL::DoNothingMappingFile> *serSevice = new DAL::SerializationService2<DAL::DoNothingMappingFile>(DAL::DoNothingMappingFile());
-	std::cout << "the json string is: " << std::endl;
-	String generatedJson = serSevice->Model2Json(a);
+	std::cout << "Before: " << std::endl;
+	String generatedJson = serSevice->Model2Json(b);
 	std::cout << generatedJson << std::endl;
-	serSevice->Json2Model(a, "{\"a\":1111}");
-	std::cout << a.a << std::endl;
+	serSevice->Json2Model(b, "{\"ca\":{\"a\":123,\"sa\":\"kibataMaka\",\"arr\":[11,22,33]},\"b\":22,\"brr\":[12,23,25],\"acrr\":[{\"a\":10,\"sa\":\"kibata0\",\"arr\":[10,20,30]},{\"a\":19,\"sa\":\"kibata9\",\"arr\":[19,29,39]},{\"a\":17,\"sa\":\"kibata7\",\"arr\":[17,27,37]}]}");
+	std::cout << "After: " << serSevice->Model2Json(b) << std::endl;
 }
 
 //------------------------------------------------
@@ -409,114 +482,29 @@ void run(){
 
 // PUT THIS IN SOME OTHER MAIN FILE AND RUN (TO TEST)
 /*
-
-#include <memory>
-#include <iostream>
-#include <stdio.h>
-#include <serializationService/JsonSerializationService2.h>
-#include <Sprinkler.h>
-#include <Plant.h>
-#include <Garden.h>
-#include <TimePattern.h>
-#include <SimpleProgram.h>
-using namespace std;
-
-
-class FlashMappingFile {//mapping file of what we are saving to the flash
-public:
-
-template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
-void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
-
-template<typename ArchiveType>
-void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType&) {//we want the program and sprinkler keys to be the id instead of the whole object
-	String key;
-
-	key = "program";
-	if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
-		context.nextName = &key;
-		const int& pid = plant._program()->id();
-		context.add(pid);
-	}else
-		context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
-
-	key = "sprinkler";
-	if(plant._sprinkler() != nullptr){//if sprinkler exists
-		context.nextName = &key;
-		const int& sid = plant._sprinkler()->id();
-		context.add(sid);
-	}else
-		context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
-}
-};
-
-class APIMappingFile {//mapping file of what we are saving to the flash
-class Link{
-public:
-	const String rel;
-	const String href;
-	Link(const String& rel, const String& href): rel(rel), href(href){}
-
-	template <class Archive>
-	void save(Archive& archive) const{
-		archive.addProperties(MACRO_NVP(rel), MACRO_NVP(href));
-	}
-};
-public:
-
-template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
-void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
-
-template<typename ArchiveType>
-void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
-	String key;
-	std::vector<Link> links;
-
-	key = "program";
-	if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
-		context.nextName = &key;
-		const int& pid = plant._program()->id();
-		links.push_back(Link(key, "/programs/" + std::to_string(pid) ));//### in the ESP we are using 'String' so we need a different function
-	}
-	context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
-
-	key = "sprinkler";
-	if(plant._sprinkler() != nullptr){//if sprinkler exists
-		context.nextName = &key;
-		const int& sid = plant._sprinkler()->id();
-		links.push_back(Link(key, "/sprinklers/" + std::to_string(sid)));
-	}
-	context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
-
-	if(!links.empty())
-		archive.addProperties(MACRO_NVP(links));
-}
-};
-
-
-int main() {
 std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();;
-std::vector<GardenModel::Hour> hours = {GardenModel::Hour(14, 12)};
-std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
-GardenModel::TimePattern TPattern(days);
-std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
-simpleProgram->timePattern = TPattern;
-std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+	std::vector<GardenModel::Hour> hours = {GardenModel::Hour(14, 12)};
+	std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
+	GardenModel::TimePattern TPattern(days);
+	std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
+	simpleProgram->timePattern = TPattern;
+	std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
 
-GardenModel::Garden garden;
-garden._plants.push_back(plant);
-garden._sprinklers.push_back(sprinkler);
-garden._programs.push_back(simpleProgram);
+	GardenModel::Garden garden;
+	garden._plants.push_back(plant);
+	garden._sprinklers.push_back(sprinkler);
+	garden._programs.push_back(simpleProgram);
 
 
 
-DAL::SerializationService2<APIMappingFile> *serSevice = new DAL::SerializationService2<APIMappingFile>(APIMappingFile());
-std::cout << "the json string is: " << std::endl;
-String generatedJson = serSevice->Model2Json(garden);
-std::cout << generatedJson << std::endl;
+	DAL::SerializationService2<DAL::DoNothingMappingFile> *serSevice = new DAL::SerializationService2<DAL::DoNothingMappingFile>(DAL::DoNothingMappingFile());
+	std::cout << "Before: " << std::endl;
+	String generatedJson = serSevice->Model2Json(garden);
+	std::cout << generatedJson << std::endl;
+	std::cout << "After: " << std::endl;
+	GardenModel::Garden emptyGarden;
+	serSevice->Json2Model(emptyGarden,"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"sprinkler\":{\"id\":21,\"status\":\"On\"},\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
+	std::cout << (serSevice->Model2Json(emptyGarden)) << std::endl;
 
-//printf("%d\n", f10);
-//DAL::run();
-return 0;
-}
+
 */

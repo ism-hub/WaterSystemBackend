@@ -69,9 +69,9 @@ public:
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive(id ,name);
-		archive(_sprinkler);
-		archive(_program);
+		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(name));
+		archive.loadProperties(DAL::make_nvp("sprinkler",_sprinkler));
+		archive.loadProperties(DAL::make_nvp("program",_program));
 	}
 
 };
