@@ -482,7 +482,144 @@ void run(){
 
 // PUT THIS IN SOME OTHER MAIN FILE AND RUN (TO TEST)
 /*
-std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();;
+#include <memory>
+#include <iostream>
+#include <stdio.h>
+#include <serializationService/JsonSerializationService2.h>
+#include <Sprinkler.h>
+#include <Plant.h>
+#include <Garden.h>
+#include <TimePattern.h>
+#include <SimpleProgram.h>
+#include <WString.h>
+using namespace std;
+
+
+class FlashMappingFile {//mapping file of what we are saving to the flash
+public:
+
+	template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
+	void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
+
+	template<typename ArchiveType>
+	void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType&) {//we want the program and sprinkler keys to be the id instead of the whole object
+		String key;
+
+		key = "program";
+		if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
+			context.nextName = &key;
+			const int& pid = plant._program()->id();
+			context.add(pid);
+		}else
+			context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
+
+		key = "sprinkler";
+		if(plant._sprinkler() != nullptr){//if sprinkler exists
+			context.nextName = &key;
+			const int& sid = plant._sprinkler()->id();
+			context.add(sid);
+		}else
+			context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
+	}
+
+	template<typename ArchiveType>
+	void Json2Model(GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
+		context.listOfNotAllowedKeys.push_back("program");//we want to manually handle this key
+		int programId=-1;
+		archive.loadProperty(DAL::NameValuePair("program", programId));
+		plant.setProgram(programId);//is it makes sense to the plant to have its garden and to the garden to set the plant program? notice that this line requires us to load the set of programs first (or to add the possibility to save the scope and come in after all the data that we can load has been loaded)
+
+		context.listOfNotAllowedKeys.push_back("sprinkler");//we will ignore the call to load it (the default way) now
+		int sprinklerId=-1;
+		archive.loadProperty(DAL::NameValuePair("sprinkler", sprinklerId));
+		plant.setSprinkler(sprinklerId);//is it makes sense to the plant to have its garden and to the garden to set the plant program? notice that this line requires us to load the set of programs first (or to add the possibility to save the scope and come in after all the data that we can load has been loaded)
+
+	}
+};
+
+class APIMappingFile {//mapping file of what we are saving to the flash
+class Link{
+public:
+	const String rel;
+	const String href;
+	Link(const String& rel, const String& href): rel(rel), href(href){}
+
+	template <class Archive>
+	void save(Archive& archive) const{
+		archive.addProperties(MACRO_NVP(rel), MACRO_NVP(href));
+	}
+};
+public:
+
+	template<typename ModelType, typename JsonObjType, typename ArchiveType> inline
+	void Model2Json(const ModelType& ,const JsonObjType&, const ArchiveType&) {} // all the ones i don't care about go here
+
+	template<typename ArchiveType>
+	void Model2Json(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
+		String key;
+		std::vector<Link> links;
+
+		key = "program";
+		if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
+			context.nextName = &key;
+			const int& pid = plant._program()->id();
+			links.push_back(Link(key, "/programs/" + std::to_string(pid) ));//### in the ESP we are using 'String' so we need a different function
+		}
+		context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
+
+		key = "sprinkler";
+		if(plant._sprinkler() != nullptr){//if sprinkler exists
+			context.nextName = &key;
+			const int& sid = plant._sprinkler()->id();
+			links.push_back(Link(key, "/sprinklers/" + std::to_string(sid)));
+		}
+		context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
+
+		if(!links.empty())
+			archive.addProperties(MACRO_NVP(links));
+	}
+
+	template<typename ArchiveType>
+	void Json2Model(const GardenModel::Plant& plant, DAL::JsonContex& context, ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
+		context.listOfNotAllowedKeys.push_back("program");//kinda useless cause he wont find those keys anyways
+		context.listOfNotAllowedKeys.push_back("sprinkler");
+		std::vector<Link> links;
+		archive.loadProperty(DAL::NameValuePair("links", links));
+		int pid = getProgramId(links);//-1 if no program id link
+		int sid = getSprinklerId(links);
+		plant.setProgram(pid);
+		plant.setSprinkler(sid);
+	}
+
+
+};
+
+
+class opT {
+public:
+	template <typename T>
+	operator T(){
+		return 4;
+	}
+
+	//template<>
+	operator String(){
+		return "abcd";
+	}
+};
+
+opT returnMultiple(){// this function acts like it can return multiple values
+	return opT();
+}
+
+int main() {
+	int i = 2; i = returnMultiple();
+	cout << i << endl;
+
+	String lala = returnMultiple();
+	cout << lala << endl;
+
+	std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();;
 	std::vector<GardenModel::Hour> hours = {GardenModel::Hour(14, 12)};
 	std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
 	GardenModel::TimePattern TPattern(days);
@@ -503,8 +640,13 @@ std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel
 	std::cout << generatedJson << std::endl;
 	std::cout << "After: " << std::endl;
 	GardenModel::Garden emptyGarden;
-	serSevice->Json2Model(emptyGarden,"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"sprinkler\":{\"id\":21,\"status\":\"On\"},\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
+	serSevice->Json2Model(emptyGarden,"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
 	std::cout << (serSevice->Model2Json(emptyGarden)) << std::endl;
+
+	//printf("%d\n", f10);
+	//DAL::run();
+	return 0;
+}
 
 
 */
