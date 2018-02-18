@@ -7,6 +7,7 @@
 
 #ifndef MODEL_GARDENACCEPTABLE_H_
 #define MODEL_GARDENACCEPTABLE_H_
+#include <memory>
 
 namespace GardenModel {
 

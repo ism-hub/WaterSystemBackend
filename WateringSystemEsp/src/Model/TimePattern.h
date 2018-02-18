@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <algorithm>
-#include <serializationService/JsonSerializationService2.h>
+#include <JsonSerializationService2.h>
 
 namespace GardenModel {
 

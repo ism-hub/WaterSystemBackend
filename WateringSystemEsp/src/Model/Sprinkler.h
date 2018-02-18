@@ -12,7 +12,7 @@
 #include <WString.h>
 #include <GardenAcceptable.h>
 #include <GardenVisitor.h>
-#include <serializationService/JsonSerializationService2.h>
+#include <JsonSerializationService2.h>
 
 #include <ObserverDesignPattern/Property.hpp>
 
@@ -85,13 +85,13 @@ public:
 	void save(Archive& archive) const{
 		String status;
 		status = (this->status == Off ? "Off" : "On");
-		archive.addProperties(DAL::make_nvp("id", id), DAL::make_nvp("status", status));
+		archive.addProperties(mycereal::make_nvp("id", id), mycereal::make_nvp("status", status));
 	}
 
 	template<class Archive>
 	void load(Archive& archive) {
 		String status;
-		archive.loadProperties(DAL::make_nvp("id", id), DAL::make_nvp("status", status));
+		archive.loadProperties(mycereal::make_nvp("id", id), mycereal::make_nvp("status", status));
 		this->status = (status == "Off" ? Off : On);
 	}
 

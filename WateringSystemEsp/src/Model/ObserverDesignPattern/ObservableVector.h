@@ -53,7 +53,11 @@ public:
 
 	}
 
-	const std::vector<T>& getInnerVector() const{
+	const std::vector<T>& getInnerVector() const {
+		return vector_;
+	}
+
+	std::vector<T>& getInnerVector(){
 		return vector_;
 	}
 

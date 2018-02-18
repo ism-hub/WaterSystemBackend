@@ -31,6 +31,8 @@ public:
 	Model::Property<std::shared_ptr<Sprinkler> > _sprinkler;
 	Model::Property<String> name;
 	Model::Property<std::shared_ptr<SimpleProgram> > _program;
+	Garden* garden;//when we add the plant to the garden the garden will set that TODO:When revisiting the model correctness - try to look on the EMF project and see how they handled that double relationship (child have apointer to the parent too)
+	//XXX: 111111111 ASAP see above, omfg "Garden* garden;"
 
 	Plant(std::shared_ptr<Sprinkler> sprinkler = nullptr, std::shared_ptr<SimpleProgram> program = nullptr): id(0), _sprinkler(sprinkler), name("Lily"), _program(program){
 #ifdef DEBUG_MY_CODE
@@ -50,6 +52,10 @@ public:
 #endif
 	}
 
+	void setProgram(int pid);//is it makes sense to the plant to have its garden and to the garden to set the plant program?
+
+	void setSprinkler(int sid);
+
 	virtual std::shared_ptr<void> accept(GardenVisitor& visitor){
 			return visitor.visit(*this);
 		}
@@ -60,9 +66,9 @@ public:
 	void save(Archive& archive) const{
 		archive.addProperties(MACRO_NVP(id), MACRO_NVP(name) );
 		//Serial.println("b4 archive(cereal2::make_nvp(sprinkler,_sprinkler)");
-		archive.addProperties(DAL::make_nvp("sprinkler",_sprinkler));
+		archive.addProperties(mycereal::make_nvp("sprinkler",_sprinkler));
 		//Serial.println("after archive(cereal2::make_nvp(sprinkler,_sprinkler)");
-		archive.addProperties(DAL::make_nvp("program",_program));
+		archive.addProperties(mycereal::make_nvp("program",_program));
 		//archive(cereal2::make_nvp(MF::getTemplateName<Sprinkler>(),_sprinkler));
 		//archive(cereal2::make_nvp(MF::getTemplateName<SimpleProgram>(),_program));
 	}
@@ -70,8 +76,8 @@ public:
 	template<class Archive>
 	void load(Archive& archive) {
 		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(name));
-		archive.loadProperties(DAL::make_nvp("sprinkler",_sprinkler));
-		archive.loadProperties(DAL::make_nvp("program",_program));
+		archive.loadProperties(mycereal::make_nvp("sprinkler",_sprinkler));
+		archive.loadProperties(mycereal::make_nvp("program",_program));
 	}
 
 };
