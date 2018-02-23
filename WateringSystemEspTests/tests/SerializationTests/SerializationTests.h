@@ -31,6 +31,7 @@ namespace SerializationTests {
 using namespace std;
 
 const int numberOfDifferentGardens = 4;
+const int uniqueId = 12345;
 
 GardenModel::Garden createGarden(int gardenIndx){
 	shared_ptr<GardenModel::Sprinkler> sprinkler = make_shared<GardenModel::Sprinkler>();
@@ -151,9 +152,45 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 	String secondJson;
 	serServive.Model2Json(garden, secondJson);
 
-	cout << "Before: " << firstJson << endl;
-	cout << "After: " << secondJson << endl;
+	//cout << "Before: " << firstJson << endl;
+	//cout << "After: " << secondJson << endl;
 	assert(firstJson == secondJson);
+}
+
+//
+void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(int gardenVariety = 4){
+	GardenModel::Garden garden = createGarden(gardenVariety);
+	DAL::APIMappingFile apiMappingFile;
+	auto& serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+
+	String json;
+	serServive.Model2Json(garden, json);
+
+	std::shared_ptr<GardenModel::Sprinkler> sprinkler = make_shared<GardenModel::Sprinkler>();
+	sprinkler->id = uniqueId;
+	garden._sprinklers.push_back(sprinkler);
+
+	std::shared_ptr<GardenModel::Plant> plant = make_shared<GardenModel::Plant>();
+	plant->id = uniqueId;
+	garden._plants.push_back(plant);
+
+	std::shared_ptr<GardenModel::SimpleProgram> program = make_shared<GardenModel::SimpleProgram>();;
+	program->id = uniqueId;
+	garden._programs.push_back(program);
+
+	String jsonAfterAddingNewStuff;
+	serServive.Model2Json(garden, jsonAfterAddingNewStuff);
+
+	serServive.Json2Model(garden, json);//suppose to delete all that we add (not in json = not in model)
+
+	String jsonAfterMerging;
+	serServive.Model2Json(garden, jsonAfterMerging);
+
+	//cout << "Before: " << json << endl;
+	//cout << "Middle: " << jsonAfterAddingNewStuff << endl;
+	//cout << "After: " << jsonAfterMerging << endl;
+
+	assert(json == jsonAfterMerging);
 }
 
 void run(){
@@ -162,6 +199,7 @@ void run(){
 		FlashMappingFileTest(i);
 		APIMappingFileTest(i);
 		APIMappingFileMergingJsonArrayIntoExistingVectorTest(i);
+		APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(i);
 	}
 
 

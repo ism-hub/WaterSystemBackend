@@ -57,6 +57,10 @@ public:
 	template<typename ... Args>
 	void Json2Model(Args& ...) {}
 
+	template<typename T, typename A>
+	std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<T, A>&, DAL::JsonContex&)
+	{return std::function<T* (std::vector<T, A>&, DAL::JsonContex&)>();}
+
 	template<typename ArchiveType>
 	void Model2Json(const GardenModel::Plant& plant,  ArchiveType& archive) {//we want the program and sprinkler keys to be the id instead of the whole object
 		String key;
@@ -103,10 +107,6 @@ public:
 	}
 
 	template<typename T, typename A>
-	std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<T, A>&, DAL::JsonContex&)
-	{return std::function<T* (std::vector<T, A>&, DAL::JsonContex&)>();}
-
-	template<typename T, typename A>
 	std::function<Model::Property<std::shared_ptr<T>>* (std::vector<Model::Property<std::shared_ptr<T>>, A>&, DAL::JsonContex&)> getComperatorForObjWithIdAsKey(std::vector<Model::Property<std::shared_ptr<T>>, A>& vec, DAL::JsonContex& contex){
 		typedef Model::Property<std::shared_ptr<T>> type;
 		auto lambdaComperatorFnc = [](std::vector<type, A>& vec, DAL::JsonContex& contex){
@@ -118,6 +118,9 @@ public:
 			return (type*)NULL;
 		};
 		std::function<type* (std::vector<type, A>&, DAL::JsonContex&)> comperator = std::function<type* (std::vector<type, A>&, DAL::JsonContex&)>(lambdaComperatorFnc);
+
+		removeIfNotInJsonProp(vec, contex);
+
 		return comperator;
 	}
 
@@ -125,7 +128,7 @@ public:
 	std::function<Model::Property<std::shared_ptr<GardenModel::Sprinkler>>* (std::vector<Model::Property<std::shared_ptr<GardenModel::Sprinkler>>, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<Model::Property<std::shared_ptr<GardenModel::Sprinkler>>, A>& vec, DAL::JsonContex& contex)
 	{
 //		typedef Model::Property<std::shared_ptr<GardenModel::Sprinkler>> objType;
-		std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Sprinkler>>" << std::endl;
+		//std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Sprinkler>>" << std::endl;
 
 		return getComperatorForObjWithIdAsKey(vec, contex);
 	}
@@ -134,7 +137,7 @@ public:
 	std::function<Model::Property<std::shared_ptr<GardenModel::SimpleProgram>>* (std::vector<Model::Property<std::shared_ptr<GardenModel::SimpleProgram>>, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<Model::Property<std::shared_ptr<GardenModel::SimpleProgram>>, A>& vec, DAL::JsonContex& contex)
 	{
 //		typedef Model::Property<std::shared_ptr<GardenModel::Sprinkler>> objType;
-		std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::SimpleProgram>>" << std::endl;
+		//std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::SimpleProgram>>" << std::endl;
 
 		return getComperatorForObjWithIdAsKey(vec, contex);
 	}
@@ -143,7 +146,7 @@ public:
 	std::function<Model::Property<std::shared_ptr<GardenModel::Plant>>* (std::vector<Model::Property<std::shared_ptr<GardenModel::Plant>>, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<Model::Property<std::shared_ptr<GardenModel::Plant>>, A>& vec, DAL::JsonContex& contex)
 	{
 //		typedef Model::Property<std::shared_ptr<GardenModel::Sprinkler>> objType;
-		std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
+		//std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
 
 		return getComperatorForObjWithIdAsKey(vec, contex);
 	}
@@ -159,24 +162,17 @@ public:
 			return (T*)NULL;
 		};
 		std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> comperator = std::function<T* (std::vector<T, A>&, DAL::JsonContex&)>(lambdaComperatorFnc);
+
+		removeIfNotInJson2(vec, contex);
+
 		return comperator;
-	}
-
-	template<typename T>//TODO: here i need to add enable_if T have id property also in the other one
-	int getIdFromId(T& item){
-		return item.id;
-	}
-
-	template<typename T>//TODO: here i need to add enable_if T have id property also in the other one
-	int getIdFromIdProperty(Model::Property<std::shared_ptr<T>>& item){
-		return item.get()->id;
 	}
 
 	template<typename A> //TODO: you can do it with one template with enable_if and check if it have id
 	std::function<GardenModel::Hour* (std::vector<GardenModel::Hour, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<GardenModel::Hour, A>& vec, DAL::JsonContex& contex)
 	{
 //		typedef Model::Property<std::shared_ptr<GardenModel::Sprinkler>> objType;
-		std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
+		//std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
 
 		return getComperatorForObjWithIdAsKeyNoPropOrSharedptr(vec, contex);
 	}
@@ -185,24 +181,33 @@ public:
 	std::function<GardenModel::Day* (std::vector<GardenModel::Day, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<GardenModel::Day, A>& vec, DAL::JsonContex& contex)
 	{
 //		typedef Model::Property<std::shared_ptr<GardenModel::Sprinkler>> objType;
-		std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
+		//std::cout << "specialization getVectorComperator Model::Property<std::shared_ptr<GardenModel::Plant>>" << std::endl;
 
 		return getComperatorForObjWithIdAsKeyNoPropOrSharedptr(vec, contex);
 	}
 
 	bool checkIfIdInJsonArray(int id, DAL::JsonContex& contex){
-		for(int i = 0; i < contex.length; i++){
-			JsonObject& innerContex = contex[i].operator JsonObject&();
-			DAL::JsonContex jObj = DAL::JsonContex(&innerContex);
-			int jId = jObj.getKeyName("id");
+		if(contex.isJsonObject())
+			std::cout << "ERROR: in checkIfIdInJsonArray" << std::endl;
+
+		JsonArray& jArr = *contex._jsonArr;
+		for(int i = 0; i < jArr.size(); i++){
+			JsonObject& innerContex = jArr[i];
+			int jId = innerContex["id"];
 			if(id == jId)
 				return true;
 		}
 		return false;
 	}
 
-	void removeIfNotInJson(){
+	template<typename T, typename A>
+	bool removeIfNotInJsonProp(std::vector<T, A>& vec, DAL::JsonContex& contex){
+		vec.erase(std::remove_if(vec.begin(), vec.end(), [&](T& prop) { return !checkIfIdInJsonArray(prop.get()->id, contex); }), vec.end());
+	}
 
+	template<typename T, typename A>
+	void removeIfNotInJson2(std::vector<T, A>& vec, DAL::JsonContex& contex){
+		vec.erase(std::remove_if(vec.begin(), vec.end(), [&](T& t) { return !checkIfIdInJsonArray(t.id, contex); }), vec.end());
 	}
 
 
