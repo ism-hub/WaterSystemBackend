@@ -5,6 +5,10 @@
  *      Author: IsM
  */
 
+#include <functional>
+#include <vector>
+#include <JsonContex.h>
+
 #ifndef DALMODULE_SERIALIZATION_DONOTHINGMAPPINGFILE_H_
 #define DALMODULE_SERIALIZATION_DONOTHINGMAPPINGFILE_H_
 
@@ -17,6 +21,10 @@ public:
 
 	template<typename ... Args>
 	void Json2Model(Args& ...) {}
+
+	template<typename T, typename A>
+	std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<T, A>&, DAL::JsonContex&)
+	{return std::function<T* (std::vector<T, A>&, DAL::JsonContex&)>();}
 };
 
 } /* namespace mycereal */

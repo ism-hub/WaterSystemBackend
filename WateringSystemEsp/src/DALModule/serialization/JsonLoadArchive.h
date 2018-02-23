@@ -117,11 +117,25 @@ protected:
 		JsonArray& jArr = contex.getKeyValue().operator JsonArray&();
 		contexList.push_back(&jArr);
 
+		//comperator - can check if an json entry of the array have a corresponding element in the list (if the json have instace of it in the list and  we need only to update that instance)
+		std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> comperator;
+		comperator = _mappingFile.getVectorComperator(vec, contexList.back());//this func can also change vec (dlete/add items)
+
 		//add what is the json, (not touching what is already inside) we can't only update those who are there or delete those who aren't etc.. cause we don't know the keys of the items, the mappingFiles prob deal with it, maybe after i will do the i will return to this TODO: revisit after the Mapping files for the load section is over
 		for(int i = 0; i < jArr.size(); i++){
 			contexList.back().nextIndx = i;
-			vec.push_back(T());
-			loadProperty(vec.back());
+			T* pt = NULL;
+			if(comperator != nullptr){ //not null -> contexList.back().getKeyValue() is a JsonObject
+				JsonObject& tJson = contexList.back().getKeyValue().operator JsonObject&();
+				DAL::JsonContex jContex = &tJson;
+				pt = comperator(vec, jContex);
+			}
+			if(pt != NULL){//TODO: add something in the lines of contexList.back()[i]
+				loadProperty(*pt);
+			}else{
+				vec.push_back(T());
+				loadProperty(vec.back());
+			}
 		}
 		contexList.pop_back();
 	}

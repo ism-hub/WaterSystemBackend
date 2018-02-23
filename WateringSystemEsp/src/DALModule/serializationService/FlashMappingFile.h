@@ -15,6 +15,9 @@ namespace DAL {
 
 class FlashMappingFile {//mapping file of what we are saving to the flash
 public:
+	template<typename T, typename A>
+	std::function<T* (std::vector<T, A>&, DAL::JsonContex&)> getVectorComperator(std::vector<T, A>&, DAL::JsonContex&)
+	{return std::function<T* (std::vector<T, A>&, DAL::JsonContex&)>();}
 
 	template<typename ... Args>
 	void Model2Json(Args& ...) {}

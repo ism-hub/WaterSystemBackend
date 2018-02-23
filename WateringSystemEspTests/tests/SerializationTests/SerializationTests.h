@@ -136,11 +136,32 @@ void APIMappingFileTest(int gardenVariety = 4){
 	assert(serDeserSerTest(garden, serServive));
 }
 
+//we do it buy creating a model -> serializing it -> deserialize the created json on the same model -> serializing that model and asserting the json is the same as the first one
+void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
+{
+	GardenModel::Garden garden = createGarden(gardenVariety);
+	DAL::APIMappingFile apiMappingFile;
+	auto& serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+
+	String firstJson;
+	serServive.Model2Json(garden, firstJson);
+
+	serServive.Json2Model(garden, firstJson);
+
+	String secondJson;
+	serServive.Model2Json(garden, secondJson);
+
+	cout << "Before: " << firstJson << endl;
+	cout << "After: " << secondJson << endl;
+	assert(firstJson == secondJson);
+}
+
 void run(){
 	for(int i = 1; i <= numberOfDifferentGardens; i++){
 		DoNothingMappingFileTest(i);
 		FlashMappingFileTest(i);
 		APIMappingFileTest(i);
+		APIMappingFileMergingJsonArrayIntoExistingVectorTest(i);
 	}
 
 

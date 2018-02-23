@@ -73,12 +73,13 @@ public:
 	class opTgetKet{
 	public:
 		JsonContex& jCntx;
-		opTgetKet(JsonContex& jsonCntx) : jCntx(jsonCntx){}
+		String name;
+		opTgetKet(JsonContex& jsonCntx, String name = "") : jCntx(jsonCntx), name(name) {}
 
 		template<typename T>
 		operator T(){
 			if(jCntx._isJsonObj)
-				return (*(jCntx._jsonObj))[*(jCntx.nextName)];
+				return (*(jCntx._jsonObj))[*(name == "" ? jCntx.nextName : &name)];
 			else
 				return (*(jCntx._jsonArr))[jCntx.nextIndx];
 		}
@@ -86,6 +87,10 @@ public:
 
 	opTgetKet getKeyValue() {//TODO: implement properly
 		return opTgetKet(*this);
+	}
+
+	opTgetKet getKeyValue(String name) {//TODO: implement properly
+		return opTgetKet(*this, name);
 	}
 
 };
