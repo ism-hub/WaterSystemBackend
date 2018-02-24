@@ -10,6 +10,7 @@
 
 #include <TimePattern.h>
 #include <GardenAcceptable.h>
+#include <NameValuePair.h>
 
 namespace GardenModel {
 

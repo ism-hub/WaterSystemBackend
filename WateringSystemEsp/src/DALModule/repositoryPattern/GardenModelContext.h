@@ -8,13 +8,16 @@
 #ifndef DAL_GARDENMODELCONTEXT_H_
 #define DAL_GARDENMODELCONTEXT_H_
 
-#include <DALModule/serialization/cereal2.h>
-#include <DALModule/serialization/json2.h>
+//#include <DALModule/serialization/cereal2.h>
+//#include <DALModule/serialization/json2.h>
 #include <Garden.h>
 
 #include <FS.h>
 
-#include <DALModule/serializationService/JsonSerializationService.h>
+#include <JsonSerializationService2.h>
+#include <JsonSaveArchive.h>
+#include <JsonLoadArchive.h>
+#include <FlashMappingFile.h>
 
 //#include <JsonGardenVisitor.h>
 //#include <GardenRepository.h>
@@ -28,13 +31,13 @@
 using namespace GardenModel;
 
 namespace DAL {
-
+typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>,mycereal::JsonLoadArchive<DAL::FlashMappingFile>> FlashSerializationSerice;
 class GardenModelContext {
 public:
 	std::shared_ptr<Garden> 				_garden = nullptr;
-	std::shared_ptr<DAL::JsonSerializationService> _jsonSerializationService;
+	std::shared_ptr<FlashSerializationSerice> _jsonSerializationService;
 
-	GardenModelContext(std::shared_ptr<DAL::JsonSerializationService> jsonSerializationService) :
+	GardenModelContext(std::shared_ptr<FlashSerializationSerice> jsonSerializationService) :
 		_jsonSerializationService(jsonSerializationService)
 	{
 
@@ -59,7 +62,8 @@ public:
 		if (_garden == nullptr)
 			return false;
 
-		const String jsonStringOfOurGarden = _jsonSerializationService->modelToJson(*_garden);
+		String jsonStringOfOurGarden;
+		_jsonSerializationService->Model2Json(*_garden, jsonStringOfOurGarden);
 
 #ifdef DEBUG_MY_CODE
 		Serial.print("The json strin of the garden we saving to memory: ");
@@ -121,8 +125,8 @@ private:
 			Serial.println("kms");
 		}*/
 
-
-		_garden = _jsonSerializationService->jsonToModel<GardenModel::Garden>(jsonGarden);
+		_garden = std::make_shared<Garden>();
+		_jsonSerializationService->Json2Model<GardenModel::Garden>(*_garden, jsonGarden);
 		return true;
 	}
 };

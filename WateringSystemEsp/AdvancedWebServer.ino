@@ -33,8 +33,8 @@
 //#define DEBUG_MY_CODE
 
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
-#include <DALModule/serialization/cereal2.h>
-#include <DALModule/serialization/json2.h>
+//#include <DALModule/serialization/cereal2.h>
+//#include <DALModule/serialization/json2.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -68,10 +68,22 @@
 
 
 
-const char *ssid = "AndroidAP";//"rina";//
-const char *password = "nakr0097";//"1qwer5counterstrike";//
+const char *ssid = "rina";//"AndroidAP";//
+const char *password = "1qwer5counterstrike";//"nakr0097";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
+
+template<typename MappingFileType>
+std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
+	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
+	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
+	typedef DAL::SerializationService2<SaveArchiveType, LoadArchiveType > ServerType;
+
+	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
+	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
+	auto serSevice =  std::make_shared<ServerType>(saveArchive, loadArchive);
+	return serSevice;
+}
 
 void writeGardenToFlash(){
 	{
@@ -94,15 +106,14 @@ void writeGardenToFlash(){
 		simpleProgram->id = 22;
 
 
-		std::shared_ptr<cereal2::JSONInputArchive> 	inputArchive = std::make_shared<cereal2::JSONInputArchive>();
-		rapidjson::StringBuffer						_stringBuffer;
-		std::shared_ptr<cereal2::JSONOutputArchive> outputArchive = std::make_shared<cereal2::JSONOutputArchive>();
-		DAL::JsonSerializationService jsonSerializationService(inputArchive, outputArchive);
+		DAL::FlashMappingFile flashMappingFile;
+		auto jsonSerializationService = createSerializationServer(flashMappingFile);
 		garden._plants.push_back(plant);
 		garden._sprinklers.push_back(sprinkler);
 		garden._programs.push_back(simpleProgram);
 
-		String str = jsonSerializationService.modelToJson(garden);
+		String str;
+		jsonSerializationService->Model2Json(garden, str);
 		Serial.println(str);
 		bool result = SPIFFS.begin();
 
@@ -194,10 +205,15 @@ void setup ( void ) {
 	if (!success)
 		Serial.println("___CRITICAL ERROR___: Failed to start all modules");
 
-	std::shared_ptr<DAL::JsonSerializationService> serService = mfs.container->resolve<DAL::JsonSerializationService>();
+	std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> serService = mfs.container->resolve<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>>();
 	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ what i belive to be the problematic line ");
-	std::shared_ptr<Garden> garden = serService->jsonToModel<Garden>("{\"Garden\":{\"name\":\"FooooodGarden\",\"plants\":[{\"id\":0,\"name\":\"Yellow Lily\",\"sprinkler\":null,\"program\":{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"Off\"}],\"programs\":[{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}]}}");
+	std::shared_ptr<Garden> garden = std::make_shared<Garden>();
+	serService->Json2Model<Garden>(*garden, "{\"name\":\"FooooodGarden\",\"plants\":[{\"program\":22,\"id\":0,\"name\":\"Yellow Lily\"}],\"sprinklers\":[{\"id\":12,\"status\":\"Off\"}],\"programs\":[{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}]}");
+	String jsonGard;
+	serService->Model2Json(*garden, jsonGard);
+	Serial.println(jsonGard);
 	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
+
 	server = mfs.container->resolve<ESP8266WebServer>();
 
 	server->begin();
@@ -227,8 +243,8 @@ void printTime(T timeToday){
 void loop ( void ) {
 //	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	server->handleClient();
-	//printTime(timeService.getCurrentDateTime());
-	//delay(1000 * 60 * 10);//10 min delay
+	printTime(timeService.getCurrentDateTime());
+	delay(1000 * 60 * 0.5);//0.5 min delay
 }
 
 

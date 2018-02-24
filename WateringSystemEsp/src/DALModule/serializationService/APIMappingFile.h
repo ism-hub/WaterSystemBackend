@@ -11,11 +11,10 @@
 #include <vector>
 #include <algorithm>
 #include <WString.h>
-#include <StringUtils.h>
+//#include <StringUtils.h>
 #include <NameValuePair.h>
 #include <Garden.h>
 #include <JsonContex.h>
-#include <string>
 #include <memory>
 #include <Garden.h>
 #include <ObserverDesignPattern/Property.hpp>
@@ -35,7 +34,7 @@ class APIMappingFile {//mapping file of what we are saving to the flash
 		const std::vector<String>& getHrefTokens(){//TODO: 111 After finishing the rest of the service: this code is suppose to do the same as the uri parser in the HttpServletRequest, extract that code to some lib
 			if(tokenizedHref.size() > 0)//already tokenized
 				return tokenizedHref;
-			tokenizedHref = stru::split(href.c_str(), '/');
+			//tokenizedHref = stru::split2(href.c_str(), '/');
 			return tokenizedHref;
 		}
 
@@ -71,7 +70,7 @@ public:
 		if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
 			context.nextName = &key;
 			const int& pid = plant._program()->id();
-			links.push_back(Link(key, "/programs/" + std::to_string(pid) ));//### in the ESP we are using 'String' so we need a different function
+			links.push_back(Link(key, "/programs/" + String(pid) ));//### in the ESP we are using 'String' so we need a different function
 		}
 		context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
 
@@ -79,7 +78,7 @@ public:
 		if(plant._sprinkler() != nullptr){//if sprinkler exists
 			context.nextName = &key;
 			const int& sid = plant._sprinkler()->id();
-			links.push_back(Link(key, "/sprinklers/" + std::to_string(sid)));
+			links.push_back(Link(key, "/sprinklers/" + String(sid)));
 		}
 		context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
 
@@ -188,7 +187,7 @@ public:
 
 	bool checkIfIdInJsonArray(int id, DAL::JsonContex& contex){
 		if(contex.isJsonObject())
-			std::cout << "ERROR: in checkIfIdInJsonArray" << std::endl;
+			Serial.println("ERROR: in checkIfIdInJsonArray");
 
 		JsonArray& jArr = *contex._jsonArr;
 		for(int i = 0; i < jArr.size(); i++){

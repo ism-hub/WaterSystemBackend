@@ -11,7 +11,7 @@
 #include <helpers.h>
 #include <JsonContex.h>
 #include <algorithm>
-#include <iostream>
+//#include <iostream>
 #include <memory>
 #include <ObserverDesignPattern/Property.hpp>
 #include <NameValuePair.h>
@@ -98,7 +98,8 @@ protected:
 
 		//adding this property to the current contex
 		if(!contex.add(t))
-			std::cout << "ERROR: failed to set a key in enable_if<std::is_arithmetic" << std::endl;
+			Serial.println("ERROR: failed to set a key in enable_if<std::is_arithmetic");
+			//std::cout << "ERROR: failed to set a key in enable_if<std::is_arithmetic" << std::endl;
 	}
 
 
@@ -134,7 +135,7 @@ protected:
 			addProperty(*sharedPtr);
 		else{// if we null ptr we need to add null property
 			if(!contexList.back().add((char*)0))
-				std::cout << "ERROR: failed to set null value" << std::endl;
+				Serial.println("ERROR: failed to set null value");
 		}
 	}
 

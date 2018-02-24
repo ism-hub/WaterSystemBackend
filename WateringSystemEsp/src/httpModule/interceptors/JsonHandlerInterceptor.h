@@ -10,7 +10,7 @@
 
 #include <GardenVisitor.h>
 #include <httpModule/dispatcher/HandlerInterceptor.h>
-#include <DALModule/serializationService/JsonSerializationService.h>
+#include <DALModule/serializationService/JsonSerializationService2.h>
 #include <httpModule/interceptors/JsonGardenVisitor.h>
 
 namespace Http {

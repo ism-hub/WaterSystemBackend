@@ -14,25 +14,46 @@
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
 #include <DALModule/repositoryPattern/GardenModelContext.h>
 
-#include <DALModule/serialization/json2.h>
-#include <DALModule/serializationService/JsonSerializationService.h>
+//#include <DALModule/serialization/json2.h>
+#include <JsonSerializationService2.h>
+#include <JsonSaveArchive.h>
+#include <JsonLoadArchive.h>
+#include <FlashMappingFile.h>
+#include <APIMappingFile.h>
 
 
 namespace DALModule {
 
-std::shared_ptr<DAL::GardenUnitOfWork> GardenUnitOfWorkCreator(std::shared_ptr<DAL::JsonSerializationService> jsonSerializationService){
-	return std::make_shared<DAL::GardenUnitOfWork>(std::make_shared<DAL::GardenModelContext>(jsonSerializationService));
+std::shared_ptr<DAL::GardenUnitOfWork> GardenUnitOfWorkCreator(std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> jsonFlashSerializationService){
+	return std::make_shared<DAL::GardenUnitOfWork>(std::make_shared<DAL::GardenModelContext>(jsonFlashSerializationService));
 }
 
+template<typename MappingFileType>
+std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
+	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
+	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
+	typedef DAL::SerializationService2<SaveArchiveType, LoadArchiveType > ServerType;
 
-std::shared_ptr<DAL::JsonSerializationService> JsonSerializationServiceCreator( ){
-	//std::shared_ptr<rapidjson::StringBuffer> jsonSBuffer = std::make_shared<rapidjson::StringBuffer>();
-	//std::shared_ptr<rapidjson::Writer<rapidjson::StringBuffer>> writer = std::make_shared<rapidjson::Writer<rapidjson::StringBuffer>>(jsonSBuffer);
-	std::shared_ptr<cereal2::JSONOutputArchive> outputArchive =std::make_shared<cereal2::JSONOutputArchive>();
+	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
+	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
+	auto serSevice =  std::make_shared<ServerType>(saveArchive, loadArchive);
+	return serSevice;
+}
 
-	std::shared_ptr<cereal2::JSONInputArchive> inputArchive = std::make_shared<cereal2::JSONInputArchive>();
+typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>,
+													mycereal::JsonLoadArchive<DAL::FlashMappingFile>> FlashSerializationServerType;
 
-	return std::make_shared<DAL::JsonSerializationService>(inputArchive, outputArchive);
+std::shared_ptr<FlashSerializationServerType> JsonFlashSerializationServiceCreator( ){
+	DAL::FlashMappingFile flashMappingFile;
+	return createSerializationServer<DAL::FlashMappingFile>(flashMappingFile);
+}
+
+typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>,
+													mycereal::JsonLoadArchive<DAL::APIMappingFile>> APISerializationServerType;
+
+std::shared_ptr<APISerializationServerType> JsonAPISerializationServiceCreator( ){
+	DAL::APIMappingFile flashMappingFile;
+	return createSerializationServer<DAL::APIMappingFile>(flashMappingFile);
 }
 
 class DALModule : public MF::ModuleBase  {
@@ -54,7 +75,9 @@ public:
 		Serial.println("DALModule start");
 #endif
 		container->registerType<DAL::GardenUnitOfWork>(&GardenUnitOfWorkCreator, true);//always gives the same unit of work (meaning all the program share the same context model)
-		container->registerType<DAL::JsonSerializationService>(&JsonSerializationServiceCreator,true);
+		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>> >(&JsonFlashSerializationServiceCreator, true);
+		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>> >(&JsonAPISerializationServiceCreator, true);
+
 	}
 };
 

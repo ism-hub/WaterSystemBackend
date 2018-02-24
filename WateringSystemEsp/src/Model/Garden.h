@@ -14,6 +14,7 @@
 #include <GardenAcceptable.h>
 #include <SimpleProgram.h>
 #include <algorithm>
+#include <NameValuePair.h>
 
 //#include <ModuleFramework/utils.h>
 

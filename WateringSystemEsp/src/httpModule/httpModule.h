@@ -49,8 +49,8 @@ std::shared_ptr<Http::JsonHandlerInterceptor> jsonHandlerInterceptorCreator(std:
 	return std::make_shared<Http::JsonHandlerInterceptor>(jsonGardenVisitor);
 }
 
-std::shared_ptr<GardenModel::JsonGardenVisitor> jsonGardenVisitorCreator(std::shared_ptr<DAL::JsonSerializationService> jsonSerializationService){
-	return std::make_shared<GardenModel::JsonGardenVisitor>(jsonSerializationService);
+std::shared_ptr<GardenModel::JsonGardenVisitor> jsonGardenVisitorCreator(std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>> jsonAPISerializationService){
+	return std::make_shared<GardenModel::JsonGardenVisitor>(jsonAPISerializationService);
 }
 
 
