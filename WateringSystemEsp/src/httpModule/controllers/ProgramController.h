@@ -34,7 +34,7 @@ public:
 	}
 
 	bool canHandle(HttpServletRequest& req) {
-		if (req.httPMethod == HTTP_GET && req.urlTokens[0] == "programs") {
+		if (req.httPMethod == HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == "programs") {
 			return true;
 		}
 		return false;

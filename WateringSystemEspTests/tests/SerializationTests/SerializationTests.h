@@ -70,12 +70,12 @@ GardenModel::Garden createGarden(int gardenIndx){
 
 //memory leaks lane
 template<typename MappingFileType>
-DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType> >& createSerializationServer(MappingFileType& mappingFile) {
+std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
 	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
 	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
-	auto& loadArchive = *(new LoadArchiveType(mappingFile));
-	auto& saveArchive = *(new SaveArchiveType(mappingFile));
-	auto& serSevice = *(new DAL::SerializationService2<SaveArchiveType, LoadArchiveType >(saveArchive, loadArchive));
+	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
+	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
+	auto serSevice = std::make_shared<DAL::SerializationService2<SaveArchiveType, LoadArchiveType >>(saveArchive, loadArchive);
 	return serSevice;
 }
 
@@ -86,7 +86,7 @@ bool serDeserSerTest(GardenModel::Garden& garden, SerializationServiceType& serS
 	String firsSer;
 	serService.Model2Json(garden, firsSer);
 
-	//cout << firsSer << endl;
+	cout << firsSer << endl;
 
 	GardenModel::Garden emptyGarden;
 	serService.Json2Model(emptyGarden, firsSer);//"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
@@ -113,9 +113,9 @@ void DoNothingMappingFileTest(int gardenVariety = 4){
 
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	mycereal::DoNothingMappingFile doNothingMappingFile;
-	auto& serServive = createSerializationServer<mycereal::DoNothingMappingFile>(doNothingMappingFile);
+	auto serServive = createSerializationServer<mycereal::DoNothingMappingFile>(doNothingMappingFile);
 
-	assert(serDeserSerTest(garden, serServive));
+	assert(serDeserSerTest(garden, *serServive));
 }
 
 //testing the FlashMapping
@@ -123,18 +123,18 @@ void FlashMappingFileTest(int gardenVariety = 4){
 
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	DAL::FlashMappingFile flashMappingFile;
-	auto& serServive = createSerializationServer<DAL::FlashMappingFile>(flashMappingFile);
+	auto serServive = createSerializationServer<DAL::FlashMappingFile>(flashMappingFile);
 
-	assert(serDeserSerTest(garden, serServive));
+	assert(serDeserSerTest(garden, *serServive));
 }
 
 void APIMappingFileTest(int gardenVariety = 4){
 
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
-	auto& serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+	auto serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 
-	assert(serDeserSerTest(garden, serServive));
+	assert(serDeserSerTest(garden, *serServive));
 }
 
 //we do it buy creating a model -> serializing it -> deserialize the created json on the same model -> serializing that model and asserting the json is the same as the first one
@@ -142,7 +142,8 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 {
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
-	auto& serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+	auto serServivePtr = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+	auto& serServive = *serServivePtr;
 
 	String firstJson;
 	serServive.Model2Json(garden, firstJson);
@@ -161,7 +162,8 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(int gardenVariety = 4){
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
-	auto& serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+	auto serServivePtr = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+	auto serServive = *serServivePtr;
 
 	String json;
 	serServive.Model2Json(garden, json);

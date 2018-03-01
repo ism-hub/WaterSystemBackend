@@ -46,8 +46,11 @@ public:
 #ifdef DEBUG_MY_CODE
 		Serial.println ( "HttpServletRequest CTOR" );
 #endif
-
+		Serial.println ( "HttpServletRequest CTOR" );
 		addURLTokens(url);
+		Serial.println("url:" + url);
+		Serial.print("size:");
+		Serial.println(urlTokens.size());
 	}
 
 	virtual ~HttpServletRequest() {
@@ -59,6 +62,8 @@ public:
 
 private:
 	void addURLTokens(String url) {
+		if(url.length() == 0 || url.length() == 1)
+			return;
 		int nextTokenStartPlace = 1;
 		int indx = url.indexOf('/', nextTokenStartPlace);
 		while (indx != -1) {

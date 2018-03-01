@@ -165,11 +165,13 @@ void ESP8266WebServer::serveStatic(const char* uri, FS& fs, const char* path, co
 std::shared_ptr<HttpServletRequest> ESP8266WebServer::_createHttpServletRequest(){
     //from what i understood from the text the RequestArgument with the key of "plain" is where the json data is going
     String requestBody="";
-    /*for (int i = 0; i < _currentArgCount; ++i) {
-    	if(_currentArgs[i].key == "plain"){
-    		requestBody = _currentArgs[i].value;
-    	}
-	}*/
+    if(hasArg("plain"))
+    	requestBody = arg("plain");
+    //for (int i = 0; i < _currentArgCount; ++i) {
+    //	if(_currentArgs[i].key == "plain"){
+    //		requestBody = _currentArgs[i].value;
+    //	}
+	//}
     Serial.println ( " before new HttpServletRequest" );
     return std::make_shared<HttpServletRequest>(requestBody, _currentMethod, _currentUri);
 }
@@ -229,24 +231,42 @@ void ESP8266WebServer::handleClient() {
 
     _contentLength = CONTENT_LENGTH_NOT_SET;
 
-    Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+    if(this->method() == HTTPMethod::HTTP_OPTIONS){
+    	Serial.println("inside the default HTTPMethod::HTTP_OPTIONS handling function");
+    	this->sendHeader("Allow", "OPTIONS, GET, HEAD, POST");
+    	// this->sendHeader("Access-Control-Allow-Origin", "*");
+    	this->sendHeader("Access-Control-Allow-Headers", "content-type");
+    	// this->sendHeader("Access-Control-Allow-Methods", "OPTIONS, GET, HEAD, POST");
+    	// this->sendHeader("Content-Type", "application/json");
+    	this->send(200);
+    }else{
+		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 
-    Serial.println ( "Calling _createHttpServletRequest()" );
-    std::shared_ptr<HttpServletRequest> httpServletRequest = _createHttpServletRequest();
+		Serial.println ( "Calling _createHttpServletRequest()" );
+		std::shared_ptr<HttpServletRequest> httpServletRequest = _createHttpServletRequest();
 
-    printServletRequest(*httpServletRequest);
+		printServletRequest(*httpServletRequest);
 
-    Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-    Serial.println ( "Dispatching the request Calling FispatcherServlet.dispatch(HttpServletRequest)" );
-    std::shared_ptr<HttpServletResponse> httpServletResponse = _dispatcherServlet->dispatch(*httpServletRequest);
-
-    Serial.println ( "Sending the http response from the dispatcher" );
-    this->send(httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
+		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+		Serial.println ( "Dispatching the request Calling FispatcherServlet.dispatch(HttpServletRequest)" );
+		std::shared_ptr<HttpServletResponse> httpServletResponse = _dispatcherServlet->dispatch(*httpServletRequest);
 
 
-    //here we need cleanup
-    Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+		Serial.println ( "~~~~The request we got:");
+		printServletRequest(*httpServletRequest);
+		Serial.println ( "~~~~The response we send:");
+		Serial.print("code: ");
+		Serial.println(httpServletResponse->_httpCode);
+		Serial.print("content_type: ");
+		Serial.println(httpServletResponse->content_type);
+		Serial.print("body: ");
+		Serial.println(httpServletResponse->content);
+		this->send(httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
 
+
+		//here we need cleanup
+		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+    }
 
 
     if (!_currentClient.connected()) {

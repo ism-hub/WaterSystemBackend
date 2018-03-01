@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <WString.h>
-//#include <StringUtils.h>
+#include <StringUtils.h>
 #include <NameValuePair.h>
 #include <Garden.h>
 #include <JsonContex.h>
@@ -24,6 +24,23 @@ namespace DAL {
 class APIMappingFile {//mapping file of what we are saving to the flash
 	class Link{
 		std::vector<String> tokenizedHref;
+
+		std::vector<String> ssplit2(const char *str, char c = '/')
+		{
+			std::vector<String> result;
+			String string(str);
+			const char* start = str;
+		    do
+		    {
+		        const char *begin = str;
+		        while(*str != c && *str)
+		            str++;
+		        result.push_back(string.substring(begin - start, str - start));
+		    } while (0 != *str++);
+
+		    return result;
+		}
+
 	public:
 		String rel;
 		String href;
@@ -34,7 +51,7 @@ class APIMappingFile {//mapping file of what we are saving to the flash
 		const std::vector<String>& getHrefTokens(){//TODO: 111 After finishing the rest of the service: this code is suppose to do the same as the uri parser in the HttpServletRequest, extract that code to some lib
 			if(tokenizedHref.size() > 0)//already tokenized
 				return tokenizedHref;
-			//tokenizedHref = stru::split2(href.c_str(), '/');
+			tokenizedHref = ssplit2(href.c_str(), '/');
 			return tokenizedHref;
 		}
 
@@ -70,7 +87,10 @@ public:
 		if(plant._program() != nullptr){// if the plant have the program, adding a key with its id
 			context.nextName = &key;
 			const int& pid = plant._program()->id();
-			links.push_back(Link(key, "/programs/" + String(pid) ));//### in the ESP we are using 'String' so we need a different function
+			char cpid[5];
+			itoa(pid, cpid, 10);// String(pid);
+			String id(cpid);
+			links.push_back(Link(key, "/programs/" + id ));//### in the ESP we are using 'String' so we need a different function
 		}
 		context.listOfNotAllowedKeys.push_back(key);//there wont be a key named program
 
@@ -78,7 +98,10 @@ public:
 		if(plant._sprinkler() != nullptr){//if sprinkler exists
 			context.nextName = &key;
 			const int& sid = plant._sprinkler()->id();
-			links.push_back(Link(key, "/sprinklers/" + String(sid)));
+			char csid[5];
+			itoa(sid, csid, 10);
+			String id(csid);
+			links.push_back(Link(key, "/sprinklers/" + id));
 		}
 		context.listOfNotAllowedKeys.push_back(key);//we dont want a program key of null, no program = no key in the json file
 

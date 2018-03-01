@@ -21,6 +21,7 @@
 
 #include <httpModule/interceptors/JsonHandlerInterceptor.h>
 #include <httpModule/controllers/ProgramController.h>
+#include <httpModule/controllers/GardenController.h>
 
 namespace httpModule {
 
@@ -30,7 +31,6 @@ std::shared_ptr<ESP8266WebServer> ESP8266WebServerCreator(std::shared_ptr<Http::
 
 std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<std::shared_ptr<Http::HandlerExecutionChain>> excecutionChains){
 	return std::make_shared<Http::DispatcherServlet>(excecutionChains);
-
 }
 
 std::shared_ptr<Http::HandlerExecutionChain> plantExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
@@ -43,6 +43,12 @@ std::shared_ptr<Http::HandlerExecutionChain> programExcecutionChainCreator(std::
 	std::shared_ptr<Http::HandlerExecutionChain> programExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::ProgramController>(unitOfWork));
 	programExceChain->addInterceptor(jsonInterceptor);
 	return programExceChain;
+}
+
+std::shared_ptr<Http::HandlerExecutionChain> gardenExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor, std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>> jsonAPISerializationService){
+	std::shared_ptr<Http::HandlerExecutionChain> gardenExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::GardenController>(unitOfWork, jsonAPISerializationService));
+	gardenExceChain->addInterceptor(jsonInterceptor);
+	return gardenExceChain;
 }
 
 std::shared_ptr<Http::JsonHandlerInterceptor> jsonHandlerInterceptorCreator(std::shared_ptr<GardenModel::JsonGardenVisitor> jsonGardenVisitor){
@@ -81,6 +87,7 @@ public:
 		container->registerType<GardenModel::JsonGardenVisitor>(&jsonGardenVisitorCreator);
 
 		container->registerType<Http::HandlerExecutionChain>(&programExcecutionChainCreator);
+		container->registerType<Http::HandlerExecutionChain>(&gardenExcecutionChainCreator);
 	}
 };
 

@@ -205,14 +205,14 @@ void setup ( void ) {
 	if (!success)
 		Serial.println("___CRITICAL ERROR___: Failed to start all modules");
 
-	std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> serService = mfs.container->resolve<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>>();
-	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ what i belive to be the problematic line ");
-	std::shared_ptr<Garden> garden = std::make_shared<Garden>();
-	serService->Json2Model<Garden>(*garden, "{\"name\":\"FooooodGarden\",\"plants\":[{\"program\":22,\"id\":0,\"name\":\"Yellow Lily\"}],\"sprinklers\":[{\"id\":12,\"status\":\"Off\"}],\"programs\":[{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}]}");
-	String jsonGard;
-	serService->Model2Json(*garden, jsonGard);
-	Serial.println(jsonGard);
-	Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
+	//std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> serService = mfs.container->resolve<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>>();
+	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ what i belive to be the problematic line ");
+	//std::shared_ptr<Garden> garden = std::make_shared<Garden>();
+	//serService->Json2Model<Garden>(*garden, "{\"name\":\"FooooodGarden\",\"plants\":[{\"program\":22,\"id\":0,\"name\":\"Yellow Lily\"}],\"sprinklers\":[{\"id\":12,\"status\":\"Off\"}],\"programs\":[{\"id\":22,\"name\":\"not-set\",\"timePattern\":{\"days\":[{\"id\":0,\"hours\":[{\"id\":0,\"hour\":11,\"min\":12}]}]}}]}");
+	//String jsonGard;
+	//serService->Model2Json(*garden, jsonGard);
+	//Serial.println(jsonGard);
+	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
 
 	server = mfs.container->resolve<ESP8266WebServer>();
 
@@ -243,8 +243,10 @@ void printTime(T timeToday){
 void loop ( void ) {
 //	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	server->handleClient();
-	printTime(timeService.getCurrentDateTime());
-	delay(1000 * 60 * 0.5);//0.5 min delay
+	// if(server->hasArg("plain"))
+	//	Serial.println(server->arg("plain"));
+	// printTime(timeService.getCurrentDateTime());
+	// delay(1000 * 60 * 0.5);//0.5 min delay
 }
 
 

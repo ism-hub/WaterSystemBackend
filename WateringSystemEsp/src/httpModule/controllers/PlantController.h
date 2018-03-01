@@ -41,7 +41,7 @@ public:
 	}
 
 	bool canHandle(HttpServletRequest& req) {
-		if(req.httPMethod == HTTP_GET && req.urlTokens[0] == "plants"){
+		if(req.httPMethod == HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == "plants"){
 #ifdef DEBUG_MY_CODE
 			Serial.println ("Plant controller can handle the request." );
 #endif

@@ -12,6 +12,14 @@
 
 typedef std::string String;
 
+class SerialClass {
+public:
+	void println(String str){
+		std::cout << str << std::endl;
+	}
+};
+
+SerialClass Serial;
 /*class String : public std::string {
 public:
 	String() : std::string() {}

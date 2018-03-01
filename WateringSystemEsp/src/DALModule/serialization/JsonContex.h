@@ -30,6 +30,17 @@ public:
 		return _isJsonObj;
 	}
 
+	void printAllKeys(){
+		if(!_isJsonObj){
+			Serial.println("we not and object");
+			return;
+		}
+
+		for (const JsonPair& pair : *_jsonObj) {
+			Serial.println(pair.key);
+		}
+	}
+
 	JsonContex createNestedObject() {
 		if(_isJsonObj)
 			return JsonContex(&(_jsonObj->createNestedObject(*nextName)));
@@ -67,7 +78,8 @@ public:
 	bool containsKey(const TString& key){
 		if(!_isJsonObj)
 			return false;
-		return _jsonObj->containsKey(key);
+		bool b = _jsonObj->containsKey(key);
+		return b;
 	}
 
 	class opTgetKet{

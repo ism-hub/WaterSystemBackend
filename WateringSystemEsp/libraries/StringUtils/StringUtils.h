@@ -13,8 +13,8 @@
 
 namespace stru  {
 
-/*
-std::vector<String> split(const char *str, char c = '/')
+
+/*std::vector<String> split(const char *str, char c = '/')
 {
 	std::vector<String> result;
     do
@@ -28,7 +28,7 @@ std::vector<String> split(const char *str, char c = '/')
     return result;
 }*/
 
-std::vector<String> split(const char *str, char c = '/')
+/*std::vector<String> split2(const char *str, char c = '/')
 {
 	std::vector<String> result;
 	String string(str);
@@ -42,7 +42,23 @@ std::vector<String> split(const char *str, char c = '/')
     } while (0 != *str++);
 
     return result;
-}
+}*/
+
+/*std::vector<String> ssplit2(const char *str, char c = '/')
+{
+	std::vector<String> result;
+	String string(str);
+	const char* start = str;
+    do
+    {
+        const char *begin = str;
+        while(*str != c && *str)
+            str++;
+        result.push_back(string.substring(begin - start, str - start));
+    } while (0 != *str++);
+
+    return result;
+}*/
 
 }
 
