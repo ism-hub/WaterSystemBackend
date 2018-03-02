@@ -158,7 +158,6 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 	assert(firstJson == secondJson);
 }
 
-//
 void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(int gardenVariety = 4){
 	GardenModel::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
@@ -203,8 +202,6 @@ void run(){
 		APIMappingFileMergingJsonArrayIntoExistingVectorTest(i);
 		APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(i);
 	}
-
-
 }
 
 
