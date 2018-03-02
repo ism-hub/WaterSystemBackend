@@ -86,7 +86,7 @@ bool serDeserSerTest(GardenModel::Garden& garden, SerializationServiceType& serS
 	String firsSer;
 	serService.Model2Json(garden, firsSer);
 
-	cout << firsSer << endl;
+	//cout << firsSer << endl;
 
 	GardenModel::Garden emptyGarden;
 	serService.Json2Model(emptyGarden, firsSer);//"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
@@ -194,14 +194,64 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTe
 	assert(json == jsonAfterMerging);
 }
 
+void APIMappingFileDeletingLinks(int gardenVariety = 4){
+	GardenModel::Garden garden = createGarden(gardenVariety);
+	DAL::APIMappingFile apiMappingFile;
+	auto serService = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+
+	String json;
+	serService->Model2Json(garden, json);
+
+	bool alwaysPass = true;
+
+	for(const auto& plant : garden._plants.getInnerVector()){
+		if(plant.get()->_program != nullptr || plant.get()->_sprinkler != nullptr)
+			alwaysPass = false;
+		plant.get()->_program = nullptr;
+		plant.get()->_sprinkler = nullptr;
+	}
+
+	String jsonWithoutPlantProgSprink;
+	serService->Model2Json(garden, jsonWithoutPlantProgSprink);
+
+	assert(alwaysPass || (jsonWithoutPlantProgSprink != json));
+
+}
+
+void temp(int gardenVariety = 4){
+	GardenModel::Garden garden; //= createGarden(gardenVariety);
+	DAL::APIMappingFile apiMappingFile;
+	auto serService = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
+
+	const String json1 =
+			"{\"name\":\"Food Garden\",\"plants\":[{\"links\":[{\"rel\":\"program\",\"href\":\"/programs/123\"},{\"rel\":\"sprinkler\",\"href\":\"/sprinklers/1\"}],\"id\":11,\"name\":\"plantA22\"}],\"sprinklers\":[{\"id\":1,\"status\":\"On\"}],\"programs\":[{\"id\":123,\"name\":\"simpleProgramA\",\"timePattern\":{\"days\":[{\"id\":80,\"hours\":[{\"id\":111,\"hour\":9,\"min\":30}]}]}}]}";
+	serService->Json2Model(garden, json1);
+
+	String json2;
+	serService->Model2Json(garden, json2);
+	cout << json2 << endl;
+
+	String json3 =
+			"{\"name\":\"Food Garden\",\"plants\":[{\"links\":[{\"rel\":\"sprinkler\",\"href\":\"/sprinklers/1\"}],\"id\":11,\"name\":\"plantA22\"}],\"programs\":[{\"id\":123,\"name\":\"simpleProgramA\",\"timePattern\":{\"days\":[{\"id\":80,\"hours\":[{\"id\":111,\"hour\":9,\"min\":30}]}]}}],\"sprinklers\":[{\"id\":1,\"status\":\"On\"}]}";
+	serService->Json2Model(garden, json3);
+
+	String json4;
+	serService->Model2Json(garden, json4);
+	cout << json4 << endl;
+
+
+}
+
 void run(){
-	for(int i = 1; i <= numberOfDifferentGardens; i++){
+	temp();
+	/*for(int i = 1; i <= numberOfDifferentGardens; i++){
 		DoNothingMappingFileTest(i);
 		FlashMappingFileTest(i);
 		APIMappingFileTest(i);
 		APIMappingFileMergingJsonArrayIntoExistingVectorTest(i);
 		APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(i);
-	}
+		APIMappingFileDeletingLinks(i);
+	}*/
 }
 
 

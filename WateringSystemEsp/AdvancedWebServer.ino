@@ -68,8 +68,8 @@
 
 
 
-const char *ssid = "rina";//"AndroidAP";//
-const char *password = "1qwer5counterstrike";//"nakr0097";//
+const char *ssid = "AndroidAP";//"rina";//
+const char *password = "nakr0097";//"1qwer5counterstrike";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
 

@@ -47,8 +47,7 @@ public:
 		if(canHandle(req) && req.httPMethod == HTTP_POST && req.requestBody != ""){
 			Serial.println("inside GardenController 'handle' handling post");
 			garden = _unitOfWork->Garden().getById(-1);
-			Garden& gard = *garden;
-			_apiSerService->Json2Model(gard, req.requestBody);
+			_apiSerService->Json2Model(*garden, req.requestBody);
 		}
 		return garden;
 	}

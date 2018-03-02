@@ -40,6 +40,19 @@ class APIMappingFile {//mapping file of what we are saving to the flash
 
 		    return result;
 		}
+		/*std::vector<String> ssplit2(const char *str, char c = '/')
+		{
+			std::vector<String> result;
+		    do
+		    {
+		        const char *begin = str;
+		        while(*str != c && *str)
+		            str++;
+		        result.push_back(String(begin, str));
+		    } while (0 != *str++);
+
+		    return result;
+		}*/
 
 	public:
 		String rel;
@@ -115,17 +128,29 @@ public:
 		//context.listOfNotAllowedKeys.push_back("sprinkler");
 		std::vector<Link> links;
 		archive.loadProperties(MACRO_NVP(links));
+		bool sawProgramLink = false;
+		bool sawSprinklerLink = false;
 
 		for(auto& link : links){
 			if(link.rel == "program" && !link.getHrefTokens().empty()){
+				sawProgramLink = true;
 				int pid = atoi(link.getHrefTokens().back().c_str());
 				archive.addCallBack([pid ,&plant](){plant.setProgram(pid);});
 			}
 			else if(link.rel == "sprinkler") {
+				sawSprinklerLink = true;
 				int sid = atoi(link.getHrefTokens().back().c_str());
 				archive.addCallBack([sid ,&plant](){plant.setSprinkler(sid);});
 			}
 		}
+
+		if(!sawProgramLink){// if we didn't see it, it means we deleted it
+			plant._program.set(nullptr);
+		}
+		if(!sawSprinklerLink){
+			plant._sprinkler.set(nullptr);
+		}
+
 	}
 
 	template<typename T, typename A>

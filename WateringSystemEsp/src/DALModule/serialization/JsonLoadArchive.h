@@ -49,6 +49,7 @@ public:
 	void clear(){
 		contexList.clear();
 		jsonBuffer.clear();
+		callbacks.clear();
 	}
 
 	void addCallBack(std::function<void()> fnc){
