@@ -13,9 +13,14 @@
 
 #include <httpModule/httpModule.h>
 
+#include <ServiceFrameworkModule/ServiceFrameworkModule.h>
+
 namespace config {
 
-void moduleMap(MF::ModuleService& mfs){
+void moduleMap(MF::ModuleService& mfs) {
+
+	mfs.registerModule<sfwkModule::ServiceFrameworkModule>();
+
 	mfs.registerModule<DALModule::DALModule>();
 
 	mfs.registerModule<httpModule::httpModule>()->

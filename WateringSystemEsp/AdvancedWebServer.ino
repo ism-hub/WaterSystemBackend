@@ -66,12 +66,14 @@
 
 #include <TimeModule/timeService/TimeService.h>
 
+#include <ServiceFrameWork.h>
 
 
 const char *ssid = "AndroidAP";//"rina";//
 const char *password = "nakr0097";//"1qwer5counterstrike";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
+std::shared_ptr<sfwk::ServiceFrameWork> serviceFrameWork = nullptr;
 
 template<typename MappingFileType>
 std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
@@ -214,6 +216,7 @@ void setup ( void ) {
 	//Serial.println(jsonGard);
 	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
 
+	serviceFrameWork = mfs.container->resolve<sfwk::ServiceFrameWork>();
 	server = mfs.container->resolve<ESP8266WebServer>();
 
 	server->begin();
