@@ -18,6 +18,7 @@
 #include <JsonSaveArchive.h>
 #include <JsonLoadArchive.h>
 #include <FlashMappingFile.h>
+#include <IGardenModelContex.h>
 
 //#include <JsonGardenVisitor.h>
 //#include <GardenRepository.h>
@@ -32,7 +33,7 @@ using namespace GardenModel;
 
 namespace DAL {
 typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>,mycereal::JsonLoadArchive<DAL::FlashMappingFile>> FlashSerializationSerice;
-class GardenModelContext {
+class GardenModelContext : public IGardenModelContex {
 public:
 	std::shared_ptr<Garden> 				_garden = nullptr;
 	std::shared_ptr<FlashSerializationSerice> _jsonSerializationService;

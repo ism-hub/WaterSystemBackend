@@ -18,8 +18,9 @@ class Hour{//24 format
 
 public:
 	int id = 0;
-	int hour=0;
-	int min=0;
+	int hour = 0;
+	int min = 0;
+	int sec = 0;
 
 	Hour(){
 #ifdef DEBUG_MY_CODE
@@ -58,6 +59,11 @@ public:
 		return false;
 	}
 
+	//the minutes between them
+	int operator-(const Hour& rhs) const{
+		int minDiff = (hour - rhs.hour)*60*60 + (min - rhs.min)*60 + sec - rhs.sec;
+		return minDiff;
+	}
 
 	template <class Archive>
 	void save(Archive& archive) const {

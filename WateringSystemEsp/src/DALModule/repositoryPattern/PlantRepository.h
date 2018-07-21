@@ -8,16 +8,16 @@
 #ifndef DAL_PLANTREPOSITORY_H_
 #define DAL_PLANTREPOSITORY_H_
 
-#include <DALModule/repositoryPattern/GardenModelContext.h>
+#include <GardenModelContext.h>
 
 namespace DAL {
 
 class PlantRepository : public Repository<Plant>{
 protected:
-	GardenModelContext& _contexModel;
+	IGardenModelContex& _contexModel;
 
 public:
-	PlantRepository(GardenModelContext& contexModel) : _contexModel(contexModel) {
+	PlantRepository(IGardenModelContex& contexModel) : _contexModel(contexModel) {
 #ifdef DEBUG_MY_CODE
 		Serial.println("PlantRepository CTOR");
 #endif
@@ -34,7 +34,11 @@ public:
 	}
 
 	std::vector<std::weak_ptr<Plant>> getAll() {
-		return std::vector<std::weak_ptr<Plant>>(); //TODO: implement this
+		std::vector<std::weak_ptr<Plant>> retVec; //TODO: implement this
+		for(auto plant : _contexModel.getGarden()->_plants.getInnerVector()) {
+			retVec.push_back(plant.get());
+		}
+		return retVec;
 	}
 
 	bool add(Plant&& entity){

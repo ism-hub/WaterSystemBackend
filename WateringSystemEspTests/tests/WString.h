@@ -9,6 +9,23 @@
 #define WSTRING_H_
 
 #include <iostream>
+#include <time.h>
+
+#define HIGH 1
+#define LOW	 0
+
+#define D1	 1
+#define D2	 2
+#define D3	 3
+
+void digitalWrite(int pinId, int status){
+	std::cout << "!!!!!!!!!!Setting pin ";
+	std::cout <<  pinId;
+	std::cout << "to ";
+	std::cout <<  status << std::endl;
+}
+
+
 
 typedef std::string String;
 
@@ -17,9 +34,27 @@ public:
 	void println(String str){
 		std::cout << str << std::endl;
 	}
+
+	void print(String str){
+		std::cout << str;
+	}
+
+	void print(const int& i){
+		std::cout << i;
+	}
+
+	void println(const int& i){
+		std::cout << i << std::endl;
+	}
 };
 
 SerialClass Serial;
+
+unsigned long startTime = time(0);
+
+unsigned long millis() {
+	return startTime - time(0);
+}
 /*class String : public std::string {
 public:
 	String() : std::string() {}

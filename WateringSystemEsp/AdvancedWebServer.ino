@@ -69,11 +69,12 @@
 #include <ServiceFrameWork.h>
 
 
-const char *ssid = "AndroidAP";//"rina";//
-const char *password = "nakr0097";//"1qwer5counterstrike";//
+const char *ssid = "rina";//"AndroidAP";//
+const char *password = "1qwer5counterstrike";//"nakr0097";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
 std::shared_ptr<sfwk::ServiceFrameWork> serviceFrameWork = nullptr;
+std::shared_ptr<sched::SchedulerService> scheduler = nullptr;
 
 template<typename MappingFileType>
 std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
@@ -93,26 +94,47 @@ void writeGardenToFlash(){
 		garden.name = String("FooooodGarden");
 		std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();
 		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
-		//std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
-		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
+		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+		//std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
 
 		Serial.print("plant->_sprinkler is ");
 		Serial.println(plant->_sprinkler == nullptr ? "null" : "not-null");
 
 		plant->name = "Yellow Lily";
-		sprinkler->id = 12;
+		plant->id = 1;
+		sprinkler->id = 1;
+		sprinkler->status = GardenModel::Sprinkler::Off;
 
-		std::vector<GardenModel::Hour> hours = {GardenModel::Hour(11,12)};
+		std::vector<GardenModel::Hour> hours = {GardenModel::Hour(13,18)};
 		std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
 		simpleProgram->timePattern = TimePattern(days);
-		simpleProgram->id = 22;
+		simpleProgram->id = 1;
+
+		//Adding another plant with sprinkler and program
+		std::shared_ptr<GardenModel::Sprinkler> sprinkler2 = std::make_shared<GardenModel::Sprinkler>();
+		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram2 = std::make_shared<GardenModel::SimpleProgram>();
+		std::shared_ptr<GardenModel::Plant> plant2 = std::make_shared<GardenModel::Plant>(sprinkler2, simpleProgram2);
+
+		plant2->name = "Yellow Lily2";
+		plant2->id = 2;
+		sprinkler2->id = 2;
+		sprinkler2->status = GardenModel::Sprinkler::Off;
+
+		std::vector<GardenModel::Hour> hours2 = {GardenModel::Hour(13,20)};
+		std::vector<GardenModel::Day> days2 = {GardenModel::Day(hours2)};
+		simpleProgram2->timePattern = TimePattern(days2);
+		simpleProgram2->id = 2;
+
 
 
 		DAL::FlashMappingFile flashMappingFile;
 		auto jsonSerializationService = createSerializationServer(flashMappingFile);
-		garden._plants.push_back(plant);
 		garden._sprinklers.push_back(sprinkler);
+		garden._sprinklers.push_back(sprinkler2);
 		garden._programs.push_back(simpleProgram);
+		garden._programs.push_back(simpleProgram2);
+		garden._plants.push_back(plant);
+		garden._plants.push_back(plant2);
 
 		String str;
 		jsonSerializationService->Model2Json(garden, str);
@@ -154,7 +176,8 @@ void writeGardenToFlash(){
 	}
 }*/
 
-TS::TimeService timeService;
+//TS::TimeService timeService;
+std::shared_ptr<TS::TimeService> timeService;
 
 void setup ( void ) {
 	Serial.begin ( 115200 );
@@ -198,7 +221,7 @@ void setup ( void ) {
 	intProp = 5;
 	intProp = 97;*/
 
-	writeGardenToFlash();
+	// %%%%%%%%%%%%% writeGardenToFlash();
 //blabla
 	MF::ModuleService mfs;
 	config::moduleMap(mfs);
@@ -222,15 +245,31 @@ void setup ( void ) {
 	server->begin();
 
 	//initiate the TimeService (will be in the module later)
-	timeService.initCurrentTime(myDate::my_clock::time_point{std::chrono::seconds{1507920363}});//18:46:03 UTC
+	//timeService.initCurrentTime(myDate::my_clock::time_point{std::chrono::seconds{1507920363}});//18:46:03 UTC
 
+	timeService = mfs.container->resolve<TS::TimeService>();
+	timeService->getCurrentDateTime();
 
-	//timeService.
+	scheduler = mfs.container->resolve<sched::SchedulerService>();
+
+	//####### pintest
+	Serial.println("Writing pin D1 to high");
+	pinMode(D1, OUTPUT);
+	pinMode(D2, OUTPUT);
+	pinMode(D8, OUTPUT);
+
+	digitalWrite(D1, LOW);
+	digitalWrite(D2, LOW);
+	digitalWrite(D8, LOW);
+
+	//delay(5000);
+	//digitalWrite(D1, LOW);
 
 	Serial.println("HTTP server started");
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	Serial.println(millis());
 }
+
 
 template <class T>
 void printTime(T timeToday){
@@ -243,13 +282,53 @@ void printTime(T timeToday){
 	Serial.println();
 }
 
+
 void loop ( void ) {
 //	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	server->handleClient();
+
+	scheduler->execute();
+
+	static int last = 0;
+	static bool printTimeNow = true;
+	if (((millis () - last) > (1000 * 60 * 5)) || printTimeNow ) {//5 minute has passed
+		printTime(timeService->getCurrentDateTime());
+		last = millis();
+		printTimeNow = false;
+	}
+
+	/*digitalWrite(D1, LOW);
+	digitalWrite(D2, LOW);
+	delay(3000);
+	Serial.println("After 3 sec switch to high");
+
+	digitalWrite(D1, HIGH);
+	digitalWrite(D2, HIGH);
+	delay(3000);*/
+	// ************* time stuff
+	/*static int i = 0;
+	static int last = 0;
+	if (syncEventTriggered) {
+		processSyncEvent (ntpEvent);
+		syncEventTriggered = false;
+	}
+	 if ((millis () - last) > 5100) {
+		//Serial.println(millis() - last);
+		last = millis ();
+		Serial.print (i); Serial.print (" ");
+		Serial.print (NTP.getTimeDateString ()); Serial.print (" ");
+		Serial.print (NTP.isSummerTime () ? "Summer Time. " : "Winter Time. ");
+		Serial.print ("WiFi is ");
+		Serial.print (WiFi.isConnected () ? "connected" : "not connected"); Serial.print (". ");
+		Serial.print ("Uptime: ");
+		Serial.print (NTP.getUptimeString ()); Serial.print (" since ");
+		Serial.println (NTP.getTimeDateString (NTP.getFirstSync ()).c_str ());
+		i++;
+	}*/
+
 	// if(server->hasArg("plain"))
 	//	Serial.println(server->arg("plain"));
-	// printTime(timeService.getCurrentDateTime());
-	// delay(1000 * 60 * 0.5);//0.5 min delay
+
 }
 
 

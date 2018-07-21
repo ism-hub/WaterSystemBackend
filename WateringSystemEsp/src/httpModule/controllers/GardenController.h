@@ -48,6 +48,8 @@ public:
 			Serial.println("inside GardenController 'handle' handling post");
 			garden = _unitOfWork->Garden().getById(-1);
 			_apiSerService->Json2Model(*garden, req.requestBody);
+			if(!_unitOfWork->complete())
+				Serial.println("__ERR didnt save the garden ");
 		}
 		return garden;
 	}

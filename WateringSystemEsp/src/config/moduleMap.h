@@ -15,13 +15,27 @@
 
 #include <ServiceFrameworkModule/ServiceFrameworkModule.h>
 
+#include <SchedulerModule/SchedulerModule.h>
+#include <HardwareModule/HardwareModule.h>
+#include <TimeModule/TimeModule.h>
+
 namespace config {
 
 void moduleMap(MF::ModuleService& mfs) {
 
+	mfs.registerModule<TM::TimeModule>();
+
 	mfs.registerModule<sfwkModule::ServiceFrameworkModule>();
 
+	mfs.registerModule<schedmodule::SchedulerModule>()->
+			registerDependenciesTypes<TM::TimeModule>();
+
 	mfs.registerModule<DALModule::DALModule>();
+
+	mfs.registerModule<hrdwrmodule::HardwareModule>()->
+			registerDependenciesTypes<schedmodule::SchedulerModule,
+										sfwkModule::ServiceFrameworkModule,
+										DALModule::DALModule>();
 
 	mfs.registerModule<httpModule::httpModule>()->
 			registerDependenciesTypes<DALModule::DALModule>();

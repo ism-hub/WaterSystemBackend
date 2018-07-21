@@ -15,16 +15,20 @@ namespace sfwk {
 
 class IService {
 	const String _id;
-	std::vector<String> _dependencies;
+	// std::vector<String> _dependencies;
 public:
 
 	IService(const String id): _id(id){}
 
 	const String getId(){return _id;}
-	void AddDependency (String id){_dependencies.push_back(id);}
+	// void AddDependency (String id){_dependencies.push_back(id);}
 
 	virtual int StartService() = 0;
-	virtual int RestartService() = 0;
+	virtual int RestartService() {
+		StopService();
+		StartService();
+		return 1;
+	}
 	virtual int StopService() = 0;
 
 	virtual ~IService() {}

@@ -79,8 +79,6 @@ public:
 		const std::vector<String>& bannedKeys = contex.listOfNotAllowedKeys;
 		if(std::find(bannedKeys.begin(), bannedKeys.end(), head.name) != bannedKeys.end())//if we already have this key we dont handle this object
 			return;
-		if(head.name == "links")
-			int i =2;
 		if(!contex.containsKey(head.name))
 			return;
 

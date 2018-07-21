@@ -31,7 +31,7 @@ public:
 	Model::Property<std::shared_ptr<Sprinkler> > _sprinkler;
 	Model::Property<String> name;
 	Model::Property<std::shared_ptr<SimpleProgram> > _program;
-	Garden* garden;//when we add the plant to the garden the garden will set that TODO:When revisiting the model correctness - try to look on the EMF project and see how they handled that double relationship (child have apointer to the parent too)
+	Garden* garden = NULL;//when we add the plant to the garden the garden will set that TODO:When revisiting the model correctness - try to look on the EMF project and see how they handled that double relationship (child have apointer to the parent too)
 	//XXX: 111111111 ASAP see above, omfg "Garden* garden;"
 
 	Plant(std::shared_ptr<Sprinkler> sprinkler = nullptr, std::shared_ptr<SimpleProgram> program = nullptr): id(0), _sprinkler(sprinkler), name("Lily"), _program(program){

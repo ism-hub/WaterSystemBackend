@@ -7,13 +7,13 @@
 
 #include <iostream>
 #include <SerializationTests/SerializationTests.h>
+#include <HardwareTests/HardwareTests.h>
 
 using namespace std;
 
 
 int main() {
-	cout << "start running SerializationTests" << endl;
-	SerializationTests::run();
-	cout << "done running SerializationTests" << endl;
+	//SerializationTests::run();
+	HardwareTests::run();
 
 }

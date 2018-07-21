@@ -8,11 +8,12 @@
 #ifndef DAL_GARDENUNITOFWORK_H_
 #define DAL_GARDENUNITOFWORK_H_
 
-#include <DALModule/repositoryPattern/GardenRepository.h>
-#include <DALModule/repositoryPattern/PlantRepository.h>
-#include <DALModule/repositoryPattern/SprinklerRepository.h>
-#include <DALModule/repositoryPattern/ProgramRepository.h>
+#include <GardenRepository.h>
+#include <PlantRepository.h>
+#include <SprinklerRepository.h>
+#include <ProgramRepository.h>
 #include <memory>
+#include <IGardenModelContex.h>
 
 namespace DAL {
 
@@ -23,10 +24,10 @@ private:
 	SprinklerRepository 	_sprinklerRepository;
 	ProgramRepository 		_programRepository;
 public:
-	std::shared_ptr<GardenModelContext> 	_gardenContext;
+	std::shared_ptr<IGardenModelContex> 	_gardenContext;
 
 public:
-	GardenUnitOfWork(std::shared_ptr<GardenModelContext> gardenContext) :// check what happens object wise, the objects i initiated here getting deleted after the CTOR end or after the object end
+	GardenUnitOfWork(std::shared_ptr<IGardenModelContex> gardenContext) :// check what happens object wise, the objects i initiated here getting deleted after the CTOR end or after the object end
 		_gardenRepository(GardenRepository(*gardenContext)),
 		_plantRepository(PlantRepository(*gardenContext)),
 		_sprinklerRepository( SprinklerRepository(*gardenContext)),

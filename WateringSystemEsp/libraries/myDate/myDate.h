@@ -9,6 +9,8 @@
 #define LIBRARIES_MYDATE_MYDATE_H_
 
 #include <chrono>
+#include <WString.h>// can delete it, to define 'millis' for the tests
+
 
 #  define CONSTDATA constexpr const
 #  define CONSTCD11 constexpr

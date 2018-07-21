@@ -77,7 +77,7 @@ public:
 		Serial.println("Calling the HandlerInterceptors post handle");
 #endif
 		//HandlerInterceptors post handle
-		for (int i = 0; i < _handlerInterceptors.size(); i++) {
+		for (size_t i = 0; i < _handlerInterceptors.size(); i++) {
 			_handlerInterceptors[i]->postHandle(req, *response, *_controller,*gardenAcceptable);
 		}
 

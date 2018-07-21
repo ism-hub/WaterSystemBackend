@@ -8,17 +8,17 @@
 #ifndef DALMODULE_REPOSITORYPATTERN_PROGRAMREPOSITORY_H_
 #define DALMODULE_REPOSITORYPATTERN_PROGRAMREPOSITORY_H_
 
-#include <DALModule/repositoryPattern/GardenModelContext.h>
-#include <DALModule/repositoryPattern/Repository.h>
+#include <GardenModelContext.h>
+#include <Repository.h>
 
 namespace DAL {
 
 class ProgramRepository : Repository<GardenModel::SimpleProgram>{
 protected:
-	GardenModelContext& _contexModel;
+	IGardenModelContex& _contexModel;
 
 public:
-	ProgramRepository(GardenModelContext& contexModel) : _contexModel(contexModel) {
+	ProgramRepository(IGardenModelContex& contexModel) : _contexModel(contexModel) {
 
 	}
 	virtual ~ProgramRepository(){

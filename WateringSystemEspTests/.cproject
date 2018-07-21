@@ -26,6 +26,17 @@
 								<option id="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level.531763840" name="Debug Level" superClass="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.268878397" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/tests}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/HardwareModule/chips}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/HardwareModule/SPIService}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/HardwareModule/chips}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/HardwareModule/SPIService}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/DALModule/repositoryPattern}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/myDate}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/TimeModule/timeService}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/tests/HardwareTests}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/SchedulerModule/service}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/HardwareModule/controllers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/tests/SerializationTests}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ArduinoJson}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/StringUtils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/Model}&quot;"/>
@@ -52,8 +63,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="tests"/>
+						<entry excluding="tests|HardwareRests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="HardwareRests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="tests"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -99,8 +110,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="tests"/>
+						<entry excluding="tests|HardwareRests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="HardwareRests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="tests"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

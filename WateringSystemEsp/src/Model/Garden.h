@@ -19,7 +19,7 @@
 //#include <ModuleFramework/utils.h>
 
 #include <ObserverDesignPattern/ObservableVector.h>
-
+#include <Pump.h>
 
 //#include <se>
 
@@ -33,6 +33,7 @@ public:
 	Model::ObservableVector<Model::Property<std::shared_ptr<Plant>> > _plants;
 	Model::ObservableVector<Model::Property<std::shared_ptr<Sprinkler>> > _sprinklers;
 	Model::ObservableVector<Model::Property<std::shared_ptr<SimpleProgram>> > _programs;
+	std::shared_ptr<Pump> _pump = std::make_shared<Pump>();
 
 	Garden() {
 #ifdef DEBUG_MY_CODE

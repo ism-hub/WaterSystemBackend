@@ -77,11 +77,11 @@ class Property : public NotifyChangeSignalable<T>{
   // sets the Property to a new value. before_change() and
   // on_change() will be emitted.
   virtual void set(T const& value) {
-    if (value != value_) {
-    	NotifyChangeSignalable<T>::before_change().emit(value_);
-      value_ = value;
-      NotifyChangeSignalable<T>::on_change().emit(value_);
-    }
+	  if (value != value_) {
+		  NotifyChangeSignalable<T>::before_change().emit(value);
+		  value_ = value;
+		  NotifyChangeSignalable<T>::on_change().emit(value_);
+	  }
   }
 
   // sets the Property to a new value. before_change() and

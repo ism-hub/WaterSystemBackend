@@ -70,7 +70,21 @@ public:
 	void push_back(T&& __x){
 		NotifyChangeSignalable<T, Change>::before_change().emit(__x, Change::Added);
 		vector_.push_back(__x);//std::forward?
-		NotifyChangeSignalable<T, Change>::on_change().emit(__x, Change::Added);
+		NotifyChangeSignalable<T, Change>::on_change().emit(vector_.back(), Change::Added);
+	}
+
+	typename std::vector<T>::iterator erase(typename std::vector<T>::iterator __position)
+	{
+		// Serial.println("called obsvec erase fnc");
+		T t = *__position;
+		NotifyChangeSignalable<T, Change>::before_change().emit(*__position, Change::Deleted);
+		auto ret =  vector_.erase(__position);
+		NotifyChangeSignalable<T, Change>::on_change().emit(t, Change::Deleted);
+		return ret;
+	}
+
+	typename std::vector<T>::size_type size() {
+		return vector_.size();
 	}
 
 	/*template<typename _Tp, typename _Alloc>
