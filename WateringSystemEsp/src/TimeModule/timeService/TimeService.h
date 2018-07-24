@@ -15,7 +15,7 @@
 
 // *********** time stuff
 // #include <TimeLib.h>
-#include <NtpClient/src/NtpClientLib.h>
+#include <NtpClientLib.h>
 int8_t timeZone = 2;
 int8_t minutesTimeZone = 0;
 bool syncEventTriggered = false; // True if a time even has been triggered

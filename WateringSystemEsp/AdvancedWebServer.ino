@@ -48,8 +48,6 @@
 #include <type_traits>
 #include <limits>
 
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 
 #include <ModuleFramework/ModuleService.h>
 #include <ModuleFramework/SomeModule.h>
@@ -68,9 +66,11 @@
 
 #include <ServiceFrameWork.h>
 
+#include <SPI.h>
 
-const char *ssid = "rina";//"AndroidAP";//
-const char *password = "1qwer5counterstrike";//"nakr0097";//
+
+const char *ssid = "Ratatata";//"AndroidAP";//
+const char *password = "c0un73rs7r1k3";//"nakr0097";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
 std::shared_ptr<sfwk::ServiceFrameWork> serviceFrameWork = nullptr;
@@ -261,6 +261,36 @@ void setup ( void ) {
 	digitalWrite(D1, LOW);
 	digitalWrite(D2, LOW);
 	digitalWrite(D8, LOW);
+
+
+	//************************************************************** SPI TESTS
+	//setting the select pin to (deselect state) high
+	/*pinMode(SS, OUTPUT);
+	digitalWrite(SS, HIGH);
+	//configuring the SPI
+	SPI.begin();
+	SPISettings mySettting(500, MSBFIRST, SPI_MODE0);
+	SPI.beginTransaction(mySettting);
+
+
+	uint8_t counter = 0;
+	while(true){
+		delay(2000);
+		digitalWrite(SS, LOW);
+		delay(500);
+		SPI.transfer(counter++);
+		delay(500);
+		digitalWrite(SS, HIGH);
+		Serial.println(counter);
+	}*/
+
+
+
+
+	//Transferring something
+
+
+
 
 	//delay(5000);
 	//digitalWrite(D1, LOW);

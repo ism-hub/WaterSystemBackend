@@ -14,7 +14,7 @@
 //************ task schedule stuff
 #define _TASK_WDT_IDS
 #define _TASK_STD_FUNCTION
-#include <TaskScheduler/src/TaskScheduler.h>
+#include <TaskScheduler.h>
 #include <TimeService.h>
 
 namespace sched {

@@ -20,6 +20,7 @@
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.671015522" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.1384097894" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/MYESP8266WebServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/HardwareModule/SPIService}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/HardwareModule/chips}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/HardwareModule/controllers}&quot;"/>
@@ -29,7 +30,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/myDate}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/DALModule/repositoryPattern}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/TaskScheduler}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/NtpClient}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/Time}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/ServiceFramework}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/StringUtils}&quot;"/>
@@ -44,19 +44,33 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src/Model}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.176035448" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.compiler.c.510521233" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
 								<option id="io.sloeber.compiler.c.sketch.option.incpath.1457846798" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266mDNS}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.833616818" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -68,6 +82,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/TaskScheduler/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/NtpClientLib/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/WateringSystemEsp/libraries/ESP8266WebServer/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.521560179" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
