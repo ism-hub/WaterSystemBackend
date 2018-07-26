@@ -70,7 +70,7 @@ public:
         return std::make_shared<Http::HttpServletRequest>(requestBody, ourMethod, server.uri());
     }
 
-    /*void printServletRequest(Http::HttpServletRequest& req){
+    void printServletRequest(Http::HttpServletRequest& req){
     	Serial.println("The Request parameters:");
     	Serial.println("url: " + req.url);
     	Serial.print("Method: ");
@@ -81,7 +81,7 @@ public:
     		Serial.print("	-token: ");
     		Serial.println(req.urlTokens[i]);
     	}
-    }*/
+    }
 
     bool handle(ESP8266WebServer& server, HTTPMethod method, String ) override {
     	if(method == HTTPMethod::HTTP_OPTIONS){
@@ -114,7 +114,7 @@ public:
     			std::shared_ptr<Http::HttpServletResponse> httpServletResponse = _dispatcher->dispatch(*httpServletRequest);
 
 
-    			/*Serial.println ( "~~~~The request we got:");
+    			Serial.println ( "~~~~The request we got:");
     			printServletRequest(*httpServletRequest);
     			Serial.println ( "~~~~The response we send:");
     			Serial.print("code: ");
@@ -122,7 +122,7 @@ public:
     			Serial.print("content_type: ");
     			Serial.println(httpServletResponse->content_type);
     			Serial.print("body: ");
-    			Serial.println(httpServletResponse->content);*/
+    			Serial.println(httpServletResponse->content);
     			server.send(httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
 
     			//here we need cleanup

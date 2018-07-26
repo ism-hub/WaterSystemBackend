@@ -21,6 +21,7 @@ public:
 	int hour = 0;
 	int min = 0;
 	int sec = 0;
+	int duration = 30;//the amount of time which the sprinkler will stay open
 
 	Hour(){
 #ifdef DEBUG_MY_CODE
@@ -43,7 +44,7 @@ public:
 
 
 	bool operator==(const Hour& rhs) const{
-		return (hour == rhs.hour && min == rhs.min);
+		return (hour == rhs.hour && min == rhs.min && duration == rhs.duration);
 	}
 
 	bool operator!=(const Hour& rhs) const{
@@ -67,12 +68,12 @@ public:
 
 	template <class Archive>
 	void save(Archive& archive) const {
-		archive.addProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min));
+		archive.addProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min), MACRO_NVP(duration));
 	}
 
 	template<class Archive>
 	void load(Archive& archive) {
-		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min));
+		archive.loadProperties(MACRO_NVP(id), MACRO_NVP(hour), MACRO_NVP(min), MACRO_NVP(duration));
 	}
 };
 

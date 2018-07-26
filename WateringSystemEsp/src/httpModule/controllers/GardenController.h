@@ -48,6 +48,10 @@ public:
 			Serial.println("inside GardenController 'handle' handling post");
 			garden = _unitOfWork->Garden().getById(-1);
 			_apiSerService->Json2Model(*garden, req.requestBody);
+			Serial.println(req.requestBody);
+			Serial.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ the durations we got from the GUI merged into our model");
+			Serial.println(garden->_programs.getInnerVector()[0].get()->timePattern.get().days[0].hours[0].duration);
+			Serial.println(garden->_programs.getInnerVector()[1].get()->timePattern.get().days[0].hours[0].duration);
 			if(!_unitOfWork->complete())
 				Serial.println("__ERR didnt save the garden ");
 		}

@@ -145,7 +145,17 @@ class PlantsSuiteController {
 					auto lambdaStartWaterPlant = [=](){return this->startWaterPlant();};
 					std::shared_ptr<Task> taskStartWater = _scheduleService->addTaskAtHour(hour, days.size(), lambdaStartWaterPlant);// @param- frequency - 1 every day at that hour, 2 - every 2 days at that hour
 					GardenModel::Hour hourPlusFewSec = hour;
-					hourPlusFewSec.sec += 15;
+
+					auto hourTimePoint = myDate::my_clock::time_point{std::chrono::seconds{hour.hour*60*60 + hour.min*60 + hour.sec}};
+					hourTimePoint += std::chrono::seconds{hour.duration};
+					auto currentDays = std::chrono::time_point_cast<myDate::days>(hourTimePoint);
+					auto secFromDayStart = hourTimePoint - currentDays;
+					auto timeToday = myDate::make_time(secFromDayStart);
+
+					hourPlusFewSec.hour = timeToday.hours().count();
+					hourPlusFewSec.min = timeToday.minutes().count();
+					hourPlusFewSec.sec = timeToday.seconds().count();
+
 					auto lambdaStoptWaterPlant = [=](){return this->stopWaterPlant();};
 					std::shared_ptr<Task> taskStopWater = _scheduleService->addTaskAtHour(hourPlusFewSec, days.size(), lambdaStoptWaterPlant); // after 15 sec stop the watering
 					shceduledTaskIds.push_back(taskStartWater);
