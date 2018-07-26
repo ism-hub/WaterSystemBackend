@@ -17,7 +17,6 @@
 #include <HardwareModule/controllers/PumpController.h>
 #include <HardwareModule/controllers/SprinklersController.h>
 #include <SPIService.h>
-#include <chipSelectSPIService.h>
 
 //will contain all controllers which connects the model to the hardware
 namespace hrdwrmodule {
@@ -112,8 +111,38 @@ public:
 
 };
 
+class SPIServiceIService : public sfwk::IService{
+	std::shared_ptr<hrdwrctrl::SPIService> spiService = nullptr;
+public:
+
+	SPIServiceIService(std::shared_ptr<hrdwrctrl::SPIService> spiService):
+		sfwk::IService("SPIServiceIService"),
+		spiService(spiService)
+	{}
+
+		virtual ~SPIServiceIService() {
+			StopService();
+		}
+
+		virtual int StartService() {
+			//if(spiService == nullptr){
+			//	spiService = std::make_shared<hrdwrctrl::SPIService>(numberOfPins);
+			//	spiService->unselectAllChips();
+			//}
+			return 1;
+		}
+
+		virtual int StopService() {
+			//spiService = nullptr;//releasing the pointer, it not really stopping the service, but no one should save pointer to it
+			return 1;
+		}
+};
+
 std::shared_ptr<hrdwrctrl::SPIService> SPIServiceCreator(){
-	return std::make_shared<hrdwrctrl::SPIService>(8);//TODO: add to configuration
+	std::shared_ptr<hrdwrctrl::SPIService> spiService = std::make_shared<hrdwrctrl::SPIService>(8);
+	Serial.println("Unselecting all chips (SPIService)");
+	spiService->unselectAllChips();
+	return spiService;//TODO: add to configuration
 }
 
 /*std::shared_ptr<hrdwrctrl::ChipSelect> ChipSelectCreator(std::shared_ptr<hrdwrctrl::SPIService> spiService){
@@ -124,15 +153,18 @@ std::shared_ptr<hrdwrctrl::SPIService> SPIServiceCreator(){
 
 std::shared_ptr<hrdwrctrl::chipSelectSPIService> ChipSelectISPIServiceCreator(std::shared_ptr<hrdwrctrl::ChipSelect> chipSelect) {
 	return std::make_shared<hrdwrctrl::chipSelectSPIService>(chipSelect);
-}
-
-std::shared_ptr<hrdwrctrl::SwitchArray> SwitchArrayCreator(std::shared_ptr<hrdwrctrl::chipSelectSPIService> chipSelectSPIService){
-	hrdwrctrl::chip spiConfForSwitchArray;
-	spiConfForSwitchArray.name = "switch hub";
-	spiConfForSwitchArray.selectPin = 1;
-	hrdwrctrl::SwitchArray::SwitchArrayConfig config{spiConfForSwitchArray, 8};
-	return std::make_shared<hrdwrctrl::SwitchArray>(chipSelectSPIService, config);//notice - we gave it the chipSelectSPIService cause it on the chipSelect chip
 }*/
+
+std::shared_ptr<hrdwrctrl::SwitchArray> SwitchArrayCreator(std::shared_ptr<hrdwrctrl::SPIService> spiService){
+	unsigned int csPin = 2;//to what chip select pin we connected to
+	unsigned int switchArraySize = 8;
+	hrdwrctrl::SwitchArray::SwitchArrayConfig config(SPISettings(500, MSBFIRST, SPI_MODE0), csPin, switchArraySize);
+	std::shared_ptr<hrdwrctrl::SwitchArray> switchArray =std::make_shared<hrdwrctrl::SwitchArray>(spiService, config);//notice - we gave it the chipSelectSPIService cause it on the chipSelect chip
+	//reset switch array
+	Serial.println("Reseting switch array");
+	switchArray->resetState();
+	return switchArray;
+}
 
 class HardwareModule  : public MF::ModuleBase {
 
@@ -142,29 +174,30 @@ public:
 
 	void start(std::shared_ptr<cntnr::Container> container){
 
-		/*container->registerType<hrdwrctrl::SPIService>(&SPIServiceCreator);
-		container->registerType<hrdwrctrl::ChipSelect>(&ChipSelectCreator);
-		container->registerType<hrdwrctrl::chipSelectSPIService>(&ChipSelectISPIServiceCreator);
+		container->registerType<hrdwrctrl::SPIService>(&SPIServiceCreator);
 		container->registerType<hrdwrctrl::SwitchArray>(&SwitchArrayCreator);
 
+		std::shared_ptr<hrdwrctrl::SPIService> spiService = container->resolve<hrdwrctrl::SPIService>();
 		std::shared_ptr<hrdwrctrl::SwitchArray> switchArray = container->resolve<hrdwrctrl::SwitchArray>();
 
 		std::shared_ptr<sched::SchedulerService> scheduleService = container->resolve<sched::SchedulerService>();
 		std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork = container->resolve<DAL::GardenUnitOfWork>();
 
 		auto plantsSuitControllerIService = std::make_shared<PlantSuiteControllerIService>(scheduleService, unitOfWork);
-		auto pumpControllerIService = std::make_shared<PumpControllerIService>(unitOfWork, switchArray, D2);
+		auto pumpControllerIService = std::make_shared<PumpControllerIService>(unitOfWork, switchArray, 7);
 		auto sprinklersControllerIService = std::make_shared<SprinklersControllerIService>(unitOfWork, switchArray);
+		auto spiServiceIService = std::make_shared<SPIServiceIService>(spiService);
 
 		//By adding the services to the ServiceFrameWork instance we are making sure that the controllers will stay alive for the duration of the program exe
 		std::shared_ptr<sfwk::ServiceFrameWork> serviceFramework = container->resolve<sfwk::ServiceFrameWork>();
 		serviceFramework->AddService(plantsSuitControllerIService);
 		serviceFramework->AddService(pumpControllerIService);
 		serviceFramework->AddService(sprinklersControllerIService);
+		serviceFramework->AddService(spiServiceIService);
 
 		plantsSuitControllerIService->StartService();
 		pumpControllerIService->StartService();
-		sprinklersControllerIService->StartService();*/
+		sprinklersControllerIService->StartService();
 
 
 	}

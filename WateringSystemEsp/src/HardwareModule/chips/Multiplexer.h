@@ -32,7 +32,7 @@ public:
 			Serial.println("Multiplexer want read from pin we don't have.");
 			return 404;
 		}
-		multiplexerInterface.setStatusToTheFirstNswitches(pinNumber, config.numOfPins);
+	//	multiplexerInterface.setStatusToTheFirstNswitches(pinNumber, config.numOfPins);
 		return 1;
 	}
 

@@ -33,10 +33,8 @@ public:
 		Status getStatus() const {return status;}
 		const char* getStatusString() const {return status == Status::On ? "On" : "Off";}
 
-		//ret - error code, 1 - success
-		int setStatus(Status status) {
+		void setStatus(Status status) {
 			this->status = status;
-			return 1;
 		}
 	};
 
@@ -60,11 +58,15 @@ protected:
 public:
 	SwitchArray(std::shared_ptr<hrdwrctrl::SPIService> spiService, SwitchArrayConfig config) :
 		ISPIChip(config.spiSettings, config.csPinNumber, *spiService),
-		//_spiService(spiService),
 		config(config) {
-
-		//_spiService->registerChipOnBoard(config.spiConf);
 		addSwitches();
+	}
+
+	void resetState(){
+		for(auto& switchh : switches)
+			switchh->setStatus(Switch::Status::Off);
+		unsigned char data = 0x00;
+		transfer(&data, 1);
 	}
 
 	virtual ~SwitchArray() {}
@@ -93,9 +95,11 @@ public:
 		//setting the new status in the SPI format
 		Serial.println("Transfering the  data to the spi (changing the status of the switch)");
 		dataToSend = dataToSend^(1 << stwitch.getId());
-
+		Serial.print("the data we are sending:");
+		printBitsOfNum(dataToSend);
+		Serial.println("b4 transfer(&dataToSend, 1)");
 		transfer(&dataToSend, 1);//TODO:: handle error
-
+		Serial.println("after transfer(&dataToSend, 1)");
 		stwitch.setStatus(status);
 		return 1;
 	}

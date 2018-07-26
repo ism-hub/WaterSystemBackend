@@ -17,8 +17,9 @@ err::Error<unsigned int> ISPIChip::transfer(unsigned char* data, unsigned int da
 			return err;
 		isRegisteredYet = true;
 	}
-
+	Serial.println("after if(!isRegisteredYet) in ISPIChip::transfer");
 	err::Error<unsigned int> iErr = spiService.transfer(*this, data, dataSize);
+	Serial.println("after if(!isRegisteredYet) spiService.transfer(*this, data, dataSize)");
 	if(iErr != err::ErrorCode::NO_ERROR)
 		return iErr;
 	return 0;

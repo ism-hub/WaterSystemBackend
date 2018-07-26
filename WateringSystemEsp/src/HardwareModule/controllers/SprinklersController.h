@@ -72,6 +72,7 @@ class SprinklersController {
 			hookOnStatusChangeId = _sprinkler.lock()->status.on_change().connect(lambdaOnStatuschange);
 		}
 
+		//TODO: "dryRun"??? get rid of that problem
 		bool dryRun = false;//on fail when we want to revert back we set it to false
 		void onStatusChange(Sprinkler::Status status) {
 			Serial.println("@@@@@@@@@@ Changing sprinkler status @@@@@@@@@@");
@@ -80,10 +81,10 @@ class SprinklersController {
 				dryRun = false;
 				return;
 			}
-			digitalWrite(getSprinklerPin(), status == Sprinkler::Status::On ? HIGH : LOW);
+			//digitalWrite(getSprinklerPin(), status == Sprinkler::Status::On ? HIGH : LOW);
+
 			Serial.print("Sprinkler ");Serial.print(_sprinkler.lock()->id);Serial.print(" status changed - ");Serial.println(status == Sprinkler::Status::On ? "On" : "Off");
 
-			/*
 			//here we will communicate with the hardware
 			// in the lines of - getting the sprinkler id to the sprinkler hardware position (its id can be the same as his pin position)
 			// then - pin selector selecet that pin and put there high or low.
@@ -98,7 +99,7 @@ class SprinklersController {
 			Serial.print("Sprinkler - ");Serial.print(_sprinkler.lock()->id.get());
 			Serial.print(" Status changed - ");Serial.println(status == Sprinkler::Status::On ? "On" : "Off");
 			Serial.println("@@@@@@@@@@ End changing sprinkler status @@@@@@@@@@");
-		*/
+
 		}
 
 		int getSprinklerPin(){

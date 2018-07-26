@@ -36,9 +36,9 @@ public:
 			dryRun = false;
 			return;
 		}
-		digitalWrite(pumpSwitchNumber, status == Pump::Status::On ? HIGH : LOW);
+		//digitalWrite(pumpSwitchNumber, status == Pump::Status::On ? HIGH : LOW);
 		Serial.print("Pump status changed - ");Serial.println(status == Pump::Status::On ? "On" : "Off");
-		/*
+
 		//here we will communicate with the hardware
 		Serial.println("@@@@@@@@@@ Changing pump status @@@@@@@@@@");
 		hrdwrctrl::SwitchArray::Switch & switchh = *(_switchHub->getSwitches()[pumpSwitchNumber]);
@@ -50,7 +50,7 @@ public:
 		}else {
 			Serial.print("Pump status changed - ");Serial.println(status == Pump::Status::On ? "On" : "Off");
 		}
-		Serial.println("@@@@@@@@@@ End changing pump status @@@@@@@@@@");*/
+		Serial.println("@@@@@@@@@@ End changing pump status @@@@@@@@@@");
 
 	}
 
