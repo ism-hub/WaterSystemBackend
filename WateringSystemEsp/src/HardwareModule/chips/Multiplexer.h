@@ -19,7 +19,7 @@ public:
 	class MultiplexerConfig {
 	public:
 		const int numOfPins;
-		const chip spiConf;
+		//const chip spiConf;
 	};
 
 	const MultiplexerConfig config;

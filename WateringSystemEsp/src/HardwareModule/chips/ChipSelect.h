@@ -16,7 +16,7 @@
 namespace hrdwrctrl {
 
 //ChipSelect chip implemented with switch array that we make sure only one switch is up in a given time
-class ChipSelect {
+/*class ChipSelect {
 
 	std::vector<chip> chips;
 	chip emptyChip{"", -1};
@@ -46,11 +46,11 @@ public:
 	}
 	virtual ~ChipSelect(){}
 
-	/*char transferDataToChip(char data, const char* name) {
-		char retVal = _spiService->transfer(data);//our chip select have some chip selected, our spi have nothing selected, so when we transfer the data only the one who selected by the chip select will read it.
-		unselectAll();// we done the transfer so we tell the spi to select the chipSelect (when the chip select is selected it blocks the clock of the SPI to the rest of the chips on the board, so we can change the chipSelect status without sending data to the chips that connected to it)
-		return retVal;
-	}*/
+	//char transferDataToChip(char data, const char* name) {
+	//	char retVal = _spiService->transfer(data);//our chip select have some chip selected, our spi have nothing selected, so when we transfer the data only the one who selected by the chip select will read it.
+	//	unselectAll();// we done the transfer so we tell the spi to select the chipSelect (when the chip select is selected it blocks the clock of the SPI to the rest of the chips on the board, so we can change the chipSelect status without sending data to the chips that connected to it)
+	//	return retVal;
+	//}
 
 	unsigned char transfer(unsigned char data) {
 		return _spiService->transfer(data);
@@ -104,7 +104,7 @@ private:
 
 		return emptyChip;
 	}
-};
+};*/
 
 } /* namespace hrdwrctrl */
 

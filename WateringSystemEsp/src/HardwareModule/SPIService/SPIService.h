@@ -1,108 +1,178 @@
 /*
- * SPIService.h
+ * ISPIService.h
  *
- *  Created on: 19 במרץ 2018
+ *  Created on: 25 במרץ 2018
  *      Author: rina
  */
 
-#ifndef HARDWAREMODULE_SPISERVICE_SPISERVICE_H_
-#define HARDWAREMODULE_SPISERVICE_SPISERVICE_H_
+#ifndef HARDWAREMODULE_SPISERVICE_ISPISERVICE_H_
+#define HARDWAREMODULE_SPISERVICE_ISPISERVICE_H_
 
+#include <stdio.h>
+#include <ISPIChip.h>
+#include <ErrorHandling/Error.h>
+#include <utility>      // std::pair, std::make_pair
 #include <SPI.h>
-#include <algorithm>
-#include <ISPIService.h>
+#include <memory>
 
 namespace hrdwrctrl {
 
 
-//the SPIService have set of chips and every chip has his pin select and his configuration
-//we can register chip, select it (will start the SPI with the correct conf for the chip), transfer/read data
-//class to centralize all the chips which connect to the SPI (all the connections are from here and we can make sure
-//that every chip has its own chipSelectPin and that the SPI is only accessible from here)
-class SPIService : public ISPIService {
-	chip emptyChip{"", -1};
-	//std::vector<chip> chipsOnChipSelect;
-	std::vector<chip> chipsOnBoard;
-	chip* currSelectedChip = &emptyChip;
-
-	//std::shared_ptr<ChipSelect> chipSelect;
-
+class SPIService {
+	//registeredChips[i] means the ISPIChip that is connected to the i'th chip select pin
+	std::vector<ISPIChip*> registeredChips;
+	const unsigned int numberOfChipSelectPins;
+	const SPISettings spiBoardSettings = SPISettings(500, MSBFIRST, SPI_MODE0);//the settings the on board SPI talks to our SPI manager chip
+	//unsigned int delayTime = 500;
 public:
-	SPIService(){}
+	//@pre: numberOfChipSelectPins%8 == 0
+	SPIService(unsigned int numberOfChipSelectPins) :
+		registeredChips(numberOfChipSelectPins), numberOfChipSelectPins(numberOfChipSelectPins)
+	{
+		//initiate the chip select of the board to not selected
+		pinMode(SS, OUTPUT);
+		digitalWrite(SS, HIGH);
+	}
 	virtual ~SPIService() {}
 
-
-	//ret - 1: success, o.w: error code
-	//selectPin - selects pin to on, on the board itself
-	int registerChipOnBoard(const chip& chip) {
-		hrdwrctrl::chip& chip2 = getChipWithName(chip.name);
-		if(chip2 != emptyChip){
-			Serial.print("Failed to register chip, chip is already exist - ");Serial.println(chip.name);
-			return 0;
-		}
-		Serial.print("Registering new chip - ");Serial.println(chip.name);
-		chipsOnBoard.push_back(chip);
-		return 1;
+	err::Error<bool> registerSPIChip(ISPIChip* spiChip) {
+		unsigned int CSPinNumber = spiChip->getCSPinNumber();
+		if(!isChipSelectInRange(CSPinNumber))
+			return err::Error<int>(err::ErrorCode::ERR_SPI_CS_INVALID, String("" + CSPinNumber));
+		if(isChipSelectPinAlreadyTaken(CSPinNumber))
+			return err::Error<int>(err::ErrorCode::ERR_SPI_CS_TAKEN, String("" + CSPinNumber));
+		registeredChips[CSPinNumber] = spiChip;
+		return true;
 	}
 
+	err::Error<bool> unregisterSPIChip(ISPIChip& spiChip) {
+		unsigned int CSPinNumber = spiChip.getCSPinNumber();
+		if(!isChipSelectInRange(CSPinNumber))
+			return err::Error<int>(err::ErrorCode::ERR_SPI_CS_INVALID, String("" + CSPinNumber));
+		if(!isChipSelectPinAlreadyTaken(CSPinNumber))
+			return err::Error<int>(err::ErrorCode::ERR_SPI_CS_ALREADYFREE, String("" + CSPinNumber));
+		registeredChips[CSPinNumber] = nullptr;
+		return true;
 
-	//Turns on the specific pin,
-	//the pin can be from our chipSelect pin or directly on our SPI
-	//ret - 1: success, o.w: error code
-	int selectChip(const char* uniqueName) {
-		Serial.print("Selecting chip ");Serial.print(uniqueName);Serial.print(" on pin ");
-		chip& chip = getChipWithName(uniqueName);
-		if(chip == emptyChip){
-			Serial.print("Failed to select chip, chip not exist - ");Serial.println(uniqueName);
-			return 404;
-		}
-		Serial.println(chip.selectPin);
-		return selectChipInner(chip);
+	}
+
+	//if isChipSelectInRange(chipSelectPin) == false we return true (like that chip is already taken)
+	bool isChipSelectPinAlreadyTaken(unsigned int chipSelectPin){
+		if(!isChipSelectInRange(chipSelectPin))
+			return true;
+		if(registeredChips[chipSelectPin] != NULL)
+			return true;
+		return false;
+	}
+
+	bool isChipSelectInRange(unsigned int chipSelectPin){
+		return chipSelectPin < this->numberOfChipSelectPins;
+	}
+
+	//transfer byte by byte to ISPIChip
+	err::Error<unsigned int> transfer(ISPIChip& spiChip, unsigned char* data, unsigned int dataSize){
+		SPI.begin();
+		err::Error<bool> err = selectChip(spiChip.getCSPinNumber());
+		if(err != err::ErrorCode::NO_ERROR)
+			return err;
+
+		//transfer the data
+		//Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
+		//Serial.print("The first byte we transfer to the chip : ");
+		//printBitsOfNum(data[0]);
+		SPI.beginTransaction(spiChip.getSPISettings());
+		for(unsigned int i = 0; i < dataSize; i++)
+			SPI.transfer(data[i]);
+		SPI.endTransaction();
+
+		//delay(delayTime);
+
+		err = unselectAllChips();
+		if(err != err::ErrorCode::NO_ERROR)
+			return err;
+		SPI.end();
+		return 0;
 	}
 
 protected:
-	int selectChipInner(chip& chip) {
-		//here we will turn the SPI on with the correct configuration
-		int retVal;
-		Serial.print("Setting pin number ");Serial.print(chip.selectPin);Serial.println(" on board to select state");
-		//TODO: set the pin number here
-
-		currSelectedChip = &chip;
-		return 1;
+	err::Error<bool> selectTheSPIBoard(){
+		//Serial.println("selectTheSPIBoard");
+		digitalWrite(SS, LOW);//low is selected
+		//delay(delayTime);
+		return true;
 	}
-public:
-
-	//ret - 1: success, o.w: error code
-	//int unselectChip(const char* name) {
-	//	currSelectedChip = &emptyChip;
-	//	return 1;
-	//}
-
-	int unselectCurrentChip() {
-		Serial.print("Setting pin number ");Serial.print(currSelectedChip->selectPin);Serial.println(" on board to unselected state");
-		currSelectedChip = &emptyChip;
-		return 1;
+	err::Error<bool> unselectTheSPIBoard(){
+		//Serial.println("unselectTheSPIBoard");
+		digitalWrite(SS, HIGH);//unselect the board
+		//delay(delayTime);
+		return true;
 	}
 
-	unsigned char transfer(unsigned char data) {
-		//SPISettings SPISettings{clock, bitOrder, dataMode};
+	//select it -> transer -> unselect the board
+	err::Error<unsigned int> transferToTheSPIBoard(char* data, unsigned int dataSize = 1){
 		SPI.begin();
-		unsigned char recvData = SPI.transfer(data);
-		SPI.end();
-		return recvData;
+		SPI.beginTransaction(spiBoardSettings);
+		selectTheSPIBoard();
+
+		//Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
+		//Serial.print("The first byte we transfer to the spi board : ");
+		//printBitsOfNum(data[0]);
+
+		for(unsigned int i = 0; i < dataSize; i++)
+			SPI.transfer(data[i]);
+		//delay(delayTime);
+		SPI.endTransaction();
+		unselectTheSPIBoard();
+		//if(bitsSent != dataSize*8)
+		//	return err::ErrorCode::ERR_SPI_FAILED_SENDDATA;
+		return 0;
 	}
 
-private:
-	chip& getChipWithName(const char* uniqueName ) {
-		auto comperator = [=](const chip& other){return strcmp(uniqueName, other.name) == 0; };
-		auto it = std::find_if(chipsOnBoard.begin(), chipsOnBoard.end(), comperator);
-		if(it != chipsOnBoard.end())
-			return *it;
+	void printBitsOfNum(unsigned char num){
+		char mask = 1;
+		for(unsigned int i = 0; i<sizeof(num)*8; i++){
+			Serial.print((mask&num) != 0 ? "1" : "0");
+			mask = mask << 1;
+		}
+		Serial.println("");
+	}
 
-		return emptyChip;
+	//select a chip on the board (low = selected)
+	err::Error<bool> selectChip(unsigned int chipSelectPin){
+		if(!isChipSelectInRange(chipSelectPin))
+			return err::Error<bool>(err::ErrorCode::ERR_SPI_CS_INVALID, String("" + chipSelectPin));
+		if(!isChipSelectPinAlreadyTaken(chipSelectPin))
+			return err::Error<bool>(err::ErrorCode::ERR_SPI_CS_ALREADYFREE, String("" + chipSelectPin));
+
+		//prepare the data to send
+		unsigned int numberOfBytes = numberOfChipSelectPins/8;
+		char dataToSend[numberOfBytes];
+		for(unsigned int i = 0; i < numberOfBytes; i++)
+			if(i == chipSelectPin/8)
+				dataToSend[i] = (0x01 << chipSelectPin%8) ^ 0xFF;
+			else
+				dataToSend[i] = 0xFF;
+
+		err::Error<unsigned int> uiErr = transferToTheSPIBoard(dataToSend, numberOfBytes);
+		if(uiErr.errorCode != err::ErrorCode::NO_ERROR)
+			return uiErr;
+		return true;
+	}
+
+	err::Error<bool> unselectAllChips(){
+		//prepare the data to send
+		unsigned int numberOfBytes = numberOfChipSelectPins/8;
+		char dataToSend[numberOfBytes];
+		for(unsigned int i = 0; i < numberOfBytes; i++)
+			dataToSend[i] = 0xFF;
+
+		err::Error<unsigned int> uiErr = transferToTheSPIBoard(dataToSend, numberOfBytes);
+		if(uiErr.errorCode != err::ErrorCode::NO_ERROR)
+			return uiErr;
+		return true;
 	}
 };
 
 } /* namespace hrdwrctrl */
 
-#endif /* HARDWAREMODULE_SPISERVICE_SPISERVICE_H_ */
+#endif /* HARDWAREMODULE_SPISERVICE_ISPISERVICE_H_ */

@@ -113,10 +113,10 @@ public:
 };
 
 std::shared_ptr<hrdwrctrl::SPIService> SPIServiceCreator(){
-	return std::make_shared<hrdwrctrl::SPIService>();
+	return std::make_shared<hrdwrctrl::SPIService>(8);//TODO: add to configuration
 }
 
-std::shared_ptr<hrdwrctrl::ChipSelect> ChipSelectCreator(std::shared_ptr<hrdwrctrl::SPIService> spiService){
+/*std::shared_ptr<hrdwrctrl::ChipSelect> ChipSelectCreator(std::shared_ptr<hrdwrctrl::SPIService> spiService){
 	hrdwrctrl::chip chipSelectSpiConf{"ChipSelect", 2};
 	hrdwrctrl::ChipSelect::ChipSelectConfig chipSelectConf = hrdwrctrl::ChipSelect::ChipSelectConfig(8, chipSelectSpiConf);
 	return std::make_shared<hrdwrctrl::ChipSelect>(spiService, chipSelectConf);
@@ -132,7 +132,7 @@ std::shared_ptr<hrdwrctrl::SwitchArray> SwitchArrayCreator(std::shared_ptr<hrdwr
 	spiConfForSwitchArray.selectPin = 1;
 	hrdwrctrl::SwitchArray::SwitchArrayConfig config{spiConfForSwitchArray, 8};
 	return std::make_shared<hrdwrctrl::SwitchArray>(chipSelectSPIService, config);//notice - we gave it the chipSelectSPIService cause it on the chipSelect chip
-}
+}*/
 
 class HardwareModule  : public MF::ModuleBase {
 
@@ -142,7 +142,7 @@ public:
 
 	void start(std::shared_ptr<cntnr::Container> container){
 
-		container->registerType<hrdwrctrl::SPIService>(&SPIServiceCreator);
+		/*container->registerType<hrdwrctrl::SPIService>(&SPIServiceCreator);
 		container->registerType<hrdwrctrl::ChipSelect>(&ChipSelectCreator);
 		container->registerType<hrdwrctrl::chipSelectSPIService>(&ChipSelectISPIServiceCreator);
 		container->registerType<hrdwrctrl::SwitchArray>(&SwitchArrayCreator);
@@ -164,7 +164,7 @@ public:
 
 		plantsSuitControllerIService->StartService();
 		pumpControllerIService->StartService();
-		sprinklersControllerIService->StartService();
+		sprinklersControllerIService->StartService();*/
 
 
 	}

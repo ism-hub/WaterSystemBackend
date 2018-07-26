@@ -68,6 +68,8 @@
 
 #include <SPI.h>
 
+#include <SPIService.h>
+
 
 const char *ssid = "Ratatata";//"AndroidAP";//
 const char *password = "c0un73rs7r1k3";//"nakr0097";//
@@ -264,8 +266,25 @@ void setup ( void ) {
 
 
 	//************************************************************** SPI TESTS
+	hrdwrctrl::SPIService spiServ(8);
+	hrdwrctrl::ISPIChip chip(SPISettings(500, MSBFIRST, SPI_MODE0), 2, spiServ);
+
+	uint8_t counter = 0;
+	while(true){
+		Serial.println(counter);
+		err::Error<unsigned int> err = chip.transfer(&counter, 1);
+		if(err.errorCode != err::ErrorCode::NO_ERROR){
+			Serial.print("_____ERRRRR_____:");
+			Serial.println(err.errorCodeToString());
+		}
+		counter++;
+		//delay(2000);
+	}
+
+
+
 	//setting the select pin to (deselect state) high
-	/*pinMode(SS, OUTPUT);
+	pinMode(SS, OUTPUT);
 	digitalWrite(SS, HIGH);
 	//configuring the SPI
 	SPI.begin();
@@ -273,7 +292,37 @@ void setup ( void ) {
 	SPI.beginTransaction(mySettting);
 
 
-	uint8_t counter = 0;
+	while(true){
+		//selecting the spi board
+		digitalWrite(SS, LOW);
+		delay(500);
+		//telling it to select the chip-select (which connected to it on port 3) board
+		SPI.transfer(0xFB);//all ones expect the 3rd bit (selected means low)
+		delay(500);
+		//done with the SPI board (done selecting)
+		digitalWrite(SS, HIGH);
+		delay(500);
+
+		Serial.println("we just selected our board now waiting for 2 sec to you to conform");
+		delay(2000);
+
+		//now that our-board is selected transfer data to it
+		SPI.transfer(counter++);
+		delay(500);
+		//unselect our board (we done writing to our board and he now will exec what we wrote)
+		//select the SPI board
+		digitalWrite(SS, LOW);
+		delay(500);
+		//telling it to unselect all
+		SPI.transfer(0xFF);
+		delay(500);
+		//unselect the SPI board
+		digitalWrite(SS, HIGH);
+		delay(1500);
+		Serial.println(counter - 1);
+	}
+
+
 	while(true){
 		delay(2000);
 		digitalWrite(SS, LOW);
@@ -281,8 +330,8 @@ void setup ( void ) {
 		SPI.transfer(counter++);
 		delay(500);
 		digitalWrite(SS, HIGH);
-		Serial.println(counter);
-	}*/
+		Serial.println(counter - 1);
+	}
 
 
 

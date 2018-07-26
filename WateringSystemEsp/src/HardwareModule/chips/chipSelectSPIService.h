@@ -8,13 +8,13 @@
 #ifndef HARDWAREMODULE_CHIPS_CHIPSELECTSPISERVICE_H_
 #define HARDWAREMODULE_CHIPS_CHIPSELECTSPISERVICE_H_
 
-#include <ISPIService.h>
+#include <SPIService.h>
 #include <ChipSelect.h>
 #include <memory>
 
 namespace hrdwrctrl {
 
-class chipSelectSPIService : public ISPIService {
+/*class chipSelectSPIService : public ISPIService {
 	std::shared_ptr<ChipSelect> chipSelect;
 public:
 
@@ -50,7 +50,7 @@ public:
 		return retVal;
 	}
 
-};
+};*/
 
 } /* namespace hrdwrctrl */
 
