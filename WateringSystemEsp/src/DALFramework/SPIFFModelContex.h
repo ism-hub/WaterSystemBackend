@@ -8,9 +8,12 @@
 #ifndef DALFRAMEWORK_SPIFFMODELCONTEX_H_
 #define DALFRAMEWORK_SPIFFMODELCONTEX_H_
 
+#include <DALFramework/IModelContex.h>
 #include <memory>
 #include <WString.h>
-#include <DALFrameWork/IModelContex.h>
+
+#include <FS.h>
+
 
 namespace dalfw {
 
