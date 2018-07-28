@@ -28,9 +28,9 @@ namespace Http {
 
 class DispatcherServlet {
 public:
-	vector<std::shared_ptr<HandlerExecutionChain>> _handlerExecutionChains;
+	vector<std::shared_ptr<IHandlerExecutionChain>> _handlerExecutionChains;
 
-	DispatcherServlet(vector<std::shared_ptr<HandlerExecutionChain>> exeChains = {}) : _handlerExecutionChains(exeChains) {
+	DispatcherServlet(vector<std::shared_ptr<IHandlerExecutionChain>> exeChains = {}) : _handlerExecutionChains(exeChains) {
 #ifdef DEBUG_MY_CODE
 		Serial.println ("DispatcherServlet CTOR ");
 #endif
@@ -43,7 +43,7 @@ public:
 #endif
 	}
 
-	std::shared_ptr<HandlerExecutionChain> getHandlerExecutionChain(HttpServletRequest& request) {
+	std::shared_ptr<IHandlerExecutionChain> getHandlerExecutionChain(HttpServletRequest& request) {
 		for(auto& exeChain : _handlerExecutionChains){
 			if(exeChain->canHandle(request))
 				return exeChain;
@@ -56,7 +56,7 @@ public:
 		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 		Serial.println("Dispatching the request");
 #endif
-		std::shared_ptr<HandlerExecutionChain> executionChain = getHandlerExecutionChain(request);
+		std::shared_ptr<IHandlerExecutionChain> executionChain = getHandlerExecutionChain(request);
 		if(executionChain == nullptr) {
 #ifdef DEBUG_MY_CODE
 			Serial.println("We didnt find any handler for the request, returning the default response.");

@@ -71,8 +71,8 @@
 #include <SPIService.h>
 
 
-const char *ssid = "AndroidAP";//"Ratatata";//
-const char *password = "nakr0097";//"c0un73rs7r1k3";//
+const char *ssid = "Ratatata";//"AndroidAP";//
+const char *password = "c0un73rs7r1k3";//"nakr0097";//
 
 std::shared_ptr<ESP8266WebServer> server = nullptr;
 std::shared_ptr<sfwk::ServiceFrameWork> serviceFrameWork = nullptr;
@@ -183,6 +183,7 @@ std::shared_ptr<TS::TimeService> timeService;
 
 void setup ( void ) {
 	Serial.begin ( 115200 );
+	WiFi.mode(WIFI_AP_STA);
 	WiFi.begin ( ssid, password );
 	Serial.println ( "" );
 

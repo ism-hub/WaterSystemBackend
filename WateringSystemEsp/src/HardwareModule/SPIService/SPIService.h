@@ -29,8 +29,6 @@ public:
 	SPIService(unsigned int numberOfChipSelectPins) :
 		registeredChips(numberOfChipSelectPins), numberOfChipSelectPins(numberOfChipSelectPins)
 	{
-		Serial.print("numberOfChipSelectPins = ");
-		Serial.println(this->numberOfChipSelectPins);
 		//initiate the chip select of the board to not selected
 		pinMode(SS, OUTPUT);
 		digitalWrite(SS, HIGH);
@@ -80,18 +78,15 @@ public:
 
 	//transfer byte by byte to ISPIChip
 	err::Error<unsigned int> transfer(ISPIChip& spiChip, unsigned char* data, unsigned int dataSize){
-		Serial.println("Just entered transfer(ISPIChip& spiChip, ...");
 		SPI.begin();
-		Serial.println("After SPI.begin();");
 		err::Error<bool> err = selectChip(spiChip.getCSPinNumber());
-		Serial.println("After selectChip(spiChip.getCSPinNumber());");
 		if(err != err::ErrorCode::NO_ERROR)
 			return err;
 
 		//transfer the data
-		Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
-		Serial.print("The first byte we transfer to the chip : ");
-		printBitsOfNum(data[0]);
+		//Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
+		//Serial.print("The first byte we transfer to the chip : ");
+		//printBitsOfNum(data[0]);
 		SPI.beginTransaction(spiChip.getSPISettings());
 		for(unsigned int i = 0; i < dataSize; i++)
 			SPI.transfer(data[i]);
@@ -121,13 +116,11 @@ public:
 
 protected:
 	err::Error<bool> selectTheSPIBoard(){
-		Serial.println("selectTheSPIBoard");
 		digitalWrite(SS, LOW);//low is selected
 		//delay(delayTime);
 		return true;
 	}
 	err::Error<bool> unselectTheSPIBoard(){
-		Serial.println("unselectTheSPIBoard");
 		digitalWrite(SS, HIGH);//unselect the board
 		//delay(delayTime);
 		return true;
@@ -135,14 +128,13 @@ protected:
 
 	//select it -> transer -> unselect the board
 	err::Error<unsigned int> transferToTheSPIBoard(char* data, unsigned int dataSize = 1){
-		Serial.println("Inside transferToTheSPIBoard(char* data, unsigned int dataSize = 1)");
 		SPI.begin();
 		SPI.beginTransaction(spiBoardSettings);
 		selectTheSPIBoard();
 
-		Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
-		Serial.print("The first byte we transfer to the spi board : ");
-		printBitsOfNum(data[0]);
+		//Serial.print("The dataToSend size is:");Serial.print(dataSize);Serial.println("Bytes");
+		//Serial.print("The first byte we transfer to the spi board : ");
+		//printBitsOfNum(data[0]);
 
 		for(unsigned int i = 0; i < dataSize; i++)
 			SPI.transfer(data[i]);
@@ -165,44 +157,24 @@ protected:
 
 	//select a chip on the board (low = selected)
 	err::Error<bool> selectChip(unsigned int chipSelectPin){
-		Serial.println("Inside err::Error<bool> selectChip(unsigned int chipSelectPin)");
-		Serial.println(chipSelectPin);
-		Serial.println("Inside err::Error<bool> selectChip(unsigned int chipSelectPin)");
 
-		Serial.println("y u do dis 2 me");
-		Serial.print("numberOfChipSelectPins = ");Serial.println(numberOfChipSelectPins);
-		Serial.print("numberOfChipSelectPins/8 = ");Serial.println(numberOfChipSelectPins/8);
 		if(!isChipSelectInRange(chipSelectPin)){
-			Serial.println("PLSSSS");
 			err::Error<bool> err(err::ErrorCode::ERR_SPI_CS_INVALID, String("" + chipSelectPin));
-			Serial.println("PLSSSS222");
 			return err;
 		}
 		if(!isChipSelectPinAlreadyTaken(chipSelectPin)){
-			Serial.println("Im dying here");
 			err::Error<bool> err(err::ErrorCode::ERR_SPI_CS_ALREADYFREE, String("" + chipSelectPin));
-			Serial.println("Im dying here222");
 			return err;
 		}
-		Serial.println("b4 prepare the data to send");
-		Serial.print("numberOfChipSelectPins = ");Serial.println(numberOfChipSelectPins);
-		Serial.print("numberOfChipSelectPins/8 = ");Serial.println(numberOfChipSelectPins/8);
 		//prepare the data to send
 		unsigned int numberOfBytes = numberOfChipSelectPins/8;
-		Serial.print("we need to send ");Serial.print(numberOfBytes);Serial.println(" Bytes; ");
-		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 		printBitsOfNum((0x01 << chipSelectPin%8) ^ 0xFF);
-		Serial.println(chipSelectPin);
-		Serial.println("lalalalala");
 		char dataToSend[numberOfBytes];
 		for(unsigned int i = 0; i < numberOfBytes; i++)
 			if(i == chipSelectPin/8)
 				dataToSend[i] = (0x01 << chipSelectPin%8) ^ 0xFF;
 			else
 				dataToSend[i] = 0xFF;
-
-		 Serial.print("the first byte of the dataToSend: ");
-		printBitsOfNum(*dataToSend);
 
 		err::Error<unsigned int> uiErr = transferToTheSPIBoard(dataToSend, numberOfBytes);
 		if(uiErr.errorCode != err::ErrorCode::NO_ERROR)

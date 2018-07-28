@@ -127,7 +127,7 @@ private:
 		}*/
 
 		_garden = std::make_shared<Garden>();
-		_jsonSerializationService->Json2Model<GardenModel::Garden>(*_garden, jsonGarden);
+		_jsonSerializationService->template Json2Model<GardenModel::Garden>(*_garden, jsonGarden);
 		return true;
 	}
 };

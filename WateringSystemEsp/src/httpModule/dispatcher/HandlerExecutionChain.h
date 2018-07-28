@@ -14,11 +14,13 @@
 #include <vector>
 #include <memory>
 
+#include <httpModule/dispatcher/IHandlerExecutionChain.h>
+
 using namespace std;
 
 namespace Http {
 
-class HandlerExecutionChain {
+class HandlerExecutionChain : public IHandlerExecutionChain {
 public:
 
 	std::shared_ptr<Controller> _controller;
@@ -47,11 +49,11 @@ public:
 		return _handlerInterceptors;
 	}
 
-	bool canHandle(HttpServletRequest& req){
+	bool canHandle(HttpServletRequest& req) override {
 		return _controller->canHandle(req);
 	}
 
-	std::shared_ptr<HttpServletResponse> execute(HttpServletRequest& req) {
+	std::shared_ptr<HttpServletResponse> execute(HttpServletRequest& req) override {
 		std::shared_ptr<HttpServletResponse> response = std::make_shared<HttpServletResponse>();
 		//HandlerInterceptors before handle (every one return bool if returned true than we need to stop the execution)
 #ifdef DEBUG_MY_CODE

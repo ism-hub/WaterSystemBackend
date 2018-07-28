@@ -27,7 +27,7 @@ public:
 	virtual int RestartService() {
 		StopService();
 		StartService();
-		return 1;
+		return 0;
 	}
 	virtual int StopService() = 0;
 

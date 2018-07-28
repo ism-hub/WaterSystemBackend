@@ -148,23 +148,23 @@ std::shared_ptr<ESP8266WebServer> ESP8266WebServerCreator(std::shared_ptr<Http::
 	return (webServer);
 }
 
-std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<std::shared_ptr<Http::HandlerExecutionChain>> excecutionChains){
+std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<std::shared_ptr<Http::IHandlerExecutionChain>> excecutionChains){
 	return std::make_shared<Http::DispatcherServlet>(excecutionChains);
 }
 
-std::shared_ptr<Http::HandlerExecutionChain> plantExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
+std::shared_ptr<Http::IHandlerExecutionChain> plantExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
 	std::shared_ptr<Http::HandlerExecutionChain> plantExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::PlantController>(unitOfWork));
 	plantExceChain->addInterceptor(jsonInterceptor);
 	return plantExceChain;
 }
 
-std::shared_ptr<Http::HandlerExecutionChain> programExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
+std::shared_ptr<Http::IHandlerExecutionChain> programExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
 	std::shared_ptr<Http::HandlerExecutionChain> programExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::ProgramController>(unitOfWork));
 	programExceChain->addInterceptor(jsonInterceptor);
 	return programExceChain;
 }
 
-std::shared_ptr<Http::HandlerExecutionChain> gardenExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor, std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>> jsonAPISerializationService){
+std::shared_ptr<Http::IHandlerExecutionChain> gardenExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor, std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>> jsonAPISerializationService){
 	std::shared_ptr<Http::HandlerExecutionChain> gardenExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::GardenController>(unitOfWork, jsonAPISerializationService));
 	gardenExceChain->addInterceptor(jsonInterceptor);
 	return gardenExceChain;
@@ -201,12 +201,12 @@ public:
 		container->registerType<ESP8266WebServer>(&ESP8266WebServerCreator);
 
 		container->registerType<Http::JsonHandlerInterceptor>(&jsonHandlerInterceptorCreator);
-		container->registerType<Http::HandlerExecutionChain>(&plantExcecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain>(&plantExcecutionChainCreator);
 
 		container->registerType<GardenModel::JsonGardenVisitor>(&jsonGardenVisitorCreator);
 
-		container->registerType<Http::HandlerExecutionChain>(&programExcecutionChainCreator);
-		container->registerType<Http::HandlerExecutionChain>(&gardenExcecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain>(&programExcecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain>(&gardenExcecutionChainCreator);
 	}
 };
 

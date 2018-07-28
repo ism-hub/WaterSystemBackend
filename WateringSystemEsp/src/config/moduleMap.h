@@ -19,6 +19,8 @@
 #include <HardwareModule/HardwareModule.h>
 #include <TimeModule/TimeModule.h>
 
+#include <AccessPointModule/AccessPointModule.h>
+
 namespace config {
 
 void moduleMap(MF::ModuleService& mfs) {
@@ -39,6 +41,11 @@ void moduleMap(MF::ModuleService& mfs) {
 
 	mfs.registerModule<httpModule::httpModule>()->
 			registerDependenciesTypes<DALModule::DALModule>();
+
+	mfs.registerModule<apm::AccessPointModule>()->
+			registerDependenciesTypes<schedmodule::SchedulerModule,
+										sfwkModule::ServiceFrameworkModule,
+										httpModule::httpModule>();
 }
 
 } /* namespace moduleFramework */

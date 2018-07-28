@@ -31,6 +31,7 @@ public:
 	}
 	virtual ~SchedulerService() {}
 
+	//TODO: change the hour to time
 	std::shared_ptr<Task> addTaskAtHour(GardenModel::Hour hour, int frequency, std::function<void()> taskFnc){
 		std::shared_ptr<Task> tsk = std::make_shared<Task>(TASK_HOUR*24*frequency, TASK_FOREVER, taskFnc);
 		ts.addTask(*tsk);
@@ -53,6 +54,14 @@ public:
 
 	void execute() {
 		ts.execute();
+	}
+
+	//Repeats the task every interval; TASK_FOREVER is to run it infinite time intervals
+	std::shared_ptr<Task> addTaskWithInterval(std::chrono::seconds interval, int aIterations, std::function<void()> taskFnc){
+		std::shared_ptr<Task> tsk = std::make_shared<Task>(interval.count()*TASK_SECOND, aIterations, taskFnc);
+		ts.addTask(*tsk);
+		tsk->enable();
+		return tsk;
 	}
 
 };
