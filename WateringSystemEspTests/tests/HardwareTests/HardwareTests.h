@@ -29,7 +29,7 @@ public:
 	}
 	virtual ~TestGardenModelContext() {}
 
-	std::shared_ptr<GardenModel::Garden> getGarden() {
+	std::shared_ptr<GardenModel::Garden> get() {
 		if(garden == nullptr)
 			init();
 		return garden;
@@ -40,7 +40,7 @@ public:
 		return true;
 	}
 
-	bool saveChanges() {
+	bool save() {
 		return true;
 	}
 

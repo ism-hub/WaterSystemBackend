@@ -26,7 +26,7 @@ public:
 
 	//every id will return the same
 	std::shared_ptr<Garden> getById(int ){
-		return _contexModel.getGarden();
+		return _contexModel.get();
 	}
 
 	std::vector<std::weak_ptr<Garden>> getAll() {

@@ -29,7 +29,7 @@ public:
 
 	std::vector<std::weak_ptr<Sprinkler>> getAll() {
 		std::vector<std::weak_ptr<Sprinkler>> retVec; //TODO: implement this
-		for(auto& sprinkler : _contexModel.getGarden()->_sprinklers.getInnerVector()) {
+		for(auto& sprinkler : _contexModel.get()->_sprinklers.getInnerVector()) {
 			retVec.push_back(sprinkler.get());
 		}
 		return retVec;

@@ -26,7 +26,7 @@ public:
 	}
 
 	std::shared_ptr<GardenModel::SimpleProgram> getById(int id){
-		for(auto programm : _contexModel.getGarden()->_programs.getInnerVector()){
+		for(auto programm : _contexModel.get()->_programs.getInnerVector()){
 			if(programm.get()->id == id)
 				return programm.get();
 		}

@@ -30,12 +30,12 @@ public:
 	}
 
 	std::shared_ptr<Plant> getById(int id){
-		return _contexModel.getGarden()->getPlant(id);
+		return _contexModel.get()->getPlant(id);
 	}
 
 	std::vector<std::weak_ptr<Plant>> getAll() {
 		std::vector<std::weak_ptr<Plant>> retVec; //TODO: implement this
-		for(auto plant : _contexModel.getGarden()->_plants.getInnerVector()) {
+		for(auto plant : _contexModel.get()->_plants.getInnerVector()) {
 			retVec.push_back(plant.get());
 		}
 		return retVec;

@@ -18,11 +18,11 @@ public:
 	IGardenModelContex() {}
 	virtual ~IGardenModelContex() {}
 
-	virtual std::shared_ptr<GardenModel::Garden> getGarden()= 0;
+	virtual std::shared_ptr<GardenModel::Garden> get()= 0;
 
 	virtual bool init() = 0;
 
-	virtual bool saveChanges() = 0;
+	virtual bool save() = 0;
 
 };
 
