@@ -11,9 +11,12 @@
 #include <WString.h>
 #include <JsonSerializationService2.h>
 
+#include <httpModule/interceptors/SerializationVisitor.h>
+#include <AccessPointModule/model/IAPConfAcceptable.h>
+
 namespace apm {
 
-class APConfiguration {
+class APConfiguration : public IAPConfAcceptable {
 
 public:
 	bool provisionMode = false;
@@ -32,6 +35,10 @@ public:
 	template<class Archive>
 	void load(Archive& archive) {
 		archive.loadProperties(MACRO_NVP(provisionMode), MACRO_NVP(ssid), MACRO_NVP(password), MACRO_NVP(apConfigRestAPIPath));
+	}
+
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<serializationServiceType>& visitor) {
+		return visitor.visit(*this);
 	}
 
 };

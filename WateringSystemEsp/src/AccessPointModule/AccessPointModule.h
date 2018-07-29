@@ -17,13 +17,23 @@
 
 #include <AccessPointModule/service/APService.h>
 
+#include <AccessPointModule/restAPI/AccessPointHandlerExecutionChain.h>
+
 namespace apm {
 
 
-std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr< DAL::SerializationService2< mycereal::JsonSaveArchive<mycereal::DoNothingMappingFile>,mycereal::JsonLoadArchive<mycereal::DoNothingMappingFile>>> serializationService){
+std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr<SerializationSerice> serializationService){
+	if(serializationService == nullptr)
+		Serial.println("_______________#$$$$$$$$$ serializationService is NULL");
 	std::shared_ptr<APConfContex> apConfContex = std::make_shared<APConfContex>(serializationService, "apconfig.json");
 	return apConfContex;
 }
+
+std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService){
+	std::shared_ptr<AccessPointHandlerExecutionChain> exceChain = std::make_shared<AccessPointHandlerExecutionChain>(contex, serializationService);
+	return exceChain;
+}
+
 
 class AccessPointModule : public MF::ModuleBase  {
 public:
@@ -34,6 +44,8 @@ public:
 		Serial.println("Inside AccessPointModule start function ###################");
 
 		container->registerType<APConfContex>(&APConfContexCreator);
+
+		container->registerType<Http::IHandlerExecutionChain>(&AccessPointHandlerExecutionChainCreator);
 
 		//creating adding and starting the service
 		std::shared_ptr<APConfContex> apConfContex = container->resolve<APConfContex>();

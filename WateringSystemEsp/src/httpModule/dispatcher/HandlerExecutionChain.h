@@ -59,7 +59,7 @@ public:
 #ifdef DEBUG_MY_CODE
 		Serial.println("execute the pre inceptors");
 #endif
-		for (int i = 0; i < _handlerInterceptors.size(); i++) {
+		for (unsigned int i = 0; i < _handlerInterceptors.size(); i++) {
 			if (!_handlerInterceptors[i]->preHandle(req, *response, *_controller)) // if false then the Interceptor handled the response
 				return response;
 		}

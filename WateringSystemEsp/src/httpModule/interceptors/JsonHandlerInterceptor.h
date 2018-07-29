@@ -9,33 +9,27 @@
 #define HTTPMODULE_JSONHANDLERINTERCEPTOR_H_
 
 #include <GardenVisitor.h>
-#include <httpModule/dispatcher/HandlerInterceptor.h>
+#include <httpModule/dispatcher/IHandlerInterceptor.h>
+#include <httpModule/dispatcher/IController.h>
 #include <DALModule/serializationService/JsonSerializationService2.h>
 #include <httpModule/interceptors/JsonGardenVisitor.h>
 
 namespace Http {
 
-class JsonHandlerInterceptor: public HandlerInterceptor {
+class JsonHandlerInterceptor : public IHandlerInterceptor<GardenAcceptable> {
 public:
 	std::shared_ptr<GardenModel::JsonGardenVisitor>	_jsonGardenVisitor;
 	JsonHandlerInterceptor(std::shared_ptr<GardenModel::JsonGardenVisitor>	jsonGardenVisitor) : _jsonGardenVisitor(jsonGardenVisitor){
-#ifdef DEBUG_MY_CODE
-		Serial.println("JsonHandlerInterceptor CTOR");
-#endif
 	}
 
 	virtual ~JsonHandlerInterceptor(){
-#ifdef DEBUG_MY_CODE
-		Serial.println("JsonHandlerInterceptor DTOR");
-#endif
-
 	}
 
-	bool preHandle(HttpServletRequest& , HttpServletResponse& , Controller&){
+	bool preHandle(HttpServletRequest& , HttpServletResponse& , IController<GardenAcceptable>&) {
 		return true;
 	}
 
-	void postHandle(HttpServletRequest& , HttpServletResponse& response, Controller& , GardenAcceptable& model) {
+	void postHandle(HttpServletRequest& , HttpServletResponse& response, IController<GardenAcceptable>& , GardenAcceptable& model)  {
 		//convert the object into json string
 		String jsonModel = std::move(*std::static_pointer_cast<String>(model.accept(*_jsonGardenVisitor)));
 		response.content = jsonModel;

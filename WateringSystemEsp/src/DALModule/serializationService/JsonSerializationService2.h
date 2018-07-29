@@ -48,6 +48,10 @@ public:
 		_loadArchive->clear();
 	}
 
+	template<typename ModelType, typename instream>
+	void serialize(const ModelType& model, instream& stream){
+		Model2Json(model, stream);
+	}
 
 };
 

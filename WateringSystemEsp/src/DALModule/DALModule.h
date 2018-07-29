@@ -14,6 +14,8 @@
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
 #include <DALModule/repositoryPattern/GardenModelContext.h>
 
+#include <DALModule/serialization/DoNothingMappingFile.h>
+
 //#include <DALModule/serialization/json2.h>
 #include <JsonSerializationService2.h>
 #include <JsonSaveArchive.h>
@@ -56,6 +58,15 @@ std::shared_ptr<APISerializationServerType> JsonAPISerializationServiceCreator( 
 	return createSerializationServer<DAL::APIMappingFile>(flashMappingFile);
 }
 
+typedef DAL::SerializationService2< mycereal::JsonSaveArchive<mycereal::DoNothingMappingFile>,
+													mycereal::JsonLoadArchive<mycereal::DoNothingMappingFile>> DefaultSerializationServerType;
+
+std::shared_ptr<DefaultSerializationServerType> defaultSerializationServiceCreator( ){
+	mycereal::DoNothingMappingFile doNothingMappingFile;
+	return createSerializationServer<mycereal::DoNothingMappingFile>(doNothingMappingFile);
+}
+
+
 class DALModule : public MF::ModuleBase  {
 public:
 	DALModule(){
@@ -77,6 +88,7 @@ public:
 		container->registerType<DAL::GardenUnitOfWork>(&GardenUnitOfWorkCreator, true);//always gives the same unit of work (meaning all the program share the same context model)
 		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>> >(&JsonFlashSerializationServiceCreator, true);
 		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>> >(&JsonAPISerializationServiceCreator, true);
+		container->registerType<DefaultSerializationServerType>(&defaultSerializationServiceCreator, true);
 
 	}
 };

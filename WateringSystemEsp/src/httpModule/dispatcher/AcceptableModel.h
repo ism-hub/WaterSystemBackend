@@ -11,14 +11,15 @@
 #include <memory>
 namespace Http {
 
+template <class Model>
 class AcceptableModel {
 public:
 	AcceptableModel() {}
 	virtual ~AcceptableModel() {}
 
 	template <class Visitor>
-	virtual std::shared_ptr<void> accept(Visitor& visitor){
-		return visitor.visit(*this);
+	std::shared_ptr<void> accept(Visitor& visitor){
+		return visitor.template visit<Model>(*this);
 	}
 };
 

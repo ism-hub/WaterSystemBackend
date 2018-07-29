@@ -18,13 +18,8 @@ class Controller {
 public:
 
 	Controller(){
-
 	}
 	virtual ~Controller(){
-#ifdef DEBUG_MY_CODE
-		Serial.println(" Controller DTOR");
-#endif
-
 	}
 
 	virtual bool canHandle(HttpServletRequest& req)=0;

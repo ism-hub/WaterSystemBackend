@@ -14,7 +14,7 @@
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
 #include <GardenAcceptable.h>
 #include <Garden.h>
-#include <httpModule/dispatcher/Controller.h>
+#include <httpModule/dispatcher/IController.h>
 #include <httpModule/model/HttpServletRequest.h>
 #include <httpModule/model/HttpServletResponse.h>
 
@@ -23,7 +23,7 @@
 
 namespace Http {
 
-class PlantController : public Controller{
+class PlantController : public IController<GardenModel::GardenAcceptable> {
 
 protected:
 	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;

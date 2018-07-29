@@ -9,7 +9,7 @@
 #define HTTPMODULE_CONTROLLERS_GARDENCONTROLLER_H_
 
 #include <DALModule/repositoryPattern/GardenUnitOfWork.h>
-#include <httpModule/dispatcher/Controller.h>
+#include <httpModule/dispatcher/IController.h>
 #include <httpModule/model/HttpServletRequest.h>
 #include <httpModule/model/HttpServletResponse.h>
 #include <memory>
@@ -18,7 +18,7 @@
 
 namespace Http {
 
-class GardenController: public Controller {
+class GardenController: public IController<GardenModel::GardenAcceptable> {
 	typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>,mycereal::JsonLoadArchive<DAL::APIMappingFile>> APISerializationSerice;
 protected:
 	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
@@ -45,13 +45,8 @@ public:
 			garden = _unitOfWork->Garden().getById(-1);
 		}
 		if(canHandle(req) && req.httPMethod == HTTP_POST && req.requestBody != ""){
-			Serial.println("inside GardenController 'handle' handling post");
 			garden = _unitOfWork->Garden().getById(-1);
 			_apiSerService->Json2Model(*garden, req.requestBody);
-			Serial.println(req.requestBody);
-			Serial.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ the durations we got from the GUI merged into our model");
-			Serial.println(garden->_programs.getInnerVector()[0].get()->timePattern.get().days[0].hours[0].duration);
-			Serial.println(garden->_programs.getInnerVector()[1].get()->timePattern.get().days[0].hours[0].duration);
 			if(!_unitOfWork->complete())
 				Serial.println("__ERR didnt save the garden ");
 		}

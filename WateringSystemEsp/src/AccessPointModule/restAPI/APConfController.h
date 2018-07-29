@@ -5,61 +5,61 @@
  *      Author: rina
  */
 
-#ifndef HTTPMODULE_CONTROLLERS_GARDENCONTROLLER_H_
-#define HTTPMODULE_CONTROLLERS_GARDENCONTROLLER_H_
+#ifndef ACCESSPOINTMODULE_RESTAPI_APCONFCONTROLLER_H_
+#define ACCESSPOINTMODULE_RESTAPI_APCONFCONTROLLER_H_
 
-#include <DALModule/repositoryPattern/GardenUnitOfWork.h>
-#include <httpModule/dispatcher/Controller.h>
+#include <httpModule/dispatcher/IController.h>
 #include <httpModule/model/HttpServletRequest.h>
 #include <httpModule/model/HttpServletResponse.h>
 #include <memory>
-#include <GardenAcceptable.h>
-#include <Garden.h>
 
-namespace Http {
+#include <AccessPointModule/model/IAPConfAcceptable.h>
+#include <AccessPointModule/DAL/APConfContex.h>
 
-class APConfController: public Controller {
-	typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>,mycereal::JsonLoadArchive<DAL::APIMappingFile>> APISerializationSerice;
+namespace apm {
+
+class APConfController: public Http::IController<IAPConfAcceptable> {
+
 protected:
-	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
-	std::shared_ptr<APISerializationSerice> _apiSerService;
+	std::shared_ptr<APConfContex> _contex;
+	std::shared_ptr<apm::SerializationSerice> _serializationService;
 public:
-	GardenController(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork,
-			std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>,mycereal::JsonLoadArchive<DAL::APIMappingFile>>> apiSerService):
-				_unitOfWork(unitOfWork), _apiSerService(apiSerService) {}
-	virtual ~GardenController() {}
+	APConfController(std::shared_ptr<APConfContex> contex,
+			std::shared_ptr<apm::SerializationSerice> serializationService):
+				_contex(contex), _serializationService(serializationService) {}
+	virtual ~APConfController() {}
 
-	bool canHandle(HttpServletRequest& req) {
-		if(req.httPMethod == HTTP_GET && req.urlTokens.size() == 0){
-			return true;
+	bool canHandle(Http::HttpServletRequest& req) {
+		Serial.println("inside APConfController 'canHandle' handling post");
+		bool flg = false;
+		if(req.httPMethod == Http::HTTPMethod::HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == _contex->get()->apConfigRestAPIPath){
+			flg = true;
 		}
-		if(req.httPMethod == HTTP_POST && req.urlTokens.size() == 0){
-			return true;
+		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 0){
+			flg = true;
 		}
-		return false;
+		Serial.println("End inside APConfController 'canHandle' handling post");
+		return flg;
 	}
 
-	std::shared_ptr<GardenAcceptable> handle(HttpServletRequest& req, HttpServletResponse&) {
-		std::shared_ptr<Garden> garden = nullptr;
-		if(canHandle(req) && req.httPMethod == HTTP_GET){
-			garden = _unitOfWork->Garden().getById(-1);
+	std::shared_ptr<IAPConfAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse&) {
+		std::shared_ptr<APConfiguration> model = nullptr;
+		if(canHandle(req) && req.httPMethod == Http::HTTPMethod::HTTP_GET){
+			model = _contex->get();
 		}
-		if(canHandle(req) && req.httPMethod == HTTP_POST && req.requestBody != ""){
-			Serial.println("inside GardenController 'handle' handling post");
-			garden = _unitOfWork->Garden().getById(-1);
-			_apiSerService->Json2Model(*garden, req.requestBody);
-			Serial.println(req.requestBody);
-			Serial.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ the durations we got from the GUI merged into our model");
-			Serial.println(garden->_programs.getInnerVector()[0].get()->timePattern.get().days[0].hours[0].duration);
-			Serial.println(garden->_programs.getInnerVector()[1].get()->timePattern.get().days[0].hours[0].duration);
-			if(!_unitOfWork->complete())
-				Serial.println("__ERR didnt save the garden ");
+		if(canHandle(req) && req.httPMethod == Http::HTTPMethod::HTTP_POST && req.requestBody != ""){
+			Serial.println("inside APConfController 'handle' handling post");
+			model = _contex->get();
+			_serializationService->Json2Model(*model, req.requestBody);
+
+			if(!_contex->save())
+				Serial.println("__ERR didn't save the APConfiguration ");
 		}
-		return garden;
+		return model;
 	}
 
 };
 
-} /* namespace Http */
+} /* namespace apm */
 
-#endif /* HTTPMODULE_CONTROLLERS_GARDENCONTROLLER_H_ */
+#endif /* ACCESSPOINTMODULE_RESTAPI_APCONFCONTROLLER_H_ */

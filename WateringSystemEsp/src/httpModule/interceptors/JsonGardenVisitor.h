@@ -30,15 +30,9 @@ public:
 	std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>>	_jsonSerializationService;
 
 	JsonGardenVisitor(std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>> > jsonSerializationService) : _jsonSerializationService(jsonSerializationService){
-#ifdef DEBUG_MY_CODE
-		Serial.println("JsonGardenVisitor CTOR");
-#endif
 	}
 
 	virtual ~JsonGardenVisitor(){
-#ifdef DEBUG_MY_CODE
-		Serial.println("JsonGardenVisitor DTOR");
-#endif
 	}
 
 	virtual std::shared_ptr<void> visit(Garden& garden) {

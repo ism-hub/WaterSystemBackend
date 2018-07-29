@@ -26,6 +26,8 @@
 #include <httpModule/controllers/ProgramController.h>
 #include <httpModule/controllers/GardenController.h>
 
+#include <httpModule/dispatcher/HandlerExecutionChain2.h>
+
 namespace httpModule {
 
 //dispatcher and webserver glue
@@ -153,19 +155,22 @@ std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<st
 }
 
 std::shared_ptr<Http::IHandlerExecutionChain> plantExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
-	std::shared_ptr<Http::HandlerExecutionChain> plantExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::PlantController>(unitOfWork));
+	typedef Http::HandlerExecutionChain2<GardenModel::GardenAcceptable> exeChainType;
+	std::shared_ptr<exeChainType> plantExceChain = std::make_shared<exeChainType>(std::make_shared<Http::PlantController>(unitOfWork));
 	plantExceChain->addInterceptor(jsonInterceptor);
 	return plantExceChain;
 }
 
 std::shared_ptr<Http::IHandlerExecutionChain> programExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
-	std::shared_ptr<Http::HandlerExecutionChain> programExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::ProgramController>(unitOfWork));
+	typedef Http::HandlerExecutionChain2<GardenModel::GardenAcceptable> exeChainType;
+	std::shared_ptr<exeChainType> programExceChain = std::make_shared<exeChainType>(std::make_shared<Http::ProgramController>(unitOfWork));
 	programExceChain->addInterceptor(jsonInterceptor);
 	return programExceChain;
 }
 
 std::shared_ptr<Http::IHandlerExecutionChain> gardenExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor, std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>>> jsonAPISerializationService){
-	std::shared_ptr<Http::HandlerExecutionChain> gardenExceChain = std::make_shared<Http::HandlerExecutionChain>(std::make_shared<Http::GardenController>(unitOfWork, jsonAPISerializationService));
+	typedef Http::HandlerExecutionChain2<GardenModel::GardenAcceptable> exeChainType;
+	std::shared_ptr<exeChainType> gardenExceChain = std::make_shared<exeChainType>(std::make_shared<Http::GardenController>(unitOfWork, jsonAPISerializationService));
 	gardenExceChain->addInterceptor(jsonInterceptor);
 	return gardenExceChain;
 }
