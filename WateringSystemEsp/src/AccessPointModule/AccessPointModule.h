@@ -13,11 +13,12 @@
 
 #include <ServiceFrameWork.h>
 #include <SchedulerService.h>
-#include <AccessPointModule/DAL/APConfContex.h>
+#include <AccessPointModule/configuration/DAL/APConfContex.h>
 
 #include <AccessPointModule/service/APService.h>
 
-#include <AccessPointModule/restAPI/AccessPointHandlerExecutionChain.h>
+#include <AccessPointModule/configuration/restAPI/AccessPointHandlerExecutionChain.h>
+#include <AccessPointModule/status/restAPI/AccessPointStatusHandlerExecutionChain.h>
 
 namespace apm {
 
@@ -29,11 +30,20 @@ std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr<SerializationS
 	return apConfContex;
 }
 
-std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService){
-	std::shared_ptr<AccessPointHandlerExecutionChain> exceChain = std::make_shared<AccessPointHandlerExecutionChain>(contex, serializationService);
+std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService, std::shared_ptr<APService> apService){
+	std::shared_ptr<AccessPointHandlerExecutionChain> exceChain = std::make_shared<AccessPointHandlerExecutionChain>(contex, serializationService, apService);
 	return exceChain;
 }
 
+std::shared_ptr<APService> APServiceCreator(std::shared_ptr<APConfContex> apConfContex, std::shared_ptr<sched::SchedulerService> scheduler){
+	auto apIService = std::make_shared<APService>(scheduler, *(apConfContex->get()));
+	return apIService;
+}
+
+std::shared_ptr<Http::IHandlerExecutionChain> AccessPointStatusHandlerExecutionChainCreator(std::shared_ptr<APService> apService, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService){
+	std::shared_ptr<AccessPointStatusHandlerExecutionChain> exceChain = std::make_shared<AccessPointStatusHandlerExecutionChain>(apService, serializationService);
+	return exceChain;
+}
 
 class AccessPointModule : public MF::ModuleBase  {
 public:
@@ -44,16 +54,18 @@ public:
 		Serial.println("Inside AccessPointModule start function ###################");
 
 		container->registerType<APConfContex>(&APConfContexCreator);
+		container->registerType<APService>(&APServiceCreator);
 
 		container->registerType<Http::IHandlerExecutionChain>(&AccessPointHandlerExecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain>(&AccessPointStatusHandlerExecutionChainCreator);
 
-		//creating adding and starting the service
-		std::shared_ptr<APConfContex> apConfContex = container->resolve<APConfContex>();
-		std::shared_ptr<sched::SchedulerService> scheduleService = container->resolve<sched::SchedulerService>();
-		auto apIService = std::make_shared<APService>(scheduleService, *(apConfContex->get()));
+
+		//starting the AP service
+		std::shared_ptr<APService> apService = container->resolve<APService>();
+
 		std::shared_ptr<sfwk::ServiceFrameWork> serviceFramework = container->resolve<sfwk::ServiceFrameWork>();
-		serviceFramework->AddService(apIService);
-		apIService->StartService();
+		serviceFramework->AddService(apService);
+		apService->StartService();
 	}
 };
 

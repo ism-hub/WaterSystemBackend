@@ -15,7 +15,7 @@
 #include <JsonLoadArchive.h>
 #include <DoNothingMappingFile.h>
 
-#include <AccessPointModule/model/APConfiguration.h>
+#include <AccessPointModule/configuration/model/APConfiguration.h>
 
 #include <DALFramework/SPIFFModelContex.h>
 

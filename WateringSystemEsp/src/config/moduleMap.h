@@ -45,7 +45,8 @@ void moduleMap(MF::ModuleService& mfs) {
 	mfs.registerModule<apm::AccessPointModule>()->
 			registerDependenciesTypes<schedmodule::SchedulerModule,
 										sfwkModule::ServiceFrameworkModule,
-										httpModule::httpModule>();
+										httpModule::httpModule,
+										DALModule::DALModule>();
 }
 
 } /* namespace moduleFramework */
