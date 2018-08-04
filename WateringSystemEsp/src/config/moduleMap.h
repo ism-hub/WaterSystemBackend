@@ -21,16 +21,20 @@
 
 #include <AccessPointModule/AccessPointModule.h>
 
+#include <StationModule/StationModule.h>
+
 namespace config {
 
 void moduleMap(MF::ModuleService& mfs) {
 
-	mfs.registerModule<TM::TimeModule>();
+	mfs.registerModule<tsm::TimeModule>()->
+			registerDependenciesTypes<DALModule::DALModule,
+								  	  sfwkModule::ServiceFrameworkModule>();
 
 	mfs.registerModule<sfwkModule::ServiceFrameworkModule>();
 
 	mfs.registerModule<schedmodule::SchedulerModule>()->
-			registerDependenciesTypes<TM::TimeModule>();
+			registerDependenciesTypes<tsm::TimeModule>();
 
 	mfs.registerModule<DALModule::DALModule>();
 
@@ -43,6 +47,12 @@ void moduleMap(MF::ModuleService& mfs) {
 			registerDependenciesTypes<DALModule::DALModule>();
 
 	mfs.registerModule<apm::AccessPointModule>()->
+			registerDependenciesTypes<schedmodule::SchedulerModule,
+										sfwkModule::ServiceFrameworkModule,
+										httpModule::httpModule,
+										DALModule::DALModule>();
+
+	mfs.registerModule<sm::StationModule>()->
 			registerDependenciesTypes<schedmodule::SchedulerModule,
 										sfwkModule::ServiceFrameworkModule,
 										httpModule::httpModule,

@@ -32,43 +32,37 @@
  */
 //#define DEBUG_MY_CODE
 
-#include <DALModule/repositoryPattern/GardenUnitOfWork.h>
+//#include <GardenModule/DAL/repositoryPattern/GardenUnitOfWork.h>
 //#include <DALModule/serialization/cereal2.h>
 //#include <DALModule/serialization/json2.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-#include <httpModule/dispatcher/DispatcherServlet.h>
+//#include <HttpFramework/dispatcher/DispatcherServlet.h>
 
 #include <vector>
-
 #include <memory>
-
 #include <type_traits>
 #include <limits>
 
-
 #include <ModuleFramework/ModuleService.h>
-#include <ModuleFramework/SomeModule.h>
 #include <ModuleFramework/Container/Container.h>
-
 #include <config/moduleMap.h>
 
-#include <Model/ObserverDesignPattern/Signal.hpp>
-#include <Model/ObserverDesignPattern/Property.hpp>
+//#include <Model/ObserverDesignPattern/Signal.hpp>
+//#include <Model/ObserverDesignPattern/Property.hpp>
 
-#include <Model/ObserverDesignPattern/ObservableVector.h>
+//#include <Model/ObserverDesignPattern/ObservableVector.h>
 
 #include <chrono>
-
 #include <TimeModule/timeService/TimeService.h>
 
-#include <ServiceFrameWork.h>
+#include <ServiceFramework/ServiceFrameWork.h>
 
-#include <SPI.h>
+//#include <SPI.h>
 
-#include <SPIService.h>
+//#include <SPIService.h>
 
 
 const char *ssid = "Ratatata";//"AndroidAP";//
@@ -78,83 +72,83 @@ std::shared_ptr<ESP8266WebServer> server = nullptr;
 std::shared_ptr<sfwk::ServiceFrameWork> serviceFrameWork = nullptr;
 std::shared_ptr<sched::SchedulerService> scheduler = nullptr;
 
-template<typename MappingFileType>
-std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
-	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
-	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
-	typedef DAL::SerializationService2<SaveArchiveType, LoadArchiveType > ServerType;
+//template<typename MappingFileType>
+//std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
+//	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
+//	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
+//	typedef DAL::SerializationService2<SaveArchiveType, LoadArchiveType > ServerType;
+//
+//	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
+//	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
+//	auto serSevice =  std::make_shared<ServerType>(saveArchive, loadArchive);
+//	return serSevice;
+//}
 
-	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
-	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
-	auto serSevice =  std::make_shared<ServerType>(saveArchive, loadArchive);
-	return serSevice;
-}
-
-void writeGardenToFlash(){
-	{
-		GardenModel::Garden garden = GardenModel::Garden();
-		garden.name = String("FooooodGarden");
-		std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();
-		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
-		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
-		//std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
-
-		Serial.print("plant->_sprinkler is ");
-		Serial.println(plant->_sprinkler == nullptr ? "null" : "not-null");
-
-		plant->name = "Yellow Lily";
-		plant->id = 1;
-		sprinkler->id = 1;
-		sprinkler->status = GardenModel::Sprinkler::Off;
-
-		std::vector<GardenModel::Hour> hours = {GardenModel::Hour(13,18)};
-		std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
-		simpleProgram->timePattern = TimePattern(days);
-		simpleProgram->id = 1;
-
-		//Adding another plant with sprinkler and program
-		std::shared_ptr<GardenModel::Sprinkler> sprinkler2 = std::make_shared<GardenModel::Sprinkler>();
-		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram2 = std::make_shared<GardenModel::SimpleProgram>();
-		std::shared_ptr<GardenModel::Plant> plant2 = std::make_shared<GardenModel::Plant>(sprinkler2, simpleProgram2);
-
-		plant2->name = "Yellow Lily2";
-		plant2->id = 2;
-		sprinkler2->id = 2;
-		sprinkler2->status = GardenModel::Sprinkler::Off;
-
-		std::vector<GardenModel::Hour> hours2 = {GardenModel::Hour(13,20)};
-		std::vector<GardenModel::Day> days2 = {GardenModel::Day(hours2)};
-		simpleProgram2->timePattern = TimePattern(days2);
-		simpleProgram2->id = 2;
-
-
-
-		DAL::FlashMappingFile flashMappingFile;
-		auto jsonSerializationService = createSerializationServer(flashMappingFile);
-		garden._sprinklers.push_back(sprinkler);
-		garden._sprinklers.push_back(sprinkler2);
-		garden._programs.push_back(simpleProgram);
-		garden._programs.push_back(simpleProgram2);
-		garden._plants.push_back(plant);
-		garden._plants.push_back(plant2);
-
-		String str;
-		jsonSerializationService->Model2Json(garden, str);
-		Serial.println(str);
-		bool result = SPIFFS.begin();
-
-		{
-			File f = SPIFFS.open("/f.txt","w");
-
-			f.print(str);
-			f.flush();
-			f.close();
-		}
-		SPIFFS.end();
-
-	}
-
-}
+//void writeGardenToFlash(){
+//	{
+//		GardenModel::Garden garden = GardenModel::Garden();
+//		garden.name = String("FooooodGarden");
+//		std::shared_ptr<GardenModel::Sprinkler> sprinkler = std::make_shared<GardenModel::Sprinkler>();
+//		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
+//		std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+//		//std::shared_ptr<GardenModel::Plant> plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
+//
+//		Serial.print("plant->_sprinkler is ");
+//		Serial.println(plant->_sprinkler == nullptr ? "null" : "not-null");
+//
+//		plant->name = "Yellow Lily";
+//		plant->id = 1;
+//		sprinkler->id = 1;
+//		sprinkler->status = GardenModel::Sprinkler::Off;
+//
+//		std::vector<GardenModel::Hour> hours = {GardenModel::Hour(13,18)};
+//		std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
+//		simpleProgram->timePattern = TimePattern(days);
+//		simpleProgram->id = 1;
+//
+//		//Adding another plant with sprinkler and program
+//		std::shared_ptr<GardenModel::Sprinkler> sprinkler2 = std::make_shared<GardenModel::Sprinkler>();
+//		std::shared_ptr<GardenModel::SimpleProgram> simpleProgram2 = std::make_shared<GardenModel::SimpleProgram>();
+//		std::shared_ptr<GardenModel::Plant> plant2 = std::make_shared<GardenModel::Plant>(sprinkler2, simpleProgram2);
+//
+//		plant2->name = "Yellow Lily2";
+//		plant2->id = 2;
+//		sprinkler2->id = 2;
+//		sprinkler2->status = GardenModel::Sprinkler::Off;
+//
+//		std::vector<GardenModel::Hour> hours2 = {GardenModel::Hour(13,20)};
+//		std::vector<GardenModel::Day> days2 = {GardenModel::Day(hours2)};
+//		simpleProgram2->timePattern = TimePattern(days2);
+//		simpleProgram2->id = 2;
+//
+//
+//
+//		DAL::FlashMappingFile flashMappingFile;
+//		auto jsonSerializationService = createSerializationServer(flashMappingFile);
+//		garden._sprinklers.push_back(sprinkler);
+//		garden._sprinklers.push_back(sprinkler2);
+//		garden._programs.push_back(simpleProgram);
+//		garden._programs.push_back(simpleProgram2);
+//		garden._plants.push_back(plant);
+//		garden._plants.push_back(plant2);
+//
+//		String str;
+//		jsonSerializationService->Model2Json(garden, str);
+//		Serial.println(str);
+//		bool result = SPIFFS.begin();
+//
+//		{
+//			File f = SPIFFS.open("/f.txt","w");
+//
+//			f.print(str);
+//			f.flush();
+//			f.close();
+//		}
+//		SPIFFS.end();
+//
+//	}
+//
+//}
 
 /*bool readThefFile(String& str){
 	bool result = SPIFFS.begin();
@@ -179,12 +173,14 @@ void writeGardenToFlash(){
 }*/
 
 //TS::TimeService timeService;
-std::shared_ptr<TS::TimeService> timeService;
+std::shared_ptr<tsm::TimeService> timeService;
 
 void setup ( void ) {
+	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	Serial.begin ( 115200 );
+	WiFi.persistent(false);
 	WiFi.mode(WIFI_AP_STA);
-	WiFi.begin ( ssid, password );
+	WiFi.begin ( ssid, password);
 	Serial.println ( "" );
 
 	// Wait for connection
@@ -193,16 +189,19 @@ void setup ( void ) {
 		Serial.print ( "." );
 	}
 
+
 	Serial.println ( "" );
-	Serial.print ( "Connected to " );
+	Serial.print("Connected to ");
 	Serial.println ( ssid );
-	Serial.print ( "IP address: " );
+	Serial.print("IP address: " );
 	Serial.println ( WiFi.localIP() );
 
-	if ( MDNS.begin ( "esp8266" ) ) {
-		Serial.println ( "MDNS responder started" );
-	}
+	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 
+	if ( MDNS.begin ( "esp8266" ) ) {
+		Serial.println("MDNS responder started");
+	}
+	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	/*Model::ObservableVector<std::shared_ptr<GardenModel::Plant> > plantz;
 	typename Model::ObservableVector<std::shared_ptr<GardenModel::Plant> >::ConnectorFncType connectorFnc;
 	connectorFnc = [](std::shared_ptr<GardenModel::Plant> plant, Model::Change change) {
@@ -233,6 +232,9 @@ void setup ( void ) {
 	if (!success)
 		Serial.println("___CRITICAL ERROR___: Failed to start all modules");
 
+	Serial.println("MMMMMMM Done loading all the modules");
+	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+
 	//std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> serService = mfs.container->resolve<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>>();
 	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ what i belive to be the problematic line ");
 	//std::shared_ptr<Garden> garden = std::make_shared<Garden>();
@@ -243,16 +245,17 @@ void setup ( void ) {
 	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
 
 	serviceFrameWork = mfs.container->resolve<sfwk::ServiceFrameWork>();
+
 	server = mfs.container->resolve<ESP8266WebServer>();
 
 	server->begin();
 
+
 	//initiate the TimeService (will be in the module later)
 	//timeService.initCurrentTime(myDate::my_clock::time_point{std::chrono::seconds{1507920363}});//18:46:03 UTC
 
-	timeService = mfs.container->resolve<TS::TimeService>();
-	timeService->getCurrentDateTime();
-
+//	timeService = mfs.container->resolve<tsm::TimeService>();
+//	timeService->getCurrentDateTime();
 	scheduler = mfs.container->resolve<sched::SchedulerService>();
 
 
@@ -272,6 +275,29 @@ void setup ( void ) {
 		delay(0);
 	}*/
 
+//	int n = WiFi.scanNetworks();
+//	Serial.println("scan done");
+//	if (n == 0) {
+//		Serial.println("no networks found");
+//	} else {
+//		Serial.print(n);
+//		Serial.println(" networks found");
+//		for (int i = 0; i < n; ++i) {
+//			// Print SSID and RSSI for each network found
+//			Serial.print(i + 1);
+//			Serial.print(": ");
+//			Serial.print(WiFi.SSID(i));
+//			Serial.print(" (");
+//			Serial.print(WiFi.RSSI(i));
+//			Serial.print(") (BSSID: ");
+//			Serial.print(WiFi.BSSIDstr(i));
+//			Serial.print(") ch:");
+//			Serial.print(WiFi.channel(i));
+//			Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
+//			delay(10);
+//		}
+//	}
+
 
 	Serial.println("HTTP server started");
 	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
@@ -281,7 +307,7 @@ void setup ( void ) {
 
 template <class T>
 void printTime(T timeToday){
-	Serial.print("The time is:");
+	Serial.print(F("The time is:"));
 	Serial.print(timeToday.hours().count());
 	Serial.print(":");
 	Serial.print(timeToday.minutes().count());
@@ -299,8 +325,9 @@ void loop ( void ) {
 
 	static int last = 0;
 	static bool printTimeNow = true;
-	if (((millis () - last) > (1000 * 60 * 5)) || printTimeNow ) {//5 minute has passed
-		printTime(timeService->getCurrentDateTime());
+	if (((millis () - last) > (1000 * 60 * 1)) || printTimeNow ) {//5 minute has passed
+		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+		//printTime(timeService->getCurrentDateTime());
 		last = millis();
 		printTimeNow = false;
 	}

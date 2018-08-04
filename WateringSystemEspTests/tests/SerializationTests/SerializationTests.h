@@ -33,34 +33,34 @@ using namespace std;
 const int numberOfDifferentGardens = 4;
 const int uniqueId = 12345;
 
-GardenModel::Garden createGarden(int gardenIndx){
-	shared_ptr<GardenModel::Sprinkler> sprinkler = make_shared<GardenModel::Sprinkler>();
+garden::Garden createGarden(int gardenIndx){
+	shared_ptr<garden::Sprinkler> sprinkler = make_shared<garden::Sprinkler>();
 	sprinkler->id = gardenIndx*3;
-	vector<GardenModel::Hour> hours = {GardenModel::Hour(gardenIndx*2, gardenIndx*3)};
+	vector<garden::Hour> hours = {garden::Hour(gardenIndx*2, gardenIndx*3)};
 	hours[0].id = gardenIndx*3;
-	std::vector<GardenModel::Day> days = {GardenModel::Day(hours)};
+	std::vector<garden::Day> days = {garden::Day(hours)};
 	days[0].id = gardenIndx*3;
-	GardenModel::TimePattern TPattern(days);
-	std::shared_ptr<GardenModel::SimpleProgram> simpleProgram = std::make_shared<GardenModel::SimpleProgram>();
+	garden::TimePattern TPattern(days);
+	std::shared_ptr<garden::SimpleProgram> simpleProgram = std::make_shared<garden::SimpleProgram>();
 	simpleProgram->timePattern = TPattern;
-	std::shared_ptr<GardenModel::Plant> plant;
+	std::shared_ptr<garden::Plant> plant;
 
 	switch(gardenIndx) {
-	    case 1: plant = std::make_shared<GardenModel::Plant>(nullptr, nullptr);
+	    case 1: plant = std::make_shared<garden::Plant>(nullptr, nullptr);
 	            break;
-	    case 2: plant = std::make_shared<GardenModel::Plant>(nullptr, simpleProgram);
+	    case 2: plant = std::make_shared<garden::Plant>(nullptr, simpleProgram);
 	    	    break;
-	    case 3: plant = std::make_shared<GardenModel::Plant>(sprinkler, nullptr);
+	    case 3: plant = std::make_shared<garden::Plant>(sprinkler, nullptr);
 	    	    break;
-	    case 4: plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+	    case 4: plant = std::make_shared<garden::Plant>(sprinkler, simpleProgram);
 	    	    break;
-	    default: plant = std::make_shared<GardenModel::Plant>(sprinkler, simpleProgram);
+	    default: plant = std::make_shared<garden::Plant>(sprinkler, simpleProgram);
 	             break;
 	}
 
 	plant->id = gardenIndx*6;
 
-	GardenModel::Garden garden;
+	garden::Garden garden;
 	garden._plants.push_back(plant);
 	garden._sprinklers.push_back(sprinkler);
 	garden._programs.push_back(simpleProgram);
@@ -81,14 +81,14 @@ std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFile
 
 //checking if serializing -> deserializing -> serializing gives the same json string both times
 template<typename SerializationServiceType>
-bool serDeserSerTest(GardenModel::Garden& garden, SerializationServiceType& serService){
+bool serDeserSerTest(garden::Garden& garden, SerializationServiceType& serService){
 
 	String firsSer;
 	serService.Model2Json(garden, firsSer);
 
 	//cout << firsSer << endl;
 
-	GardenModel::Garden emptyGarden;
+	garden::Garden emptyGarden;
 	serService.Json2Model(emptyGarden, firsSer);//"{\"name\":\"GardName12\",\"plants\":[{\"id\":20,\"name\":\"Li2ly\",\"program\":{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}}],\"sprinklers\":[{\"id\":12,\"status\":\"On\"}],\"programs\":[{\"id\":20,\"name\":\"not2-set\",\"timePattern\":{\"days\":[{\"id\":20,\"hours\":[{\"id\":20,\"hour\":124,\"min\":122}]}]}}]}");
 	String secSer;
 	serService.Model2Json(emptyGarden, secSer);
@@ -111,7 +111,7 @@ void TestMappingFile(MappingFileType& mappingFile, int gardenVariety){
 //testing the serialization (without mapping file (using the default one))
 void DoNothingMappingFileTest(int gardenVariety = 4){
 
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	mycereal::DoNothingMappingFile doNothingMappingFile;
 	auto serServive = createSerializationServer<mycereal::DoNothingMappingFile>(doNothingMappingFile);
 
@@ -121,7 +121,7 @@ void DoNothingMappingFileTest(int gardenVariety = 4){
 //testing the FlashMapping
 void FlashMappingFileTest(int gardenVariety = 4){
 
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	DAL::FlashMappingFile flashMappingFile;
 	auto serServive = createSerializationServer<DAL::FlashMappingFile>(flashMappingFile);
 
@@ -130,7 +130,7 @@ void FlashMappingFileTest(int gardenVariety = 4){
 
 void APIMappingFileTest(int gardenVariety = 4){
 
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
 	auto serServive = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 
@@ -140,7 +140,7 @@ void APIMappingFileTest(int gardenVariety = 4){
 //we do it buy creating a model -> serializing it -> deserialize the created json on the same model -> serializing that model and asserting the json is the same as the first one
 void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 {
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
 	auto serServivePtr = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 	auto& serServive = *serServivePtr;
@@ -159,7 +159,7 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorTest(int gardenVariety = 4)
 }
 
 void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTest(int gardenVariety = 4){
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
 	auto serServivePtr = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 	auto serServive = *serServivePtr;
@@ -167,15 +167,15 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTe
 	String json;
 	serServive.Model2Json(garden, json);
 
-	std::shared_ptr<GardenModel::Sprinkler> sprinkler = make_shared<GardenModel::Sprinkler>();
+	std::shared_ptr<garden::Sprinkler> sprinkler = make_shared<garden::Sprinkler>();
 	sprinkler->id = uniqueId;
 	garden._sprinklers.push_back(sprinkler);
 
-	std::shared_ptr<GardenModel::Plant> plant = make_shared<GardenModel::Plant>();
+	std::shared_ptr<garden::Plant> plant = make_shared<garden::Plant>();
 	plant->id = uniqueId;
 	garden._plants.push_back(plant);
 
-	std::shared_ptr<GardenModel::SimpleProgram> program = make_shared<GardenModel::SimpleProgram>();;
+	std::shared_ptr<garden::SimpleProgram> program = make_shared<garden::SimpleProgram>();;
 	program->id = uniqueId;
 	garden._programs.push_back(program);
 
@@ -195,7 +195,7 @@ void APIMappingFileMergingJsonArrayIntoExistingVectorDeletesFromVecIfNotInJsonTe
 }
 
 void APIMappingFileDeletingLinks(int gardenVariety = 4){
-	GardenModel::Garden garden = createGarden(gardenVariety);
+	garden::Garden garden = createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
 	auto serService = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 
@@ -219,7 +219,7 @@ void APIMappingFileDeletingLinks(int gardenVariety = 4){
 }
 
 void temp(int gardenVariety = 4){
-	GardenModel::Garden garden; //= createGarden(gardenVariety);
+	garden::Garden garden; //= createGarden(gardenVariety);
 	DAL::APIMappingFile apiMappingFile;
 	auto serService = createSerializationServer<DAL::APIMappingFile>(apiMappingFile);
 

@@ -8,9 +8,9 @@
 #ifndef ACCESSPOINTMODULE_RESTAPI_APSTATUSCONTROLLER_H_
 #define ACCESSPOINTMODULE_RESTAPI_APSTATUSCONTROLLER_H_
 
-#include <httpModule/dispatcher/IController.h>
-#include <httpModule/model/HttpServletRequest.h>
-#include <httpModule/model/HttpServletResponse.h>
+#include <HttpFramework/dispatcher/IController.h>
+#include <HttpFramework/model/HttpServletRequest.h>
+#include <HttpFramework/model/HttpServletResponse.h>
 #include <memory>
 
 #include <AccessPointModule/status/model/IAPStatusAcceptable.h>
@@ -29,7 +29,7 @@ public:
 	virtual ~APStatusController() {}
 
 	bool canHandle(Http::HttpServletRequest& req) {
-		Serial.println("inside APStatusController 'canHandle' handling post");
+	//	Serial.println("inside APStatusController 'canHandle' handling post");
 		bool flg = false;
 		if(req.httPMethod == Http::HTTPMethod::HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == urlPath){
 			flg = true;

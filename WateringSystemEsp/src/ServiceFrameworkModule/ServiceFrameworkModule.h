@@ -12,7 +12,7 @@
 #include <ModuleFramework/Module.h>
 #include <ModuleFramework/Container/Container.h>
 
-#include <ServiceFrameWork.h>
+#include <ServiceFramework/ServiceFrameWork.h>
 
 namespace sfwkModule {
 
@@ -24,12 +24,12 @@ std::shared_ptr<sfwk::ServiceFrameWork> ServiceFrameWorkCreator( ){
 class ServiceFrameworkModule : public MF::ModuleBase {
 public:
 	ServiceFrameworkModule() {}
-	virtual ~ServiceFrameworkModule() {}
+	~ServiceFrameworkModule() {}
 
 	void start(std::shared_ptr<cntnr::Container> container){
-
+//		Serial.println("Inside ServiceFrameworkModule start ");
 		container->registerType<sfwk::ServiceFrameWork>(&ServiceFrameWorkCreator);//always gives the same unit of work (meaning all the program share the same context model)
-
+//		Serial.println("End Inside ServiceFrameworkModule start ");
 	}
 };
 

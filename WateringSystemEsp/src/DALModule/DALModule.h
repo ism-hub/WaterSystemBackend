@@ -11,85 +11,58 @@
 #include <ModuleFramework/Module.h>
 #include <ModuleFramework/Container/Container.h>
 
-#include <DALModule/repositoryPattern/GardenUnitOfWork.h>
-#include <DALModule/repositoryPattern/GardenModelContext.h>
+#include <GardenModule/DAL/repositoryPattern/GardenUnitOfWork.h>
+#include <GardenModule/DAL/repositoryPattern/GardenModelContext.h>
 
-#include <DALModule/serialization/DoNothingMappingFile.h>
+#include <DALFramework/serialization/DoNothingMappingFile.h>
+#include <DALFramework/serializationService/DefaultSerializationService.h>
 
-//#include <DALModule/serialization/json2.h>
-#include <JsonSerializationService2.h>
-#include <JsonSaveArchive.h>
-#include <JsonLoadArchive.h>
-#include <FlashMappingFile.h>
-#include <APIMappingFile.h>
+#include <DALFramework/serializationService/JsonSerializationService2.h>
+
+#include <GardenModule/http/jsonSerialization/GardenRESTSerializationService.h>
+#include <GardenModule/DAL/GardenFlashSerializationService.h>
 
 
 namespace DALModule {
 
-std::shared_ptr<DAL::GardenUnitOfWork> GardenUnitOfWorkCreator(std::shared_ptr<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>>> jsonFlashSerializationService){
-	return std::make_shared<DAL::GardenUnitOfWork>(std::make_shared<DAL::GardenModelContext>(jsonFlashSerializationService));
+std::shared_ptr<garden::GardenUnitOfWork> GardenUnitOfWorkCreator(std::shared_ptr<garden::GardenFlashSerializationService> gardenFlashSerializationService){
+	return std::make_shared<garden::GardenUnitOfWork>(std::make_shared<garden::GardenModelContext>(gardenFlashSerializationService));
 }
 
-template<typename MappingFileType>
-std::shared_ptr<DAL::SerializationService2<mycereal::JsonSaveArchive<MappingFileType>, mycereal::JsonLoadArchive<MappingFileType>> > createSerializationServer(MappingFileType& mappingFile) {
-	typedef mycereal::JsonLoadArchive<MappingFileType> LoadArchiveType;
-	typedef mycereal::JsonSaveArchive<MappingFileType> SaveArchiveType;
-	typedef DAL::SerializationService2<SaveArchiveType, LoadArchiveType > ServerType;
-
-	auto loadArchive = std::make_shared<LoadArchiveType>(mappingFile);
-	auto saveArchive = std::make_shared<SaveArchiveType>(mappingFile);
-	auto serSevice =  std::make_shared<ServerType>(saveArchive, loadArchive);
-	return serSevice;
+std::shared_ptr<garden::GardenFlashSerializationService> gardenFlashSerializationServiceCreator(std::shared_ptr<DAL::SerializationService2> SerializationService2){
+	return std::make_shared<garden::GardenFlashSerializationService>(SerializationService2);
 }
 
-typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>,
-													mycereal::JsonLoadArchive<DAL::FlashMappingFile>> FlashSerializationServerType;
-
-std::shared_ptr<FlashSerializationServerType> JsonFlashSerializationServiceCreator( ){
-	DAL::FlashMappingFile flashMappingFile;
-	return createSerializationServer<DAL::FlashMappingFile>(flashMappingFile);
+std::shared_ptr<garden::GardenRESTSerializationService> gardenRESTSerializationServiceCreator(std::shared_ptr<DAL::SerializationService2> SerializationService2){
+	return std::make_shared<garden::GardenRESTSerializationService>(SerializationService2);
 }
 
-typedef DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>,
-													mycereal::JsonLoadArchive<DAL::APIMappingFile>> APISerializationServerType;
-
-std::shared_ptr<APISerializationServerType> JsonAPISerializationServiceCreator( ){
-	DAL::APIMappingFile flashMappingFile;
-	return createSerializationServer<DAL::APIMappingFile>(flashMappingFile);
+std::shared_ptr<DefaultSerializationService> defaultSerializationServiceCreator(std::shared_ptr<DAL::SerializationService2> SerializationService2){
+	return std::make_shared<DefaultSerializationService>(SerializationService2);
 }
 
-typedef DAL::SerializationService2< mycereal::JsonSaveArchive<mycereal::DoNothingMappingFile>,
-													mycereal::JsonLoadArchive<mycereal::DoNothingMappingFile>> DefaultSerializationServerType;
-
-std::shared_ptr<DefaultSerializationServerType> defaultSerializationServiceCreator( ){
-	mycereal::DoNothingMappingFile doNothingMappingFile;
-	return createSerializationServer<mycereal::DoNothingMappingFile>(doNothingMappingFile);
+std::shared_ptr<DAL::SerializationService2> SerializationService2Creator(){
+	return std::make_shared<DAL::SerializationService2>();
 }
 
 
 class DALModule : public MF::ModuleBase  {
 public:
 	DALModule(){
-#ifdef DEBUG_MY_CODE
-		Serial.println("DALModule CTOR");
-#endif
-		 }
+	}
 	virtual ~DALModule(){
-#ifdef DEBUG_MY_CODE
-		Serial.println("DALModule DTOR");
-#endif
 	}
 
 	void start(std::shared_ptr<cntnr::Container> container){
-#ifdef DEBUG_MY_CODE
-		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
-		Serial.println("DALModule start");
-#endif
-		container->registerType<DAL::GardenUnitOfWork>(&GardenUnitOfWorkCreator, true);//always gives the same unit of work (meaning all the program share the same context model)
-		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::FlashMappingFile>, mycereal::JsonLoadArchive<DAL::FlashMappingFile>> >(&JsonFlashSerializationServiceCreator, true);
-		container->registerType<DAL::SerializationService2< mycereal::JsonSaveArchive<DAL::APIMappingFile>, mycereal::JsonLoadArchive<DAL::APIMappingFile>> >(&JsonAPISerializationServiceCreator, true);
-		container->registerType<DefaultSerializationServerType>(&defaultSerializationServiceCreator, true);
+	//	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
+	//	Serial.println("DALModule start");
 
+		container->registerType<garden::GardenUnitOfWork>(&GardenUnitOfWorkCreator, true);//always gives the same unit of work (meaning all the program share the same context model)
+		container->registerType<DAL::SerializationService2>(&SerializationService2Creator, true);
+		container->registerType<DefaultSerializationService>(&defaultSerializationServiceCreator, true);
+		container->registerType<garden::GardenRESTSerializationService>(&gardenRESTSerializationServiceCreator, true);
+		container->registerType<garden::GardenFlashSerializationService>(&gardenFlashSerializationServiceCreator, true);
+	//	Serial.println("end Inside DALModule start ");
 	}
 };
 

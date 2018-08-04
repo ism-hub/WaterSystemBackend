@@ -8,7 +8,8 @@
 #ifndef SCHEDULERMODULE_SERVICE_SCHEDULERSERVICE_H_
 #define SCHEDULERMODULE_SERVICE_SCHEDULERSERVICE_H_
 
-#include <TimePattern.h>
+#include <GardenModule/model/TimePattern.h>
+
 #include <functional>
 
 //************ task schedule stuff
@@ -24,31 +25,31 @@ namespace sched {
 //	(so no much of a complex logic here)
 class SchedulerService {
 	Scheduler ts;
-	std::shared_ptr<TS::TimeService> _timeService;
+	std::shared_ptr<tsm::TimeService> _timeService;
 public:
-	SchedulerService(std::shared_ptr<TS::TimeService> timeService) : _timeService(timeService) {
+	SchedulerService(std::shared_ptr<tsm::TimeService> timeService) : _timeService(timeService) {
 
 	}
-	virtual ~SchedulerService() {}
+	 ~SchedulerService() {}
 
 	//TODO: change the hour to time
-	std::shared_ptr<Task> addTaskAtHour(GardenModel::Hour hour, int frequency, std::function<void()> taskFnc){
+	std::shared_ptr<Task> addTaskAtHour(garden::Hour hour, int frequency, std::function<void()> taskFnc){
 		std::shared_ptr<Task> tsk = std::make_shared<Task>(TASK_HOUR*24*frequency, TASK_FOREVER, taskFnc);
 		ts.addTask(*tsk);
 		auto currTime = _timeService->getCurrentDateTime();
-		GardenModel::Hour hourNow;
+		garden::Hour hourNow;
 		hourNow.hour = currTime.hours().count();
 		hourNow.min = currTime.minutes().count();
 		hourNow.sec = currTime.seconds().count();
 
 		unsigned long int delayInSec = hour - hourNow > 0 ? hour - hourNow : 24*60*60 + (hour - hourNow);
-		Serial.print("    Delay in sec - ");Serial.println(delayInSec);
+		Serial.print(F("    Delay in sec - "));Serial.println(delayInSec);
 		tsk->enableDelayed(delayInSec*TASK_SECOND);
 		return tsk;
 	}
 
 	void removeTask(std::shared_ptr<Task> task) {
-		Serial.print("Deleting task with id - ");//Serial.println(task->id_);
+//		Serial.print("Deleting task with id - ");//Serial.println(task->id_);
 		ts.deleteTask(*task);
 	}
 

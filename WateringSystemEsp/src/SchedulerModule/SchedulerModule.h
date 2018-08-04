@@ -17,17 +17,19 @@
 
 namespace schedmodule {
 
-std::shared_ptr<sched::SchedulerService> schedulerServiceCreator(std::shared_ptr<TS::TimeService> timeService) {
+std::shared_ptr<sched::SchedulerService> schedulerServiceCreator(std::shared_ptr<tsm::TimeService> timeService) {
 	return std::make_shared<sched::SchedulerService>(timeService);
 }
 
 class SchedulerModule : public MF::ModuleBase {
 public:
 	SchedulerModule() {}
-	virtual ~SchedulerModule() {}
+	~SchedulerModule() {}
 
 	void start(std::shared_ptr<cntnr::Container> container){
+	//	Serial.println("Inside SchedulerModule start ");
 		container->registerType<sched::SchedulerService>(&schedulerServiceCreator);
+	//	Serial.println("End Inside SchedulerModule start ");
 	}
 
 };

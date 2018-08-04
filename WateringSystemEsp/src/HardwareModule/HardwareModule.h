@@ -12,11 +12,11 @@
 #include <memory>
 #include <ModuleFramework/Module.h>
 #include <ModuleFramework/Container/Container.h>
-#include <IService.h>
-#include <HardwareModule/controllers/PlantsSuiteController.h>
-#include <HardwareModule/controllers/PumpController.h>
-#include <HardwareModule/controllers/SprinklersController.h>
-#include <SPIService.h>
+#include <ServiceFramework/IService.h>
+#include <GardenModule/hardware/PlantsSuiteController.h>
+#include <GardenModule/hardware/PumpController.h>
+#include <GardenModule/hardware/SprinklersController.h>
+#include <HardwareLib/SPIService/SPIService.h>
 
 //will contain all controllers which connects the model to the hardware
 namespace hrdwrmodule {
@@ -24,27 +24,27 @@ namespace hrdwrmodule {
 
 class PlantSuiteControllerIService : public sfwk::IService {
 
-	std::shared_ptr<hrdwrctrl::PlantsSuiteController> plantSuiteController = nullptr;
+	std::shared_ptr<garden::PlantsSuiteController> plantSuiteController = nullptr;
 	std::shared_ptr<sched::SchedulerService> _scheduleService;
-	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
+	std::shared_ptr<garden::GardenUnitOfWork> _unitOfWork;
 public:
 
-		PlantSuiteControllerIService(std::shared_ptr<sched::SchedulerService> scheduleService, std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork):
-			sfwk::IService("PlantSuiteControllerIService"),
+		PlantSuiteControllerIService(std::shared_ptr<sched::SchedulerService> scheduleService, std::shared_ptr<garden::GardenUnitOfWork> unitOfWork):
+			sfwk::IService(F("PlantSuiteControllerIService")),
 			_scheduleService(scheduleService),
 			_unitOfWork(unitOfWork)
 			{}
 
-		virtual ~PlantSuiteControllerIService() {
+		~PlantSuiteControllerIService() {
 			StopService();
 		}
 
-		virtual int StartService() {
-			plantSuiteController = std::make_shared<hrdwrctrl::PlantsSuiteController>(_scheduleService, _unitOfWork);
+		int StartService() {
+			plantSuiteController = std::make_shared<garden::PlantsSuiteController>(_scheduleService, _unitOfWork);
 			return 1;
 		}
 
-		virtual int StopService() {
+		int StopService() {
 			plantSuiteController = nullptr;//releasing the pointer, it not really stopping the service, but no one should save pointer to it
 			return 1;
 		}
@@ -53,29 +53,29 @@ public:
 
 class PumpControllerIService : public sfwk::IService {
 
-	std::shared_ptr<hrdwrctrl::PumpController> pumpController = nullptr;
-	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
+	std::shared_ptr<garden::PumpController> pumpController = nullptr;
+	std::shared_ptr<garden::GardenUnitOfWork> _unitOfWork;
 	std::shared_ptr<hrdwrctrl::SwitchArray> _switchHub;
 	int _pumpSwitchNumber;
 public:
 
-	PumpControllerIService(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<hrdwrctrl::SwitchArray> switchHub, int pumpSwitchNumber):
-			sfwk::IService("PumpControllerIService"),
+	PumpControllerIService(std::shared_ptr<garden::GardenUnitOfWork> unitOfWork, std::shared_ptr<hrdwrctrl::SwitchArray> switchHub, int pumpSwitchNumber):
+			sfwk::IService(F("PumpControllerIService")),
 			_unitOfWork(unitOfWork),
 			_switchHub(switchHub),
 			_pumpSwitchNumber(pumpSwitchNumber)
 			{}
 
-		virtual ~PumpControllerIService() {
+		~PumpControllerIService() {
 			StopService();
 		}
 
-		virtual int StartService() {
-			pumpController = std::make_shared<hrdwrctrl::PumpController>(_unitOfWork, _switchHub, _pumpSwitchNumber);
+		int StartService() {
+			pumpController = std::make_shared<garden::PumpController>(_unitOfWork, _switchHub, _pumpSwitchNumber);
 			return 1;
 		}
 
-		virtual int StopService() {
+		int StopService() {
 			pumpController = nullptr;//releasing the pointer, it not really stopping the service, but no one should save pointer to it
 			return 1;
 		}
@@ -84,27 +84,27 @@ public:
 
 class SprinklersControllerIService : public sfwk::IService {
 
-	std::shared_ptr<hrdwrctrl::SprinklersController> sprinklersController = nullptr;
-	std::shared_ptr<DAL::GardenUnitOfWork> _unitOfWork;
+	std::shared_ptr<garden::SprinklersController> sprinklersController = nullptr;
+	std::shared_ptr<garden::GardenUnitOfWork> _unitOfWork;
 	std::shared_ptr<hrdwrctrl::SwitchArray> _switchHub;
 public:
 
-	SprinklersControllerIService(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<hrdwrctrl::SwitchArray> switchHub):
-			sfwk::IService("SprinklersControllerIService"),
+	SprinklersControllerIService(std::shared_ptr<garden::GardenUnitOfWork> unitOfWork, std::shared_ptr<hrdwrctrl::SwitchArray> switchHub):
+			sfwk::IService(F("SprinklersControllerIService")),
 			_unitOfWork(unitOfWork),
 			_switchHub(switchHub)
 			{}
 
-		virtual ~SprinklersControllerIService() {
+		~SprinklersControllerIService() {
 			StopService();
 		}
 
-		virtual int StartService() {
-			sprinklersController = std::make_shared<hrdwrctrl::SprinklersController>(_unitOfWork, _switchHub);
+		int StartService() {
+			sprinklersController = std::make_shared<garden::SprinklersController>(_unitOfWork, _switchHub);
 			return 1;
 		}
 
-		virtual int StopService() {
+		int StopService() {
 			sprinklersController = nullptr;//releasing the pointer, it not really stopping the service, but no one should save pointer to it
 			return 1;
 		}
@@ -116,15 +116,15 @@ class SPIServiceIService : public sfwk::IService{
 public:
 
 	SPIServiceIService(std::shared_ptr<hrdwrctrl::SPIService> spiService):
-		sfwk::IService("SPIServiceIService"),
+		sfwk::IService(F("SPIServiceIService")),
 		spiService(spiService)
 	{}
 
-		virtual ~SPIServiceIService() {
+		 ~SPIServiceIService() {
 			StopService();
 		}
 
-		virtual int StartService() {
+		 int StartService() {
 			//if(spiService == nullptr){
 			//	spiService = std::make_shared<hrdwrctrl::SPIService>(numberOfPins);
 			//	spiService->unselectAllChips();
@@ -132,7 +132,7 @@ public:
 			return 1;
 		}
 
-		virtual int StopService() {
+		 int StopService() {
 			//spiService = nullptr;//releasing the pointer, it not really stopping the service, but no one should save pointer to it
 			return 1;
 		}
@@ -140,7 +140,7 @@ public:
 
 std::shared_ptr<hrdwrctrl::SPIService> SPIServiceCreator(){
 	std::shared_ptr<hrdwrctrl::SPIService> spiService = std::make_shared<hrdwrctrl::SPIService>(8);
-	Serial.println("Unselecting all chips (SPIService)");
+//	Serial.println("Unselecting all chips (SPIService)");
 	spiService->unselectAllChips();
 	return spiService;//TODO: add to configuration
 }
@@ -161,7 +161,7 @@ std::shared_ptr<hrdwrctrl::SwitchArray> SwitchArrayCreator(std::shared_ptr<hrdwr
 	hrdwrctrl::SwitchArray::SwitchArrayConfig config(SPISettings(500, MSBFIRST, SPI_MODE0), csPin, switchArraySize);
 	std::shared_ptr<hrdwrctrl::SwitchArray> switchArray =std::make_shared<hrdwrctrl::SwitchArray>(spiService, config);//notice - we gave it the chipSelectSPIService cause it on the chipSelect chip
 	//reset switch array
-	Serial.println("Reseting switch array");
+//	Serial.println("Reseting switch array");
 	switchArray->resetState();
 	return switchArray;
 }
@@ -170,10 +170,10 @@ class HardwareModule  : public MF::ModuleBase {
 
 public:
 	HardwareModule() {}
-	virtual ~HardwareModule() {}
+	~HardwareModule() {}
 
 	void start(std::shared_ptr<cntnr::Container> container){
-
+	//	Serial.println("Inside HardwareModule start ");
 		container->registerType<hrdwrctrl::SPIService>(&SPIServiceCreator);
 		container->registerType<hrdwrctrl::SwitchArray>(&SwitchArrayCreator);
 
@@ -181,7 +181,7 @@ public:
 		std::shared_ptr<hrdwrctrl::SwitchArray> switchArray = container->resolve<hrdwrctrl::SwitchArray>();
 
 		std::shared_ptr<sched::SchedulerService> scheduleService = container->resolve<sched::SchedulerService>();
-		std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork = container->resolve<DAL::GardenUnitOfWork>();
+		std::shared_ptr<garden::GardenUnitOfWork> unitOfWork = container->resolve<garden::GardenUnitOfWork>();
 
 		auto plantsSuitControllerIService = std::make_shared<PlantSuiteControllerIService>(scheduleService, unitOfWork);
 		auto pumpControllerIService = std::make_shared<PumpControllerIService>(unitOfWork, switchArray, 7);
@@ -198,7 +198,7 @@ public:
 		plantsSuitControllerIService->StartService();
 		pumpControllerIService->StartService();
 		sprinklersControllerIService->StartService();
-
+//		Serial.println("end Inside HardwareModule start ");
 
 	}
 

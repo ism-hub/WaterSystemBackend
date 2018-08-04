@@ -8,9 +8,9 @@
 #ifndef ACCESSPOINTMODULE_SERVICE_APSERVICE_H_
 #define ACCESSPOINTMODULE_SERVICE_APSERVICE_H_
 
-#include <IService.h>
+#include <ServiceFramework/IService.h>
 #include <memory>
-#include <SchedulerService.h>
+#include <SchedulerModule/service/SchedulerService.h>
 
 #include <AccessPointModule/configuration/model/APConfiguration.h>
 #include <AccessPointModule/status/model/APStatus.h>
@@ -25,7 +25,7 @@ class APService : public sfwk::IService {
 	APStatus apStatus;
 public:
 	APService(std::shared_ptr<sched::SchedulerService> scheduler, APConfiguration apConf) :
-		sfwk::IService("APService"), scheduler(scheduler), apConf(apConf), apStatus(apStatus) {}
+		sfwk::IService(F("APService")), scheduler(scheduler), apConf(apConf) {}
 
 	virtual ~APService(){}
 
@@ -33,7 +33,7 @@ public:
 	int StartService() override {
 		WiFi.softAPdisconnect();
 		apStatus.init();
-		Serial.println("Inside APService::StartService");
+	//	Serial.println("Inside APService::StartService");
 		auto lambdatryToCreateAP = [=](){return this->tryToCreate();};
 		tsk = scheduler->addTaskWithInterval(std::chrono::seconds{1}, TASK_FOREVER, lambdatryToCreateAP);
 		return 0;
@@ -71,28 +71,28 @@ public:
 protected:
 	//tries to create the access point
 	void tryToCreate() {//TODO: handle errors
-		Serial.println("Trying to create AP ***************");
+	//	Serial.println("Trying to create AP ***************");
 		IPAddress localIp;
 		localIp.fromString(apConf.localIP);
-		Serial.println(localIp.toString());
+	//	Serial.println(localIp.toString());
 		IPAddress gateway;
 		gateway.fromString(apConf.gateway);
-		Serial.println(gateway.toString());
+	//	Serial.println(gateway.toString());
 		IPAddress subnet;
 		subnet.fromString(apConf.subnet);
-		Serial.println(subnet.toString());
+	//	Serial.println(subnet.toString());
 
 		WiFi.softAPConfig(localIp, gateway, subnet);
-		Serial.println(apConf.ssid.c_str());
-		Serial.println(apConf.password.c_str());
+//		Serial.println(apConf.ssid.c_str());
+	//	Serial.println(apConf.password.c_str());
 		boolean result = WiFi.softAP(apConf.ssid.c_str(), apConf.password.c_str());
 		if(result == true){
 			tsk = nullptr;//the DTOR of this makes sure it kills the task from the SchedulerService
 			apStatus.isOn = true;
-			Serial.println("Succeeded to create AP");
+	//		Serial.println("Succeeded to create AP");
 		}else{
 			apStatus.isOn = false;
-			Serial.println("Failed to create AP (will try again in 1 sec)");
+	//		Serial.println("Failed to create AP (will try again in 1 sec)");
 		}
 	}
 

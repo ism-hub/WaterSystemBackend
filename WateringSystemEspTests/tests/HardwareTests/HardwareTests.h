@@ -23,20 +23,20 @@ namespace HardwareTests {
 
 class TestGardenModelContext : public DAL::IGardenModelContex {
 public:
-	std::shared_ptr<GardenModel::Garden>  garden;
+	std::shared_ptr<garden::Garden>  garden;
 	TestGardenModelContext() {
 
 	}
 	virtual ~TestGardenModelContext() {}
 
-	std::shared_ptr<GardenModel::Garden> get() {
+	std::shared_ptr<garden::Garden> get() {
 		if(garden == nullptr)
 			init();
 		return garden;
 	}
 
 	bool init() {
-		garden = std::make_shared<GardenModel::Garden>();
+		garden = std::make_shared<garden::Garden>();
 		return true;
 	}
 
@@ -108,15 +108,15 @@ void run(){
 
 	//################ Model stuff ################
 	//create the model (not really using the repository add function (need to think on how to bypass the id on the add method (I think theoretically only on save we get the correct ids)))
-	std::shared_ptr<GardenModel::Garden> garden = unitOfWork->Garden().getById(-1);
+	std::shared_ptr<garden::Garden> garden = unitOfWork->Garden().getById(-1);
 	//	create the sprinklers
-	std::shared_ptr<GardenModel::Sprinkler> sprinkler1 = std::make_shared<GardenModel::Sprinkler>();
+	std::shared_ptr<garden::Sprinkler> sprinkler1 = std::make_shared<garden::Sprinkler>();
 	sprinkler1->id = 1;
-	std::shared_ptr<GardenModel::Sprinkler> sprinkler2 = std::make_shared<GardenModel::Sprinkler>();
+	std::shared_ptr<garden::Sprinkler> sprinkler2 = std::make_shared<garden::Sprinkler>();
 	sprinkler2->id = 2;
-	std::shared_ptr<GardenModel::Sprinkler> sprinkler3 = std::make_shared<GardenModel::Sprinkler>();
+	std::shared_ptr<garden::Sprinkler> sprinkler3 = std::make_shared<garden::Sprinkler>();
 	sprinkler3->id = 3;
-	std::shared_ptr<GardenModel::Sprinkler> sprinkler4 = std::make_shared<GardenModel::Sprinkler>();
+	std::shared_ptr<garden::Sprinkler> sprinkler4 = std::make_shared<garden::Sprinkler>();
 	sprinkler4->id = 4;
 	//	adding the sprinklers to the model
 	std::cout << std::endl << "#### Adding sprinklers to the garden" << std::endl;
@@ -126,31 +126,31 @@ void run(){
 	garden->_sprinklers.push_back(sprinkler4);
 
 	//	creating program
-	GardenModel::Hour hour1{11,44};
-	GardenModel::Day day1;
+	garden::Hour hour1{11,44};
+	garden::Day day1;
 	day1.hours.push_back(hour1);
-	GardenModel::TimePattern timePattern1;
+	garden::TimePattern timePattern1;
 	timePattern1.days.push_back(day1);
-	auto program1 = std::make_shared<GardenModel::SimpleProgram>();
+	auto program1 = std::make_shared<garden::SimpleProgram>();
 	program1->id = 1;
 	program1->timePattern = timePattern1;
 
-	GardenModel::Hour hour2{11,46};
-	GardenModel::Day day2;
+	garden::Hour hour2{11,46};
+	garden::Day day2;
 	day2.hours.push_back(hour2);
-	GardenModel::TimePattern timePattern2;
+	garden::TimePattern timePattern2;
 	timePattern2.days.push_back(day2);
-	auto program2 = std::make_shared<GardenModel::SimpleProgram>();
+	auto program2 = std::make_shared<garden::SimpleProgram>();
 	program2->id = 2;
 	program2->timePattern = timePattern2;
 
 
 	//	creating the plants
-	std::shared_ptr<GardenModel::Plant> plant1 = std::make_shared<GardenModel::Plant>();
+	std::shared_ptr<garden::Plant> plant1 = std::make_shared<garden::Plant>();
 	plant1->id = 1;
-	std::shared_ptr<GardenModel::Plant> plant2 = std::make_shared<GardenModel::Plant>();;
+	std::shared_ptr<garden::Plant> plant2 = std::make_shared<garden::Plant>();;
 	plant2->id = 2;
-	std::shared_ptr<GardenModel::Plant> plant3 = std::make_shared<GardenModel::Plant>();;
+	std::shared_ptr<garden::Plant> plant3 = std::make_shared<garden::Plant>();;
 	plant3->id = 3;
 	// adding the plants to the garden (here we can see that we need to do two things to add the plant (two things the repository should do))
 	std::cout << std::endl << "#### Adding plants to the garden" << std::endl;

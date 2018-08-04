@@ -11,10 +11,10 @@
 #include <ModuleFramework/Module.h>
 #include <ModuleFramework/Container/Container.h>
 
-#include <ServiceFrameWork.h>
-#include <SchedulerService.h>
-#include <AccessPointModule/configuration/DAL/APConfContex.h>
+#include <ServiceFramework/ServiceFrameWork.h>
+#include <SchedulerModule/service/SchedulerService.h>
 
+#include <AccessPointModule/configuration/DAL/APConfContex.h>
 #include <AccessPointModule/service/APService.h>
 
 #include <AccessPointModule/configuration/restAPI/AccessPointHandlerExecutionChain.h>
@@ -23,14 +23,15 @@
 namespace apm {
 
 
-std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr<SerializationSerice> serializationService){
-	if(serializationService == nullptr)
-		Serial.println("_______________#$$$$$$$$$ serializationService is NULL");
+std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr<DALModule::DefaultSerializationService> serializationService){
+	//if(serializationService == nullptr)
+		//Serial.println("_______________#$$$$$$$$$ serializationService is NULL");
+
 	std::shared_ptr<APConfContex> apConfContex = std::make_shared<APConfContex>(serializationService, "apconfig.json");
 	return apConfContex;
 }
 
-std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService, std::shared_ptr<APService> apService){
+std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationService> serializationService, std::shared_ptr<APService> apService){
 	std::shared_ptr<AccessPointHandlerExecutionChain> exceChain = std::make_shared<AccessPointHandlerExecutionChain>(contex, serializationService, apService);
 	return exceChain;
 }
@@ -40,7 +41,7 @@ std::shared_ptr<APService> APServiceCreator(std::shared_ptr<APConfContex> apConf
 	return apIService;
 }
 
-std::shared_ptr<Http::IHandlerExecutionChain> AccessPointStatusHandlerExecutionChainCreator(std::shared_ptr<APService> apService, std::shared_ptr<DALModule::DefaultSerializationServerType> serializationService){
+std::shared_ptr<Http::IHandlerExecutionChain> AccessPointStatusHandlerExecutionChainCreator(std::shared_ptr<APService> apService, std::shared_ptr<DALModule::DefaultSerializationService> serializationService){
 	std::shared_ptr<AccessPointStatusHandlerExecutionChain> exceChain = std::make_shared<AccessPointStatusHandlerExecutionChain>(apService, serializationService);
 	return exceChain;
 }
@@ -48,10 +49,10 @@ std::shared_ptr<Http::IHandlerExecutionChain> AccessPointStatusHandlerExecutionC
 class AccessPointModule : public MF::ModuleBase  {
 public:
 	AccessPointModule(){}
-	virtual ~AccessPointModule(){}
+	~AccessPointModule(){}
 
 	void start(std::shared_ptr<cntnr::Container> container){
-		Serial.println("Inside AccessPointModule start function ###################");
+		//Serial.println("Inside AccessPointModule start function ###################");
 
 		container->registerType<APConfContex>(&APConfContexCreator);
 		container->registerType<APService>(&APServiceCreator);
@@ -66,6 +67,7 @@ public:
 		std::shared_ptr<sfwk::ServiceFrameWork> serviceFramework = container->resolve<sfwk::ServiceFrameWork>();
 		serviceFramework->AddService(apService);
 		apService->StartService();
+		//Serial.println("end Inside AccessPointModule start ");
 	}
 };
 

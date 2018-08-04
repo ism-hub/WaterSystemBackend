@@ -10,7 +10,7 @@
 
 
 #include <DALModule/DALModule.h>
-#include <httpModule/interceptors/SerializationVisitor.h>
+#include <HttpFramework/inteceptors/SerializationVisitor.h>
 
 namespace apm {
 
@@ -19,7 +19,7 @@ public:
 	IAPStatusAcceptable() {}
 	virtual ~IAPStatusAcceptable() {}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationServerType>& visitor) = 0;
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) = 0;
 };
 
 } /* namespace apm */

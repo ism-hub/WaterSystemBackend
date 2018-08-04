@@ -44,16 +44,16 @@ public:
 		return macAddress;
 	}
 
-	template <class Archive>
-	void save(Archive& archive) const {
-		archive.addProperties(MACRO_NVP(isOn), MACRO_NVP(ipAddress), MACRO_NVP(numOfConnectedStations), MACRO_NVP(macAddress));
+	template <class MappingFile, class Archive>
+	void save(MappingFile& mappingFile, Archive& archive) const {
+		archive.addProperties(mappingFile, MACRO_NVP(isOn), MACRO_NVP(ipAddress), MACRO_NVP(numOfConnectedStations), MACRO_NVP(macAddress));
 	}
 
-	template<class Archive>
-	void load(Archive& archive) {
+	template<class MappingFile, class Archive>
+	void load(MappingFile& mappingFile, Archive& archive) {
 	}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationServerType>& visitor) {
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) {
 		return visitor.visit(*this);
 	}
 };

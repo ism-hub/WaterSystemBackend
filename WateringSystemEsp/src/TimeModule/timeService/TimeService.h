@@ -8,6 +8,9 @@
 #ifndef TIMEMODULE_TIMESERVICE_TIMESERVICE_H_
 #define TIMEMODULE_TIMESERVICE_TIMESERVICE_H_
 
+#include <ServiceFramework/IService.h>
+#include <TimeModule/DAL/NtpSettingsContex.h>
+
 #include <chrono>
 //#include <time.h>
 //#include <date/date.h>
@@ -16,27 +19,31 @@
 // *********** time stuff
 // #include <TimeLib.h>
 #include <NtpClientLib.h>
-int8_t timeZone = 2;
-int8_t minutesTimeZone = 0;
+
+
+
+namespace tsm {
 bool syncEventTriggered = false; // True if a time even has been triggered
 NTPSyncEvent_t ntpEvent; // Last triggered event
 
 
-namespace TS {
-
-
-class TimeService {
+class TimeService : public sfwk::IService {
+	std::shared_ptr<NtpSettingsContex> ntpSettingsContex;
 public:
-	TimeService(){
+	TimeService(std::shared_ptr<NtpSettingsContex> ntpSettingsContex) : sfwk::IService(F("TimeService")), ntpSettingsContex(ntpSettingsContex){
+	//	Serial.println("INSIDE  TimeService CTOR");
 		NTP.onNTPSyncEvent ([](NTPSyncEvent_t event) {
 			ntpEvent = event;
 			syncEventTriggered = true;
 		});
-		NTP.begin ("pool.ntp.org", timeZone, true, minutesTimeZone);
-		NTP.setInterval (10, 60*30);//every 10 sec on failure, once every 30 min on success
+		NTP.begin (ntpSettingsContex->get()->serverIP, ntpSettingsContex->get()->timeZone, ntpSettingsContex->get()->daylight, ntpSettingsContex->get()->minutesTimeZone);
+		std::chrono::seconds intervalOnFailure = ntpSettingsContex->get()->intervalOnFailure;
+		std::chrono::seconds intervalOnSuccess = ntpSettingsContex->get()->intervalOnSuccess;
+		NTP.setInterval (intervalOnFailure.count(), intervalOnSuccess.count());//every 10 sec on failure, once every 10 min on success
+//		Serial.println("END INSIDE  TimeService CTOR");
 	}
 
-	virtual ~TimeService(){
+	 ~TimeService(){
 
 	}
 
@@ -67,17 +74,25 @@ public:
 		return timeToday;
 	}
 
+	int StartService(){
+		return 0;
+	}
+
+	int StopService(){
+		return 0;
+	}
+
 protected:
 	// ************ time stuff
 	void processSyncEvent (NTPSyncEvent_t ntpEvent) {
 	    if (ntpEvent) {
-	        Serial.print ("Time Sync error: ");
+	        Serial.print(F("Time Sync error: "));
 	        if (ntpEvent == noResponse)
-	            Serial.println ("NTP server not reachable");
+	            Serial.println(F("NTP server not reachable"));
 	        else if (ntpEvent == invalidAddress)
-	            Serial.println ("Invalid NTP server address");
+	            Serial.println(F("Invalid NTP server address"));
 	    } else {
-	        Serial.print ("Got NTP time: ");
+	        Serial.print(F("Got NTP time: "));
 	       // Serial.println (NTP.getTimeDateString (NTP.getLastNTPSync ()));
 	        initCurrentTime(myDate::my_clock::time_point{std::chrono::seconds{NTP.getLastNTPSync()}});
 	    }

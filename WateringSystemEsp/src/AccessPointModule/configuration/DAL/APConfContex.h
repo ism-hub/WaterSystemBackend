@@ -10,24 +10,25 @@
 
 #include <FS.h>
 
-#include <JsonSerializationService2.h>
-#include <JsonSaveArchive.h>
-#include <JsonLoadArchive.h>
-#include <DoNothingMappingFile.h>
+#include <DALFramework/serializationService/JsonSerializationService2.h>
+#include <DALFramework/serialization/JsonSaveArchive.h>
+#include <DALFramework/serialization/JsonLoadArchive.h>
+#include <DALFramework/serialization/DoNothingMappingFile.h>
 
 #include <AccessPointModule/configuration/model/APConfiguration.h>
 
 #include <DALFramework/SPIFFModelContex.h>
 
+#include <DALFramework/serializationService/DefaultSerializationService.h>
+
 namespace apm {
 
-typedef DAL::SerializationService2< mycereal::JsonSaveArchive<mycereal::DoNothingMappingFile>,mycereal::JsonLoadArchive<mycereal::DoNothingMappingFile>> SerializationSerice;
-typedef dalfw::SPIFFModelContex<SerializationSerice, APConfiguration> APconfigSPIFFContex;
+typedef dalfw::SPIFFModelContex<DALModule::DefaultSerializationService, APConfiguration> APconfigSPIFFContex;
 
 class APConfContex : public APconfigSPIFFContex {
 
 public:
-	APConfContex(std::shared_ptr<SerializationSerice> jsonSerializationService, String savePath) :
+	APConfContex(std::shared_ptr<DALModule::DefaultSerializationService> jsonSerializationService, String savePath) :
 		APconfigSPIFFContex(jsonSerializationService, savePath)
 	{}
 	virtual ~APConfContex() {}
