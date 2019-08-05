@@ -1,7 +1,7 @@
 /*
  * Station.h
  *
- *  Created on: 30 áéåìé 2018
+ *  Created on: 30 ï¿½ï¿½ï¿½ï¿½ï¿½ 2018
  *      Author: IsM
  */
 
@@ -18,7 +18,7 @@
 #include <StationModule/model/WiFiNetwork.h>
 #include <StationModule/model/ConnectionStatus.h>
 
-#include <SchedulerService.h>
+#include <SchedulerModule\service\SchedulerService.h>
 
 namespace sm {
 
@@ -77,6 +77,16 @@ public:
 		std::sort(networks.begin(), networks.end());
 		//std::reverse(networks.begin(), networks.end());
 		networks.erase(networks.begin(), networks.end() - 7);
+
+		//if the network is one of the saved ones, merge the saved one pass and auto connect
+		for(auto& network : networks) {
+			auto p = std::find(savedNetworks.begin(), savedNetworks.end(), network);
+			if(p != savedNetworks.end()){
+				network.password = (*p).password;
+				network.autoConnect = (*p).autoConnect;
+			}
+		}
+
 		return networks;
 	}
 
@@ -91,12 +101,9 @@ public:
 	/*
 	 * try to connect to a network; toSave- do you want to save that network? (maybe for auto connect or just the password)
 	 * */
-	void connect(sm::WiFiNetwork wifiNet, bool toSave) {
-	//	Serial.println("^^^^^^^^^^^^^^^^^^ Inside station.connect (trying to connect to wifiNetwork)");
-//		if(scheduler == nullptr)
-	//		Serial.println("________ERROR________^^^^^^^^^^^^^^^^^^ scheduler is null in Station");
+	void connect(sm::WiFiNetwork wifiNet, bool toSave, std::function<void()> callBack = nullptr) {
 		//disconnect();
-		auto lambdatryToWaitForConnection = [=](){return this->updateConnectionStatusAndMaybeSaveNetwork(wifiNet, toSave);};
+		auto lambdatryToWaitForConnection = [=](){return this->updateConnectionStatusAndMaybeSaveNetwork(wifiNet, toSave, callBack);};
 		tsk = scheduler->addTaskWithInterval(std::chrono::seconds{10}, TASK_FOREVER, lambdatryToWaitForConnection);//check every sec if we connected
 	}
 
@@ -119,14 +126,22 @@ public:
 	 * Checks if one of the saved networks with connect flag is on is available and connects to it
 	 * */
 	void connectAuto() {
-		std::vector<sm::WiFiNetwork>& nearbyNetworks = scan();
-		for(auto& savedNetwork : savedNetworks){
-			if(savedNetwork.autoConnect){
-				auto p = find(nearbyNetworks.begin(), nearbyNetworks.end(), savedNetwork);
-				if(p != nearbyNetworks.end())// one of the saved networks is available
-					connect(savedNetwork, false);
+		Serial.println("Insided connectAuto()");
+		std::vector<sm::WiFiNetwork>& nearbyNetworks = getNearbyNetworks();//scan
+		for(auto& network : nearbyNetworks){
+			if(network.autoConnect){
+				Serial.print("Trying to connect to:");Serial.println(network.SSID);
+				connect(network, false);
+				break;//TODO: if we didnt suceed to connect try the nexy one
 			}
 		}
+//		for(auto& savedNetwork : savedNetworks){
+//			if(savedNetwork.autoConnect){
+//				auto p = find(nearbyNetworks.begin(), nearbyNetworks.end(), savedNetwork);
+//				if(p != nearbyNetworks.end())// one of the saved networks is available
+//					connect(savedNetwork, false);
+//			}
+//		}
 	}
 
 	/*
@@ -204,15 +219,15 @@ protected:
 		connectionStatus.localIp = WiFi.localIP().toString();
 	}
 
-	void updateConnectionStatusAndMaybeSaveNetwork(sm::WiFiNetwork wifiNet, bool toSave) {
-		/*Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^ Inside updateConnectionStatusAndMaybeSaveNetwork");
+	void updateConnectionStatusAndMaybeSaveNetwork(sm::WiFiNetwork wifiNet, bool toSave, std::function<void()> callBack = nullptr) {
+		Serial.println(F("^^^^^^^^^^^^^^^^^^^^^^^^^^^ Inside updateConnectionStatusAndMaybeSaveNetwork"));
 		if(WiFi.status() != WL_CONNECTED ){//while we not connected
 			Serial.print(WiFi.status());
-			Serial.print("trying to connect to: ");Serial.println(wifiNet.SSID);
-			Serial.print("pass: ");Serial.println(wifiNet.password);
+			Serial.print(F("trying to connect to: "));Serial.println(wifiNet.SSID);
+			Serial.print(F("pass: "));Serial.println(wifiNet.password);
 			connectInner(wifiNet);
 			return;
-		}*/
+		}
 		//we connected
 		tsk = nullptr;//end this task
 		if(toSave)//save the network if we specified it
@@ -220,6 +235,8 @@ protected:
 		//update that we connected to this network
 		connectionStatus.network = wifiNet;
 		updateConnectionStatus();
+		if(callBack != nullptr)
+			callBack();
 
 		//print stuff
 //		Serial.println ( "" );

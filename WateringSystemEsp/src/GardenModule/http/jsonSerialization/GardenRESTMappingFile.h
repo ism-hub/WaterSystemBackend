@@ -1,7 +1,7 @@
 /*
  * GardenRESTMappingFile.h
  *
- *  Created on: 3 баевЧ 2018
+ *  Created on: 3 пїЅпїЅпїЅпїЅпїЅ 2018
  *      Author: IsM
  */
 
@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <WString.h>
-#include <StringUtils.h>
+#include <StringUtils\StringUtils.h>
 #include <DALFramework/serialization/NameValuePair.h>
 #include <GardenModule/model/Garden.h>
 #include <DALFramework/serialization/JsonContex.h>

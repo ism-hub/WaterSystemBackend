@@ -51,6 +51,8 @@ public:
 		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 2 ) {
 			if(req.urlTokens[1] == F("disconnect"))
 				return true;
+			if(req.urlTokens[1] == F("connect"))
+				return true;
 		}
 		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 4) {
 			if(req.urlTokens[1] == F("nearbyNetworks") && (req.urlTokens[3] == F("connect") || req.urlTokens[3] == F("disconnect") || req.urlTokens[3] == F("save")))
@@ -89,18 +91,21 @@ public:
 				return ret;
 			}
 		}
-		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 2)
+
+		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 2){
 			if(req.urlTokens[1] == F("disconnect")){
 				station->disconnect();
 				return  std::make_shared<ConnectionStatus>(station->getConnectionStatus());
 			}
+			if(req.urlTokens[1] == F("connect")){
+				connectJson(req.requestBody);
+				return  std::make_shared<ConnectionStatus>(station->getConnectionStatus());
+			}
+		}
 		if(req.httPMethod == Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 4) {
 			if(req.urlTokens[1] == F("nearbyNetworks")){
 				if( req.urlTokens[3] == F("connect")){
-					WiFiNetwork network;
-					_restSerializationService->Json2Model(network, req.requestBody);
-					network.SSID = req.urlTokens[2];
-					station->connect(network, true);
+					connectJson(req.requestBody);
 					return  std::make_shared<ConnectionStatus>(station->getConnectionStatus());
 				}
 				if(req.urlTokens[3] == F("disconnect")){
@@ -121,6 +126,13 @@ public:
 		}
 		Serial.println(F("__ERROR___: (inside StationController::handle)"));
 		return nullptr;
+	}
+
+protected:
+	void connectJson(const String& json) {
+		WiFiNetwork network;
+		_restSerializationService->Json2Model(network, json);
+		stationService->getStation()->connect(network, true, [=](){stationService->saveStation();});
 	}
 };
 

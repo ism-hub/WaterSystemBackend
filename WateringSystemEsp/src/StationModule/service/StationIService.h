@@ -21,24 +21,35 @@ public:
 	StationIService(std::shared_ptr<StationContex> stationContex) :
 		sfwk::IService(F("StationIService")), stationContex(stationContex)
 	{
-		sm::WiFiNetwork wifiNet;
-		wifiNet.SSID = F("Ratatata");
-		wifiNet.password = F("c0un73rs7r1k3");
-		std::shared_ptr<Station> station = stationContex->get();
+		//sm::WiFiNetwork wifiNet;
+		//wifiNet.SSID = F("Ratatata");
+		//wifiNet.password = F("c0un73rs7r1k3");
+		// std::shared_ptr<Station> station = stationContex->get();
 		//station->setScheduler(scheduler);
 		//Serial.println("^^^^^^^^^^^^^^^^^^^^^^^ before station->connect(wifiNet, false);");
-		station->connect(wifiNet, false);
+		//station->connect(wifiNet, false);
 	}
 	 ~StationIService() {
 //		Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~ StationIService DTOR");
 	}
 
-	int StartService() {}
+	int StartService() {
+		std::shared_ptr<Station> station = stationContex->get();
+		station->connectAuto();
+		return 0;
+	}
 
-	int StopService() {}
+	int StopService() {
+		Serial.println(F("Stopping StationIService server"));
+		return 0;
+	}
 
 	std::shared_ptr<Station> getStation(){
 		return stationContex->get();
+	}
+
+	int saveStation(){
+		return stationContex->save();
 	}
 
 };

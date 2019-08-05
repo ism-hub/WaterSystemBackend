@@ -1,0 +1,111 @@
+The places in which we will use JSON in our project and the format of the serialization - 
+
+-----------------
+Where we are using the JSON - 
+	* Saving our model to the flash (serialization).
+	* Constracting the model from the JSON in the flash (deserialization)
+	* Sending the model or parts of it to the client (lets call it api serialization)
+	* Getting response/request from the client (api deserialization)
+	
+-----------------	
+Format - 
+
+Saving our model to flash - 
+	* Every not "main reference" (mainly weak pointers) should be an id.
+		(e.g.: plant have program, the program is a reference to the main reference program object in the garden, we will represents the reference as the program id,
+			so - plant:{name:"lala",..., program:3} the plant with the name of lala has the watering program with id 3 assign to it)
+
+Constracting our model from flash - 
+	* every id that represents an object (reference) should be translated to an actual reference.
+		to it being a reference to an object it means that the object should exist, so now we have an order for the serialization.
+	
+Sending the model or parts of it to the client -
+	* We are using REST so part of the model we are sending can be a link 
+		(e.g. - plant:{id:5 , ..., program: "http://ismpc.com/garden/program/2"})
+		that is one example but it proves that the JSON we are sending in the API isn't necessarily the same as the one serialized in the flash,
+		the JSON we are sending need to fulfill the REST specs, so it can be different.
+		
+Getting response/request from the client - 
+	* like "Sending the model or parts of it to the client", 
+		I think the REST api can let use to send an update request with only the fields we want to update,
+		(e.g. - sendidng to http://ismpc.com/plants/5/ (in UPDATE MOD) the JSON string - '{name:"Lily"}' meaning we updates only the name field)
+		so once again the JSON we are sending isn't necessarily the same as the JSON of the object in the flash or what we sent to the client etc. 
+		
+-----------------
+Design in code - 
+
+	We will use ArduinoJson.h lib for the serialization to and from a generic model,
+	then we will convert our model to and from that generic model.
+	
+	The conversions we need and how we implement them in the code- (we need to think on a way to reuse the similar parts)
+		* We will have a service in our system that is responsible for: generic model <-> JSON string (the ArduinoJson.h lib basically).
+			API: 
+				- JSON2GenericModel: essentially like the line: JsonObject& root = jsonBuffer.parseObject(json);
+				- genericModel2JSON: essentially like the line: root.printTo(Serial);
+		
+		* Service which responisble for converting the service model to JSON
+			We will use config files to have flexibility on the serialization process (and by this we will able to reuse code while still being flexible)
+				- PropMappingFile file will have property <-> key values (translation units) for specific type.
+					* essentially saying what keys the type will have in his serialization, and to what values those keys corresponds to.
+				- MappingFile - will have the actual mapping code. how the generic model generates the model and vice versa. 
+					* The default serialization (MappingFile) will have mapping to the default types and know how to go thru pointers (ignore the pointer part and take the data only) and take the keys from the PropMappingFile.
+					* It will support custom mapping options for model2JSON and JSON2model for each type (a custom mapper file)
+				- Configuration will contain
+					* list of PropMapping files (like inheritance in objects, extending and shadowing the maps of lower levels map files)
+					* list of Mapping files (the same as above, if we don't find a mapping go to the the next mapping file in the list)
+					* 2 numbers representing where are we in the lists of PropMapping files and Mapping files.
+			We will support an update mechanism which built-in to the JSON -> model conversion
+				- We want to support partial updates seamlessly, meaning that we can send part of an object to the server for an update.
+					example - we send {name:"Lily2"} to http://ismpc.com/plants/5/ (in UPDATE mod) as result only the name field in the plant get updated
+				- The conversion will get an object reference and only update the properties of the existing keys in the JSON (using the default mapping file and the PropMapping file)
+			API:
+				- modelType JSON2Model<modelType>(configuration, json, model) : notice the configuration file, it make the function a pure function (no state involved) so we can reuse the object.
+				- string Model2JSON<modelType>(configuration, model)
+
+		* Flow - 
+			Model2JSON: ### - why not just do the chain of the configuration a new configuration which extends all the old ones and then all we do is calling to Model2JSON of the new configuration (even inside the loop (i think we cant have one))
+			- calling Model2JSON(configuration, model) will call the first MappingFile Model2JSON(...) function
+			- if there isn't any function that can handle the specific model it will go to the default, the default will return a 404 not found to the service
+				- and the service will call the next MappingFile Model2JSON and try it, if we didn't find it in all the mapping files than error - 
+					### now this is a runtime error but we don't need to change the configuration at runtime, can we make a compile time error instead?
+						we maybe can do that - the default will call to the next config file by himself, and when we create the config file we will specify his next chain, and in the last one it will give a compile time error
+						(notice that that only works if all our calls are explicit, but inside the function the calls are with a loop)
+			- if we find compatible Model2JSON in the MappingFile, we call it and inside of it -
+				- from the list in PropMappingFile and our type we call the service's Model2JSON (exept the types we want to manually create (we specify them so the loop so we dont call Model2JSON on them))
+					### maybe can get the calls in compile time with the generic meta programing and achive the compile time function completeness (we have all the functions we need to uses)
+			
+			JSON2Model: the problem here is that we don't know what are the keys we will get from the json, but we do know we can to call all the JSON2Model to the keys defiened in PropMappingFile
+							and again if we don't want the possibility to call something we can specify not to call it and in turn it wont look for the function and we wont have to define it
+			- 
+			
+			!!!
+			to make all the above happen we need a way to loop on the list of types of specific type and call Model2JSON/JSON2Model on them 
+			(we can do a constant signature func (every type will have it) that call inside her the correct Model2JSON func, but that means all the functions need to be present even if we end up not using them )
+			type -> list<(type,key)>
+	
+				
+-----------------
+Table of definitions (legend?)- 
+	main reference - if that reference is deleted it means that the object should be deleted too, 
+		(in the garden example - deleting a program from the garden means deleting the program (even from the plants that are using it),
+		while deleting the program for a specific plane means that we still have that program but that specific plane dont use it, or we will want to use it later).
+		So the program in the garden list of programs is the main reference (it reference cause we are using shared pointer for the safety it provides altho it not suppose to be a pointer at all)
+			and the program in the plant is not main refernce (usually a weak pointer, so if we will delete the main reference and not the not main one we will prompt that something fishy is happened..)
+			
+			
+			
+			
+			
+			
+-----------------					
+TRASH:
+
+automagically (by the keys in the JSON) populate the (empty) model 
+	(sadly we can't get our hands on the constructor in C++ so istead we call the default constructor and than using the init(...) method)
+
+
+		* server model -> generic (flash): 
+		* generic (flash) -> server model
+		* server model -> generic (api response)
+		* generic (api) request -> ??? (maybe do a new api request model, like PlantAPIRequest object that have all the information )
+					

@@ -1,7 +1,7 @@
 /*
  * SchedulerService.h
  *
- *  Created on: 6 бошх 2018
+ *  Created on: 6 пїЅпїЅпїЅпїЅ 2018
  *      Author: rina
  */
 
@@ -16,7 +16,7 @@
 #define _TASK_WDT_IDS
 #define _TASK_STD_FUNCTION
 #include <TaskScheduler.h>
-#include <TimeService.h>
+#include <TimeModule\timeService\TimeService.h>
 
 namespace sched {
 
