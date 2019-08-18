@@ -8,8 +8,7 @@
 #define ACCESSPOINTMODULE_ACCESSPOINTMODULE_H_
 
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <ServiceFramework/ServiceFrameWork.h>
 #include <SchedulerModule/service/SchedulerService.h>

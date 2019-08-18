@@ -1,7 +1,7 @@
 /*
  * StationModule.h
  *
- *  Created on: 29 αιεμι 2018
+ *  Created on: 29 οΏ½οΏ½οΏ½οΏ½οΏ½ 2018
  *      Author: IsM
  */
 
@@ -9,8 +9,7 @@
 #define STATIONMODULE_STATIONMODULE_H_
 
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <ServiceFramework/ServiceFrameWork.h>
 #include <SchedulerModule/service/SchedulerService.h>

@@ -1,7 +1,7 @@
 /*
  * httpModule.h
  *
- *  Created on: 23 áñôè× 2017
+ *  Created on: 23 ï¿½ï¿½ï¿½ï¿½ï¿½ 2017
  *      Author: IsM
  */
 
@@ -10,8 +10,7 @@
 
 #include <vector>
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <HttpFramework/dispatcher/DispatcherServlet.h>
 #include <ESP8266WebServer.h>

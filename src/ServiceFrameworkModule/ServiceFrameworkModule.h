@@ -1,7 +1,7 @@
 /*
  * ServiceFrameworkModule.h
  *
- *  Created on: 5 бошх 2018
+ *  Created on: 5 пїЅпїЅпїЅпїЅ 2018
  *      Author: IsM
  */
 
@@ -9,8 +9,7 @@
 #define SERVICEFRAMEWORKMODULE_SERVICEFRAMEWORKMODULE_H_
 
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <ServiceFramework/ServiceFrameWork.h>
 

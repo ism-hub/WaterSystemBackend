@@ -1,7 +1,7 @@
 /*
  * HardwareModule.h
  *
- *  Created on: 6 бошх 2018
+ *  Created on: 6 пїЅпїЅпїЅпїЅ 2018
  *      Author: rina
  */
 
@@ -10,8 +10,7 @@
 
 #include <vector>
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 #include <ServiceFramework/IService.h>
 #include <GardenModule/hardware/PlantsSuiteController.h>
 #include <GardenModule/hardware/PumpController.h>

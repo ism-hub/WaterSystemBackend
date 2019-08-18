@@ -8,8 +8,7 @@
 #define DALMODULE_DALMODULE_H_
 
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <GardenModule/DAL/repositoryPattern/GardenUnitOfWork.h>
 #include <GardenModule/DAL/repositoryPattern/GardenModelContext.h>

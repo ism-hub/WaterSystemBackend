@@ -15,9 +15,7 @@
 #include <type_traits>
 #include <limits>
 
-#include <ModuleFramework/ModuleService.h>
-#include <ModuleFramework/ModuleService.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 #include <config/moduleMap.h>
 
 //#include <Model/ObserverDesignPattern/Signal.hpp>
@@ -200,8 +198,8 @@ void setup ( void ) {
 	MF::ModuleService mfs;
 	config::moduleMap(mfs);
 
-	bool success = mfs.startAllModules();
-	if (!success)
+	auto success = mfs.startAllModules();
+	if (success != MF::ErrorCode::NO_ERROR)
 		Serial.println("___CRITICAL ERROR___: Failed to start all modules");
 
 	Serial.println("MMMMMMM Done loading all the modules");
@@ -216,13 +214,13 @@ void setup ( void ) {
 	//Serial.println(jsonGard);
 	//Serial.println("@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER what i belive to be the problematic line ");
 
-	serviceFrameWork = mfs.container->resolve<sfwk::ServiceFrameWork>();
+	serviceFrameWork = mfs.getContainer()->resolve<sfwk::ServiceFrameWork>();
 
-	server = mfs.container->resolve<ESP8266WebServer>();
+	server = mfs.getContainer()->resolve<ESP8266WebServer>();
 
 	server->begin();
 
-	scheduler = mfs.container->resolve<sched::SchedulerService>();
+	scheduler = mfs.getContainer()->resolve<sched::SchedulerService>();
 
 
 

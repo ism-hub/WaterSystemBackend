@@ -1,7 +1,7 @@
 /*
  * TimeModule.h
  *
- *  Created on: 11 баечЧ 2017
+ *  Created on: 11 пїЅпїЅпїЅпїЅпїЅ 2017
  *      Author: IsM
  */
 
@@ -9,8 +9,7 @@
 #define TIMEMODULE_TIMEMODULE_H_
 
 #include <memory>
-#include <ModuleFramework/Module.h>
-#include <ModuleFramework/Container/Container.h>
+#include <ModuleFramework/ModuleFramework.hpp>
 
 #include <TimeModule/timeService/TimeService.h>
 #include <TimeModule/DAL/NtpSettingsContex.h>
