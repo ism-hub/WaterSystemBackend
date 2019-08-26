@@ -1,7 +1,7 @@
 /*
  * APConfiguration.h
  *
- *  Created on: 27 αιεμι 2018
+ *  Created on: 27 οΏ½οΏ½οΏ½οΏ½οΏ½ 2018
  *      Author: IsM
  */
 #ifndef ACCESSPOINTMODULE_MODEL_APCONFIGURATION_H_
@@ -11,7 +11,7 @@
 #include <WString.h>
 #include <DALFramework/serializationService/JsonSerializationService2.h>
 
-#include <HttpFramework/inteceptors/SerializationVisitor.h>
+#include <HttpFramework.hpp>
 #include <AccessPointModule/configuration/model/IAPConfAcceptable.h>
 
 namespace apm {
@@ -59,7 +59,7 @@ public:
 
 	}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) {
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService, String>& visitor) {
 		return visitor.visit(*this);
 	}
 

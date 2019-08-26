@@ -1,16 +1,14 @@
 /*
  * GardenController.h
  *
- *  Created on: 27 áôáø× 2018
+ *  Created on: 27 ï¿½ï¿½ï¿½ï¿½ï¿½ 2018
  *      Author: rina
  */
 
 #ifndef ACCESSPOINTMODULE_RESTAPI_APCONFCONTROLLER_H_
 #define ACCESSPOINTMODULE_RESTAPI_APCONFCONTROLLER_H_
 
-#include <HttpFramework/dispatcher/IController.h>
-#include <HttpFramework/model/HttpServletRequest.h>
-#include <HttpFramework/model/HttpServletResponse.h>
+#include <HttpFramework.hpp>
 #include <memory>
 
 #include <AccessPointModule/configuration/model/IAPConfAcceptable.h>
@@ -20,7 +18,7 @@
 
 namespace apm {
 
-class APConfController: public Http::IController<IAPConfAcceptable> {
+class APConfController: public Http::IController<IAPConfAcceptable, String> {
 
 protected:
 	std::shared_ptr<APConfContex> _contex;
@@ -33,7 +31,7 @@ public:
 				_contex(contex), _serializationService(serializationService),  apService(apService) {}
 	virtual ~APConfController() {}
 
-	bool canHandle(Http::HttpServletRequest& req) {
+	bool canHandle(Http::HttpServletRequest<String>& req) {
 	//	Serial.println("inside APConfController 'canHandle' handling post");
 		bool flg = false;
 		if(req.httPMethod == Http::HTTPMethod::HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == _contex->get()->apConfigRestAPIPath){
@@ -46,7 +44,7 @@ public:
 		return flg;
 	}
 
-	std::shared_ptr<IAPConfAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse&) {
+	std::shared_ptr<IAPConfAcceptable> handle(Http::HttpServletRequest<String>& req, Http::HttpServletResponse<String>&) {
 		std::shared_ptr<APConfiguration> model = nullptr;
 		if(canHandle(req) && req.httPMethod == Http::HTTPMethod::HTTP_GET){
 			model = std::make_shared<APConfiguration>(apService->getAPConfiguration());

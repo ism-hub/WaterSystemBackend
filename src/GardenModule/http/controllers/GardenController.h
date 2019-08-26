@@ -1,7 +1,7 @@
 /*
  * GardenController.h
  *
- *  Created on: 27 áôáø× 2018
+ *  Created on: 27 ï¿½ï¿½ï¿½ï¿½ï¿½ 2018
  *      Author: rina
  */
 
@@ -9,9 +9,7 @@
 #define HTTPMODULE_CONTROLLERS_GARDENCONTROLLER_H_
 
 #include <GardenModule/DAL/repositoryPattern/GardenUnitOfWork.h>
-#include <HttpFramework/dispatcher/IController.h>
-#include <HttpFramework/model/HttpServletRequest.h>
-#include <HttpFramework/model/HttpServletResponse.h>
+#include <HttpFramework.hpp>
 #include <memory>
 #include <GardenModule/model/GardenAcceptable.h>
 #include <GardenModule/model/Garden.h>
@@ -20,7 +18,7 @@
 
 namespace garden {
 
-class GardenController: public Http::IController<garden::GardenAcceptable> {
+class GardenController: public Http::IController<garden::GardenAcceptable, String> {
 
 protected:
 	std::shared_ptr<GardenUnitOfWork> _unitOfWork;
@@ -31,22 +29,22 @@ public:
 				_unitOfWork(unitOfWork), _apiSerService(apiSerService) {}
 	 ~GardenController() {}
 
-	bool canHandle(Http::HttpServletRequest& req) {
-		if(req.httPMethod == HTTP_GET && req.urlTokens.size() == 0){
+	bool canHandle(Http::HttpServletRequest<String>& req) {
+		if(req.httPMethod == Http::HTTPMethod::HTTP_GET && req.urlTokens.size() == 0){
 			return true;
 		}
-		if(req.httPMethod == HTTP_POST && req.urlTokens.size() == 0){
+		if(req.httPMethod ==  Http::HTTPMethod::HTTP_POST && req.urlTokens.size() == 0){
 			return true;
 		}
 		return false;
 	}
 
-	std::shared_ptr<GardenAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse&) {
+	std::shared_ptr<GardenAcceptable> handle(Http::HttpServletRequest<String>& req, Http::HttpServletResponse<String>&) {
 		std::shared_ptr<Garden> garden = nullptr;
-		if(canHandle(req) && req.httPMethod == HTTP_GET){
+		if(canHandle(req) && req.httPMethod ==  Http::HTTPMethod::HTTP_GET){
 			garden = _unitOfWork->Garden().getById(-1);
 		}
-		if(canHandle(req) && req.httPMethod == HTTP_POST && req.requestBody != ""){
+		if(canHandle(req) && req.httPMethod == Http::HTTPMethod::HTTP_POST && req.requestBody != ""){
 			garden = _unitOfWork->Garden().getById(-1);
 			_apiSerService->Json2Model(*garden, req.requestBody);
 			if(!_unitOfWork->complete())

@@ -1,7 +1,7 @@
 /*
  * StationHandlerExecutionChain.h
  *
- *  Created on: 31 áéåìé 2018
+ *  Created on: 31 ï¿½ï¿½ï¿½ï¿½ï¿½ 2018
  *      Author: IsM
  */
 
@@ -9,11 +9,7 @@
 #define STATIONMODULE_REST_STATIONHANDLEREXECUTIONCHAIN_H_
 
 #include <memory>
-
-#include <HttpFramework/dispatcher/HandlerExecutionChain2.h>
-#include <HttpFramework/inteceptors/visitorHandlerInterceptor.h>
-#include <HttpFramework/dispatcher/HandlerExecutionChain2.h>
-#include <HttpFramework/inteceptors/visitorHandlerInterceptor.h>
+#include <HttpFramework.hpp>
 
 #include <StationModule/model/IStationAcceptable.h>
 #include <StationModule/REST/StationController.h>
@@ -22,13 +18,13 @@
 
 namespace sm {
 
-class StationHandlerExecutionChain : public Http::HandlerExecutionChain2<IStationAcceptable> {
+class StationHandlerExecutionChain : public Http::HandlerExecutionChain2<IStationAcceptable, String> {
 public:
 	StationHandlerExecutionChain(std::shared_ptr<StationIService> stationService, std::shared_ptr<StationRESTSerializationService> _restSerializationService) :
-			Http::HandlerExecutionChain2<IStationAcceptable>(std::make_shared<StationController>(stationService, _restSerializationService)){
+			Http::HandlerExecutionChain2<IStationAcceptable, String>(std::make_shared<StationController>(stationService, _restSerializationService)){
 	//	Serial.println("------------------------------ StationHandlerExecutionChain CTOR");
 		//typedef Http::SerializationVisitor<StationRESTSerializationService> jsonVisitorType;
-		typedef Http::visitorHandlerInterceptor<StationRESTJsonVisitor, IStationAcceptable> jsonInteceptorType;
+		typedef Http::SerializationInterceptor<StationRESTJsonVisitor, IStationAcceptable, String> jsonInteceptorType;
 		auto jsonVisitor = std::make_shared<StationRESTJsonVisitor>(_restSerializationService);
 		auto jsonInterceptor = std::make_shared<jsonInteceptorType>(jsonVisitor);
 		addInterceptor(jsonInterceptor);

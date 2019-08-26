@@ -26,7 +26,7 @@
 
 namespace sm {
 
-std::shared_ptr<Http::IHandlerExecutionChain> stationHandlerExecutionChainCreator(std::shared_ptr<StationIService> stationService, std::shared_ptr<StationRESTSerializationService> restSerializationService) {
+std::shared_ptr<Http::IHandlerExecutionChain<String>> stationHandlerExecutionChainCreator(std::shared_ptr<StationIService> stationService, std::shared_ptr<StationRESTSerializationService> restSerializationService) {
 //	if(stationService == nullptr || restSerializationService == nullptr)
 //			Serial.println("________________ERROR________ stationHandlerExecutionChainCreator  stationService == nullptr || restSerializationService == nullptr");
 	return std::make_shared<StationHandlerExecutionChain>(stationService, restSerializationService);
@@ -69,7 +69,7 @@ public:
 		container->registerType<StationIService>(&StationIServiceCreator);
 
 		container->registerType<StationRESTSerializationService>(&stationRESTSerializationServiceCreator);
-		container->registerType<Http::IHandlerExecutionChain>(&stationHandlerExecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain<String>>(&stationHandlerExecutionChainCreator);
 
 
 		//starting the server

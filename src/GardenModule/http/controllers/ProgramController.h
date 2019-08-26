@@ -1,7 +1,7 @@
 /*
  * ProgramController.h
  *
- *  Created on: 11 баечЧ 2017
+ *  Created on: 11 пїЅпїЅпїЅпїЅпїЅ 2017
  *      Author: IsM
  */
 
@@ -14,13 +14,11 @@
 #include <GardenModule/DAL/repositoryPattern/GardenUnitOfWork.h>
 #include <GardenAcceptable.h>
 #include <Garden.h>
-#include <HttpFramework/dispatcher/IController.h>
-#include <HttpFramework/model/HttpServletRequest.h>
-#include <HttpFramework/model/HttpServletResponse.h>
+#include <HttpFramework.hpp>
 
 namespace garden {
 
-class ProgramController : public Http::IController<garden::GardenAcceptable>{
+class ProgramController : public Http::IController<garden::GardenAcceptable, String>{
 
 protected:
 	std::shared_ptr<GardenUnitOfWork> _unitOfWork;
@@ -33,16 +31,16 @@ public:
 
 	}
 
-	bool canHandle(Http::HttpServletRequest& req) {
-		if (req.httPMethod == HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == F("programs")) {
+	bool canHandle(Http::HttpServletRequest<String>& req) {
+		if (req.httPMethod == HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == String(F("programs"))) {
 			return true;
 		}
 		return false;
 	}
 
-	std::shared_ptr<GardenAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse&) {
+	std::shared_ptr<GardenAcceptable> handle(Http::HttpServletRequest<String>& req, Http::HttpServletResponse<String>&) {
 		std::shared_ptr<garden::SimpleProgram> program = nullptr;
-		if (canHandle(req) && req.urlTokens.size() == 2) { //get a program     – GET         /programs/{id}
+		if (canHandle(req) && req.urlTokens.size() == 2) { //get a program     пїЅ GET         /programs/{id}
 		//get parameters
 			int id = atoi(req.urlTokens[1].c_str());
 			//call the correct function

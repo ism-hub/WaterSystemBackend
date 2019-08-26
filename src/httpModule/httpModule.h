@@ -12,11 +12,8 @@
 #include <memory>
 #include <ModuleFramework/ModuleFramework.hpp>
 
-#include <HttpFramework/dispatcher/DispatcherServlet.h>
+#include <HttpFramework.hpp>
 #include <ESP8266WebServer.h>
-
-#include <HttpFramework/model/HttpServletRequest.h>
-#include <HttpFramework/model/HttpServletResponse.h>
 
 #include <GardenModule/http/controllers/PlantController.h>
 
@@ -24,7 +21,6 @@
 //#include <GardenModule/http/controllers/ProgramController.h>
 #include <GardenModule/http/controllers/GardenController.h>
 
-#include <HttpFramework/dispatcher/HandlerExecutionChain2.h>
 
 #include <GardenModule/http/jsonSerialization/GardenRESTSerializationService.h>
 
@@ -33,7 +29,7 @@ namespace httpModule {
 //dispatcher and webserver glue
 class DispatcherHandler : public RequestHandler {
 public:
-	DispatcherHandler(std::shared_ptr<Http::DispatcherServlet> dispatcherServlet):
+	DispatcherHandler(std::shared_ptr<Http::DispatcherServlet<String>> dispatcherServlet):
 		_dispatcher(dispatcherServlet)
     {
     }
@@ -47,29 +43,30 @@ public:
         return false;
     }
 
-    std::shared_ptr<Http::HttpServletRequest> _createHttpServletRequest(ESP8266WebServer& server){
+    std::shared_ptr<Http::HttpServletRequest<String>> _createHttpServletRequest(ESP8266WebServer& server){
         //from what i understood from the text the RequestArgument with the key of "plain" is where the json data is going
-        String requestBody="";
-        if(server.hasArg(F("plain")))
-        	requestBody = server.arg(F("plain"));
+       
+        
        // Serial.println ( " before new HttpServletRequest" );
         //translating the method:
         Http::HTTPMethod ourMethod;
         HTTPMethod serverMethod = server.method();
         switch (serverMethod){
-        	case HTTP_ANY: ourMethod = Http::HTTP_ANY; break;
-        	case HTTP_GET: ourMethod = Http::HTTP_GET; break;
-        	case HTTP_POST: ourMethod = Http::HTTP_POST; break;
-        	case HTTP_PUT: ourMethod = Http::HTTP_PUT; break;
-        	case HTTP_PATCH: ourMethod = Http::HTTP_PATCH; break;
-        	case HTTP_DELETE: ourMethod = Http::HTTP_DELETE; break;
-        	case HTTP_OPTIONS: ourMethod = Http::HTTP_OPTIONS; break;
+        	case HTTP_ANY: ourMethod = Http::HTTPMethod::HTTP_ANY; break;
+        	case HTTP_GET: ourMethod = Http::HTTPMethod::HTTP_GET; break;
+        	case HTTP_POST: ourMethod = Http::HTTPMethod::HTTP_POST; break;
+        	case HTTP_PUT: ourMethod = Http::HTTPMethod::HTTP_PUT; break;
+        	case HTTP_PATCH: ourMethod = Http::HTTPMethod::HTTP_PATCH; break;
+        	case HTTP_DELETE: ourMethod = Http::HTTPMethod::HTTP_DELETE; break;
+        	case HTTP_OPTIONS: ourMethod = Http::HTTPMethod::HTTP_OPTIONS; break;
         	default:
         		Serial.println(F("___ERROR: unrecognized http method"));
         		return nullptr;
         		break;
         }
-        return std::make_shared<Http::HttpServletRequest>(requestBody, ourMethod, server.uri());
+		//if(server.hasArg(F("plain")))
+        return std::make_shared<Http::HttpServletRequest<String>>(server.arg(F("plain")), ourMethod, server.uri());//XXX: maybe possible error here if server.hasArg(F("plain")) ? i dont think so cuz it returns reference but maybe it doesnt clean it from the last call..
+       // return std::make_shared<Http::HttpServletRequest<String>>(requestBody, ourMethod, server.uri());
     }
 
 //    void printServletRequest(Http::HttpServletRequest& req){
@@ -101,7 +98,7 @@ public:
     		//	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 
     		//	Serial.println ( "Calling _createHttpServletRequest()" );
-    			std::shared_ptr<Http::HttpServletRequest> httpServletRequest = _createHttpServletRequest(server);
+    			std::shared_ptr<Http::HttpServletRequest<String>> httpServletRequest = _createHttpServletRequest(server);
     			if(httpServletRequest == nullptr){
     				Serial.println(F("______ Recieved unknown http method"));
     				server.sendHeader(F("Allow"), F("OPTIONS, GET, HEAD, POST"));
@@ -113,7 +110,7 @@ public:
 
     	//		Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
     	//		Serial.println ( "Dispatching the request Calling FispatcherServlet.dispatch(HttpServletRequest)" );
-    			std::shared_ptr<Http::HttpServletResponse> httpServletResponse = _dispatcher->dispatch(*httpServletRequest);
+    			std::shared_ptr<Http::HttpServletResponse<String>> httpServletResponse = _dispatcher->dispatch(*httpServletRequest);
 
 
 //    			Serial.println ( "~~~~The request we got:");
@@ -125,7 +122,7 @@ public:
 //    			Serial.println(httpServletResponse->content_type);
 //    			Serial.print("body: ");
 //    			Serial.println(httpServletResponse->content);
-    			server.send(httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
+    			server.send((int)httpServletResponse->_httpCode, httpServletResponse->content_type, httpServletResponse->content );
 
     			//here we need cleanup
     			Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
@@ -140,18 +137,18 @@ public:
     }
 
 protected:
-    std::shared_ptr<Http::DispatcherServlet> _dispatcher;
+    std::shared_ptr<Http::DispatcherServlet<String>> _dispatcher;
 };
 
-std::shared_ptr<ESP8266WebServer> ESP8266WebServerCreator(std::shared_ptr<Http::DispatcherServlet> dispatcherServlet){
+std::shared_ptr<ESP8266WebServer> ESP8266WebServerCreator(std::shared_ptr<Http::DispatcherServlet<String>> dispatcherServlet){
 	std::shared_ptr<ESP8266WebServer> webServer = std::make_shared<ESP8266WebServer>();
 	DispatcherHandler* dispatcherHandler = new DispatcherHandler(dispatcherServlet);
 	webServer->addHandler(dispatcherHandler);
 	return (webServer);
 }
 
-std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<std::shared_ptr<Http::IHandlerExecutionChain>> excecutionChains){
-	return std::make_shared<Http::DispatcherServlet>(excecutionChains);
+std::shared_ptr<Http::DispatcherServlet<String>> dispatcherServletCreator(std::vector<std::shared_ptr<Http::IHandlerExecutionChain<String>>> excecutionChains){
+	return std::make_shared<Http::DispatcherServlet<String>>(excecutionChains);
 }
 
 //std::shared_ptr<Http::IHandlerExecutionChain> plantExcecutionChainCreator(std::shared_ptr<DAL::GardenUnitOfWork> unitOfWork, std::shared_ptr<Http::JsonHandlerInterceptor> jsonInterceptor){
@@ -168,8 +165,8 @@ std::shared_ptr<Http::DispatcherServlet> dispatcherServletCreator(std::vector<st
 //	return programExceChain;
 //}
 
-std::shared_ptr<Http::IHandlerExecutionChain> gardenExcecutionChainCreator(std::shared_ptr<garden::GardenUnitOfWork> unitOfWork, std::shared_ptr<garden::GardenRESTSerializationService> gardenRESTSerializationService){
-	typedef Http::HandlerExecutionChain2<garden::GardenAcceptable> exeChainType;
+std::shared_ptr<Http::IHandlerExecutionChain<String>> gardenExcecutionChainCreator(std::shared_ptr<garden::GardenUnitOfWork> unitOfWork, std::shared_ptr<garden::GardenRESTSerializationService> gardenRESTSerializationService){
+	typedef Http::HandlerExecutionChain2<garden::GardenAcceptable, String> exeChainType;
 
 	auto jsonGardenVisitor = std::make_shared<garden::JsonGardenVisitor>(gardenRESTSerializationService);
 	auto jsonHandlerInterceptor = std::make_shared<garden::JsonHandlerInterceptor>(jsonGardenVisitor);
@@ -198,7 +195,7 @@ public:
 	void start(std::shared_ptr<cntnr::Container> container){
 	//	Serial.printf("settings heap size: %u\n", ESP.getFreeHeap());
 	//	Serial.println("httpModule start");
-		container->registerType<Http::DispatcherServlet>(&dispatcherServletCreator, true);
+		container->registerType<Http::DispatcherServlet<String>>(&dispatcherServletCreator, true);
 		container->registerType<ESP8266WebServer>(&ESP8266WebServerCreator);
 
 		//container->registerType<Http::JsonHandlerInterceptor>(&jsonHandlerInterceptorCreator);
@@ -207,7 +204,7 @@ public:
 		//container->registerType<GardenModel::JsonGardenVisitor>(&jsonGardenVisitorCreator);
 
 		//container->registerType<Http::IHandlerExecutionChain>(&programExcecutionChainCreator);
-		container->registerType<Http::IHandlerExecutionChain>(&gardenExcecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain<String>>(&gardenExcecutionChainCreator);
 	//	Serial.println("end Inside httpModule start ");
 	}
 };

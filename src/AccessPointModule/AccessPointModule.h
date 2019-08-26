@@ -30,7 +30,7 @@ std::shared_ptr<APConfContex> APConfContexCreator(std::shared_ptr<DALModule::Def
 	return apConfContex;
 }
 
-std::shared_ptr<Http::IHandlerExecutionChain> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationService> serializationService, std::shared_ptr<APService> apService){
+std::shared_ptr<Http::IHandlerExecutionChain<String>> AccessPointHandlerExecutionChainCreator(std::shared_ptr<APConfContex> contex, std::shared_ptr<DALModule::DefaultSerializationService> serializationService, std::shared_ptr<APService> apService){
 	std::shared_ptr<AccessPointHandlerExecutionChain> exceChain = std::make_shared<AccessPointHandlerExecutionChain>(contex, serializationService, apService);
 	return exceChain;
 }
@@ -40,7 +40,7 @@ std::shared_ptr<APService> APServiceCreator(std::shared_ptr<APConfContex> apConf
 	return apIService;
 }
 
-std::shared_ptr<Http::IHandlerExecutionChain> AccessPointStatusHandlerExecutionChainCreator(std::shared_ptr<APService> apService, std::shared_ptr<DALModule::DefaultSerializationService> serializationService){
+std::shared_ptr<Http::IHandlerExecutionChain<String>> AccessPointStatusHandlerExecutionChainCreator(std::shared_ptr<APService> apService, std::shared_ptr<DALModule::DefaultSerializationService> serializationService){
 	std::shared_ptr<AccessPointStatusHandlerExecutionChain> exceChain = std::make_shared<AccessPointStatusHandlerExecutionChain>(apService, serializationService);
 	return exceChain;
 }
@@ -56,8 +56,8 @@ public:
 		container->registerType<APConfContex>(&APConfContexCreator);
 		container->registerType<APService>(&APServiceCreator);
 
-		container->registerType<Http::IHandlerExecutionChain>(&AccessPointHandlerExecutionChainCreator);
-		container->registerType<Http::IHandlerExecutionChain>(&AccessPointStatusHandlerExecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain<String>>(&AccessPointHandlerExecutionChainCreator);
+		container->registerType<Http::IHandlerExecutionChain<String>>(&AccessPointStatusHandlerExecutionChainCreator);
 
 
 		//starting the AP service

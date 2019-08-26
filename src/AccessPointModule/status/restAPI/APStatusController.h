@@ -1,16 +1,14 @@
 /*
  * GardenController.h
  *
- *  Created on: 27 áôáø× 2018
+ *  Created on: 27 ï¿½ï¿½ï¿½ï¿½ï¿½ 2018
  *      Author: rina
  */
 
 #ifndef ACCESSPOINTMODULE_RESTAPI_APSTATUSCONTROLLER_H_
 #define ACCESSPOINTMODULE_RESTAPI_APSTATUSCONTROLLER_H_
 
-#include <HttpFramework/dispatcher/IController.h>
-#include <HttpFramework/model/HttpServletRequest.h>
-#include <HttpFramework/model/HttpServletResponse.h>
+#include <HttpFramework.hpp>
 #include <memory>
 
 #include <AccessPointModule/status/model/IAPStatusAcceptable.h>
@@ -18,7 +16,7 @@
 
 namespace apm {
 
-class APStatusController: public Http::IController<IAPStatusAcceptable> {
+class APStatusController: public Http::IController<IAPStatusAcceptable, String> {
 
 protected:
 	std::shared_ptr<APService> apService;
@@ -28,7 +26,7 @@ public:
 		apService(apService), urlPath(urlPath) {}
 	virtual ~APStatusController() {}
 
-	bool canHandle(Http::HttpServletRequest& req) {
+	bool canHandle(Http::HttpServletRequest<String>& req) {
 	//	Serial.println("inside APStatusController 'canHandle' handling post");
 		bool flg = false;
 		if(req.httPMethod == Http::HTTPMethod::HTTP_GET && req.urlTokens.size() > 0 && req.urlTokens[0] == urlPath){
@@ -37,7 +35,7 @@ public:
 		return flg;
 	}
 
-	std::shared_ptr<IAPStatusAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse&) {
+	std::shared_ptr<IAPStatusAcceptable> handle(Http::HttpServletRequest<String>& req, Http::HttpServletResponse<String>&) {
 		if(canHandle(req) && req.httPMethod == Http::HTTPMethod::HTTP_GET){
 			return make_shared<APStatus>(apService->getAPStatus());
 		}

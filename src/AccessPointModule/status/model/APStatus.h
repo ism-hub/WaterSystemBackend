@@ -1,7 +1,7 @@
 /*
  * APStatus.h
  *
- *  Created on: 29 αιεμι 2018
+ *  Created on: 29 οΏ½οΏ½οΏ½οΏ½οΏ½ 2018
  *      Author: IsM
  */
 
@@ -53,7 +53,7 @@ public:
 	void load(MappingFile& mappingFile, Archive& archive) {
 	}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) {
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService, String>& visitor) {
 		return visitor.visit(*this);
 	}
 };

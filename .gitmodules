@@ -1,3 +1,6 @@
 [submodule "lib/ModuleFramework/ModuleFramework"]
 	path = lib/ModuleFramework/ModuleFramework
 	url = https://github.com/ism-hub/ModuleFramework.git
+[submodule "lib/HttpFramework"]
+	path = lib/HttpFramework
+	url = https://github.com/ism-hub/HttpFramework.git

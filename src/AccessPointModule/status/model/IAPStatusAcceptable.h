@@ -1,7 +1,7 @@
 /*
  * APStatusAcceptable.h
  *
- *  Created on: 29 αιεμι 2018
+ *  Created on: 29 οΏ½οΏ½οΏ½οΏ½οΏ½ 2018
  *      Author: IsM
  */
 
@@ -10,7 +10,7 @@
 
 
 #include <DALModule/DALModule.h>
-#include <HttpFramework/inteceptors/SerializationVisitor.h>
+#include <HttpFramework.hpp>
 
 namespace apm {
 
@@ -19,7 +19,7 @@ public:
 	IAPStatusAcceptable() {}
 	virtual ~IAPStatusAcceptable() {}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) = 0;
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService, String>& visitor) = 0;
 };
 
 } /* namespace apm */

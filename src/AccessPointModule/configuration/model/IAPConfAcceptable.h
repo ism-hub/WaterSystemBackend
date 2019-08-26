@@ -1,7 +1,7 @@
 /*
  * IAPConfAcceptable.h
  *
- *  Created on: 28 αιεμι 2018
+ *  Created on: 28 οΏ½οΏ½οΏ½οΏ½οΏ½ 2018
  *      Author: IsM
  */
 
@@ -9,7 +9,7 @@
 #define ACCESSPOINTMODULE_MODEL_IAPCONFACCEPTABLE_H_
 
 #include <DALFramework/serializationService/JsonSerializationService2.h>
-#include <HttpFramework/inteceptors/SerializationVisitor.h>
+#include <HttpFramework.hpp>
 #include <DALFramework/serializationService/DefaultSerializationService.h>
 #include <DALFramework/serialization/JsonSaveArchive.h>
 #include <DALFramework/serialization/JsonLoadArchive.h>
@@ -21,7 +21,7 @@ public:
 	IAPConfAcceptable() {}
 	virtual ~IAPConfAcceptable() {}
 
-	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService>& visitor) = 0;
+	virtual std::shared_ptr<void> accept(Http::SerializationVisitor<DALModule::DefaultSerializationService, String>& visitor) = 0;
 };
 
 } /* namespace apm */
