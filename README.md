@@ -6,7 +6,7 @@ Clone from git with the submodules with that command -
 ```git
 git clone --recursive https://github.com/ism-hub/WaterSystemBackend.git
 ```
-Open using vscode with [Platformio](https://platformio.org/) installed, and that's it now you can compile, upload, run and edit code.
+Open using vscode with [Platformio](https://platformio.org/) installed, and that's it you now can compile, upload, run and edit the code.
 
 # Hardware
 ### Overview 
